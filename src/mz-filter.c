@@ -83,7 +83,7 @@ mz_eom (SMFICTX *context)
 sfsistat
 mz_abort (SMFICTX *context)
 {
-    return mz_cleanup (context);
+    return mz_cleanup(context);
 }
 
 sfsistat
