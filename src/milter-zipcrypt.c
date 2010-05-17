@@ -200,6 +200,6 @@ main (int argc, char **argv[])
         exit(EXIT_FAILURE);
     }
 
-	return smfi_main();
+    return smfi_main();
 }
 
