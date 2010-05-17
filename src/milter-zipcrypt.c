@@ -1,6 +1,7 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <libmilter/mfapi.h>
 #include <zlib.h>
@@ -113,6 +114,7 @@ static sfsistat
 _eom (SMFICTX *context)
 {
     struct MzPriv *priv;
+    char *boundary_line;
 
     priv = (struct MzPriv*)smfi_getpriv(context);
     if (!priv)
@@ -124,7 +126,15 @@ _eom (SMFICTX *context)
     if (!priv->body)
         return SMFIS_ACCEPT;
 
+    boundary_line = malloc(strlen(priv->boundary) + 3);
+    sprintf(boundary_line, "--%s", priv->boundary);
+    if (!strstr(priv->body, boundary_line)) {
+        free(boundary_line);
+        return SMFIS_ACCEPT;
+    }
+
     smfi_replacebody(context, priv->body, priv->body_length);
+    free(boundary_line);
 
     return SMFIS_CONTINUE;
 }
