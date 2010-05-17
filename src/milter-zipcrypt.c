@@ -71,12 +71,12 @@ _header (SMFICTX *context, char *name, char *value)
         return SMFIS_ACCEPT;
     }
 
-	memset(priv, 0, sizeof(*priv));
+    memset(priv, 0, sizeof(*priv));
     priv->boundary = boundary;
     priv->body = NULL;
     priv->body_length = 0;
 
-	smfi_setpriv(context, priv);
+    smfi_setpriv(context, priv);
 
     return SMFIS_CONTINUE;
 }
@@ -141,7 +141,7 @@ _close (SMFICTX *context)
 static sfsistat
 _cleanup (SMFICTX *context)
 {
-	struct MzPriv *priv;
+    struct MzPriv *priv;
     
     priv = (struct MzPriv*)smfi_getpriv(context);
     if (!priv)
@@ -166,22 +166,22 @@ _cleanup (SMFICTX *context)
 }
 
 struct smfiDesc smfilter = {
-	"milter-zipcrypt",
-	SMFI_VERSION,
-	SMFIF_CHGHDRS | SMFIF_CHGBODY,
-	NULL, /* connect */
-	NULL, /* helo */
-	_envfrom,
-	_envrcpt,
-	_header,
-	NULL, /* eoh */
-	_body,
-	_eom,
-	_abort,
-	_close,
-	NULL, /* unknown */
-	NULL, /* data */
-	NULL  /* negotiate */
+    "milter-zipcrypt",
+    SMFI_VERSION,
+    SMFIF_CHGHDRS | SMFIF_CHGBODY,
+    NULL, /* connect */
+    NULL, /* helo */
+    _envfrom,
+    _envrcpt,
+    _header,
+    NULL, /* eoh */
+    _body,
+    _eom,
+    _abort,
+    _close,
+    NULL, /* unknown */
+    NULL, /* data */
+    NULL  /* negotiate */
 };
 
 int
