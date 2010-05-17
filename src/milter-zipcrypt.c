@@ -118,6 +118,9 @@ _eom (SMFICTX *context)
     if (!priv)
         return SMFIS_ACCEPT;
 
+    if (!priv->boundary)
+        return SMFIS_ACCEPT;
+
     if (!priv->body)
         return SMFIS_ACCEPT;
 
