@@ -129,13 +129,13 @@ _eom (SMFICTX *context)
 static sfsistat
 _abort (SMFICTX *context)
 {
-    return _cleanup (context);
+    return _cleanup(context);
 }
 
 static sfsistat
 _close (SMFICTX *context)
 {
-    return _cleanup (context);
+    return _cleanup(context);
 }
 
 static sfsistat
