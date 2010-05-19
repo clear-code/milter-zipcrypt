@@ -86,14 +86,19 @@ static sfsistat
 append_body (struct MzPriv *priv, unsigned char *chunk, size_t size)
 {
     if (!priv->body) {
-        priv->body_length = size;
         priv->body = malloc(size);
+        if (!priv->body)
+            return SMIS_SKIP;
         memcpy(priv->body, chunk, size);
+        priv->body_length = size;
     } else {
         priv->body = realloc(priv->body, priv->body_length + size);
+        if (!priv->body)
+            return SMIS_SKIP;
         memcpy(&priv->body[priv->body_length], chunk, size);
         priv->body_length += size;
     }
+    return SMIS_CONTINUE;
 }
 
 static sfsistat
@@ -105,9 +110,7 @@ _body (SMFICTX *context, unsigned char *chunk, size_t size)
     if (!priv)
         return SMFIS_ACCEPT;
 
-    append_body(priv, chunk, size);
-
-    return SMFIS_CONTINUE;
+    return append_body(priv, chunk, size);
 }
 
 static sfsistat
