@@ -201,7 +201,7 @@ struct smfiDesc smfilter = {
 };
 
 int
-main (int argc, char **argv[])
+main (int argc, char *argv[])
 {
     char *connection_spec;
 
