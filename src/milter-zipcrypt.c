@@ -8,7 +8,7 @@
 
 struct MzPriv {
     char *boundary;
-    char *body;
+    unsigned char *body;
     size_t body_length;
 };
 
@@ -131,7 +131,7 @@ _eom (SMFICTX *context)
 
     boundary_line = malloc(strlen(priv->boundary) + 3);
     sprintf(boundary_line, "--%s", priv->boundary);
-    if (!strstr(priv->body, boundary_line)) {
+    if (!strstr((char*)priv->body, boundary_line)) {
         free(boundary_line);
         return SMFIS_ACCEPT;
     }
