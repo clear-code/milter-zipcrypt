@@ -7,6 +7,7 @@
 void test_get_content_type (void);
 void test_get_content_transfer_encoding (void);
 void test_get_content_disposition (void);
+void test_get_attachment_body_place (void);
 
 void
 setup (void)
@@ -64,3 +65,24 @@ test_get_content_disposition (void)
     cut_assert_equal_string("t.png", filename);
 }
 
+void
+test_get_attachment_body_place (void)
+{
+    const char *content;
+    const char *body;
+    const char *expected_body;
+    unsigned int size = 0;
+
+    content = cut_get_fixture_data_string("attachment", NULL);
+    cut_assert_not_null(content);
+
+    expected_body = cut_get_fixture_data_string("attachment_body", NULL);
+    cut_assert_not_null(expected_body);
+
+    body = mz_utils_get_attachment_body_place(content, &size);
+    cut_assert_not_null(body);
+    cut_assert_not_equal_int(0, size);
+
+    cut_assert_equal_int(strlen(expected_body), size);
+    cut_assert_equal_substring(expected_body, body, size);
+}
