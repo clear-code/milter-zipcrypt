@@ -27,6 +27,7 @@ test_get_content_type (void)
     cut_assert_not_null(content);
 
     content_type = mz_utils_get_content_type(content);
+    cut_take_string(content_type);
     cut_assert_equal_string("image/png", content_type);
 }
 
@@ -40,6 +41,7 @@ test_get_content_transfer_encoding (void)
     cut_assert_not_null(content);
 
     content_transfer_encoding = mz_utils_get_content_transfer_encoding(content);
+    cut_take_string(content_transfer_encoding);
     cut_assert_equal_string("base64", content_transfer_encoding);
 }
 
