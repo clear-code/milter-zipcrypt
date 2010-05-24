@@ -129,8 +129,8 @@ _eom (SMFICTX *context)
     if (!priv->body)
         return SMFIS_ACCEPT;
 
-    boundary_line = malloc(strlen(priv->boundary) + 3);
-    sprintf(boundary_line, "--%s", priv->boundary);
+    boundary_line = malloc(strlen(priv->boundary) + 4);
+    sprintf(boundary_line, "--%s\n", priv->boundary);
     if (!strstr((char*)priv->body, boundary_line)) {
         free(boundary_line);
         return SMFIS_ACCEPT;
