@@ -2,11 +2,11 @@ if WITH_CUTTER
 TESTS = run-test.sh
 TESTS_ENVIRONMENT = NO_MAKE=yes CUTTER="$(CUTTER)"
 
-noinst_LTLIBRARIES =			\
-	test_filter.la
+noinst_LTLIBRARIES =		\
+	test_utils.la
 endif
 
-EXTRA_DIST =		\
+EXTRA_DIST =			\
 	run-test.sh
 
 INCLUDES =			\
@@ -23,14 +23,13 @@ AM_LDFLAGS =			\
 	-avoid-version		\
 	-no-undefined
 
-LIBS =						\
+LIBS =				\
 	-L/usr/lib/libmilter	\
-	-lmilter		\
 	$(CUTTER_LIBS)
 
-test_filter_la_SOURCES = test-filter.c
-test_filter_la_LIBADD = 				\
-	$(top_builddir)/src/milter_ziprypt-mz-filter.o
+test_utils_la_SOURCES = test-utils.c
+test_utils_la_LIBADD =			\
+	$(top_builddir)/src/milter_zipcrypt-mz-utils.o
 
 echo-cutter:
 	@echo $(CUTTER)
