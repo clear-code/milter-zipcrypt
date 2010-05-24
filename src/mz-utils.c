@@ -13,7 +13,7 @@ mz_utils_get_content_type (const char *contents)
 
     while ((line_feed = strchr(line, '\n'))) {
         if (!strncasecmp(CONTENT_TYPE_STRING, line, strlen(CONTENT_TYPE_STRING))) {
-            char *content_type;
+            const char *content_type;
             char *semicolon;
             content_type = line + strlen(CONTENT_TYPE_STRING);
             while (*content_type == ' ') {
@@ -41,7 +41,7 @@ mz_utils_get_content_transfer_encoding (const char *contents)
         if (!strncasecmp(CONTENT_TRANSFER_ENCODING_STRING,
                          line,
                          strlen(CONTENT_TRANSFER_ENCODING_STRING))) {
-            char *content_type;
+            const char *content_type;
             content_type = line + strlen(CONTENT_TRANSFER_ENCODING_STRING);
             while (*content_type == ' ') {
                 content_type++;
