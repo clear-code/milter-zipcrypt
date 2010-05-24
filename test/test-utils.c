@@ -5,6 +5,7 @@
 #include "mz-utils.h"
 
 void test_get_content_type (void);
+void test_get_content_transfer_encoding (void);
 
 void
 setup (void)
