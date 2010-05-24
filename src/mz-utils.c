@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include "mz-utils.h"
+#include "base64.h"
 
 #define CONTENT_TYPE_STRING "Content-type:"
 
@@ -143,3 +144,23 @@ mz_utils_get_attachment_body_place (const char *contents, unsigned int *size)
 
     return start;
 }
+
+const char *
+mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size)
+{
+    const char *body;
+    unsigned int encoded_body_length = 0;
+    int state = 0;
+    unsigned int save = 0;
+
+    *size = 0;
+
+    body = mz_utils_get_attachment_body_place (contents, &encoded_body_length);
+    if (!body)
+        return NULL;
+
+    *size = mz_base64_decode_step(body, encoded_body_length,
+                                  (unsigned char *)body, &state, &save);
+    return body;
+}
+
