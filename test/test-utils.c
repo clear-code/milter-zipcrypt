@@ -6,6 +6,7 @@
 
 void test_get_content_type (void);
 void test_get_content_transfer_encoding (void);
+void test_get_content_disposition (void);
 
 void
 setup (void)
@@ -44,5 +45,22 @@ test_get_content_transfer_encoding (void)
     content_transfer_encoding = mz_utils_get_content_transfer_encoding(content);
     cut_take_string(content_transfer_encoding);
     cut_assert_equal_string("base64", content_transfer_encoding);
+}
+
+void
+test_get_content_disposition (void)
+{
+    char *type = NULL, *filename = NULL;
+    const char *content;
+
+    cut_take_string(type);
+    cut_take_string(filename);
+
+    content = cut_get_fixture_data_string("attachment", NULL);
+    cut_assert_not_null(content);
+
+    cut_assert_true(mz_utils_get_content_disposition(content, &type, &filename));
+    cut_assert_equal_string("attachment", type);
+    cut_assert_equal_string("t.png", filename);
 }
 

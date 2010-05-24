@@ -54,3 +54,71 @@ mz_utils_get_content_transfer_encoding (const char *contents)
     return NULL;
 }
 
+#define CONTENT_DISPOSITION_STRING "Content-Disposition:"
+static char *
+get_filename (const char *value, unsigned int length)
+{
+    const char *filename;
+    const char *quote_end;
+    char quote;
+
+    if (strncasecmp("filename=", value, strlen("filename=")))
+        return NULL;
+
+    filename = value + strlen("filename=");
+
+    if (*filename == '\'')
+        quote = '\'';
+    else if (*filename == '"')
+        quote = '"';
+    else
+        return strndup(filename, length - strlen("filename="));
+
+    filename++;
+    quote_end = strchr(filename, quote);
+    if (!quote_end)
+        return NULL;
+
+    return strndup(filename, quote_end - filename);
+}
+
+bool
+mz_utils_get_content_disposition (const char *contents, char **type, char **filename)
+{
+    const char *line_feed;
+    const char *line = contents;
+
+    *type = NULL;
+    *filename = NULL;
+
+    while ((line_feed = strchr(line, '\n'))) {
+        if (!strncasecmp(CONTENT_DISPOSITION_STRING,
+                         line,
+                         strlen(CONTENT_DISPOSITION_STRING))) {
+            const char *value;
+            const char *semicolon;
+            value = line + strlen(CONTENT_DISPOSITION_STRING);
+            while (*value == ' ') {
+                value++;
+            }
+
+            semicolon = strchr(value, ';');
+            if (!semicolon) {
+                *type = strndup(value, line_feed - value);
+                return true;
+            }
+
+            *type = strndup(value, semicolon - value);
+            semicolon++;
+            while (*semicolon == ' ') {
+                semicolon++;
+            }
+
+            *filename = get_filename(semicolon, line_feed - semicolon);
+
+            return true;
+        }
+        line = line_feed + 1;
+    }
+    return false;
+}
