@@ -30,3 +30,27 @@ mz_utils_get_content_type (const char *contents)
     return NULL;
 }
 
+#define CONTENT_TRANSFER_ENCODING_STRING "Content-Transfer-Encoding:"
+char *
+mz_utils_get_content_transfer_encoding (const char *contents)
+{
+    const char *line_feed;
+    const char *line = contents;
+
+    while ((line_feed = strchr(line, '\n'))) {
+        if (!strncasecmp(CONTENT_TRANSFER_ENCODING_STRING,
+                         line,
+                         strlen(CONTENT_TRANSFER_ENCODING_STRING))) {
+            char *content_type;
+            content_type = line + strlen(CONTENT_TRANSFER_ENCODING_STRING);
+            while (*content_type == ' ') {
+                content_type++;
+            }
+
+            return strndup(content_type, line_feed - content_type);
+        }
+        line = line_feed + 1;
+    }
+    return NULL;
+}
+

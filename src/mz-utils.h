@@ -5,4 +5,5 @@
 #endif /* __MZ_UTILS_H__ */
 
 char *mz_utils_get_content_type (const char *contents);
+char *mz_utils_get_content_transfer_encoding (const char *contents);
 
