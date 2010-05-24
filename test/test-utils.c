@@ -165,6 +165,5 @@ test_get_decoded_attachment_body (void)
     cut_assert_not_null(body);
     cut_assert_not_equal_int(0, size);
 
-    cut_assert_equal_int(expected_size, size);
-    cut_assert_equal_substring(expected, body, size);
+    cut_assert_equal_memory(expected, expected_size, body, size);
 }
