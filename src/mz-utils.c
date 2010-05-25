@@ -1,8 +1,10 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 
 #include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include "mz-utils.h"
+#include "mz-attachment.h"
 #include "base64.h"
 
 #define CONTENT_TYPE_STRING "Content-type:"
@@ -94,7 +96,9 @@ get_filename (const char *value)
 }
 
 bool
-mz_utils_get_content_disposition (const char *contents, char **type, char **filename)
+mz_utils_get_content_disposition (const char *contents,
+                                  unsigned int contents_length,
+                                  char **type, char **filename)
 {
     const char *line_feed;
     const char *line = contents;
@@ -172,5 +176,56 @@ mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size)
     *size = mz_base64_decode_step(body, encoded_body_length,
                                   (unsigned char *)body, &state, &save);
     return body;
+}
+
+bool
+mz_utils_parse_body (const char *body, const char *boundary)
+{
+    char *boundary_line;
+    const char *p;
+    unsigned int boundary_line_length;
+    const char *start_boundary, *end_boundary;
+
+    if (!boundary || !body)
+        return false;
+
+    boundary_line_length = strlen(boundary) + 4;
+    boundary_line = malloc(boundary_line_length);
+
+    sprintf(boundary_line, "--%s\n", boundary);
+
+    p = body;
+    while ((p = strstr(p, boundary_line))) {
+        char *type = NULL;
+        char *filename = NULL;
+
+        p += boundary_line_length;
+        start_boundary = p;
+
+        end_boundary = strstr(p, boundary_line);
+        if (!end_boundary)
+            break;
+        if (mz_utils_get_content_disposition(start_boundary,
+                                             end_boundary - start_boundary,
+                                             &type,
+                                             &filename) &&
+            !strcasecmp(type, "attachment") && filename) {
+            const char *attachment;
+            unsigned int length;
+            attachment = mz_utils_get_decoded_attachment_body(start_boundary, &length);
+
+            if (attachment) {
+                mz_attachment_new(filename, attachment, length);
+            }
+        }
+        free(type);
+        free(filename);
+        p = end_boundary;
+        if (!strcmp(p + boundary_line_length, "--"))
+            break;
+    }
+    free(boundary_line);
+
+    return true;
 }
 

@@ -16,6 +16,7 @@ void test_get_content_disposition (void);
 void test_get_content_disposition_with_line_feed (void);
 void test_get_attachment_body_place (void);
 void test_get_decoded_attachment_body (void);
+void test_parse_body (void);
 
 void
 setup (void)
@@ -56,62 +57,6 @@ test_get_content_transfer_encoding (void)
     cut_assert_equal_string("base64", content_transfer_encoding);
 }
 
-void
-test_get_content_disposition (void)
-{
-    char *type = NULL, *filename = NULL;
-    const char *content;
-
-    cut_take_string(type);
-    cut_take_string(filename);
-
-    content = cut_get_fixture_data_string("attachment", NULL);
-    cut_assert_not_null(content);
-
-    cut_assert_true(mz_utils_get_content_disposition(content, &type, &filename));
-    cut_assert_equal_string("attachment", type);
-    cut_assert_equal_string("t.png", filename);
-}
-
-void
-test_get_content_disposition_with_line_feed (void)
-{
-    char *type = NULL, *filename = NULL;
-    const char *content;
-
-    cut_take_string(type);
-    cut_take_string(filename);
-
-    content = cut_get_fixture_data_string("attachment_content_disposition_with_line_feed", NULL);
-    cut_assert_not_null(content);
-
-    cut_assert_true(mz_utils_get_content_disposition(content, &type, &filename));
-    cut_assert_equal_string("attachment", type);
-    cut_assert_equal_string("t.png", filename);
-}
-
-void
-test_get_attachment_body_place (void)
-{
-    const char *content;
-    const char *body;
-    const char *expected_body;
-    unsigned int size = 0;
-
-    content = cut_get_fixture_data_string("attachment", NULL);
-    cut_assert_not_null(content);
-
-    expected_body = cut_get_fixture_data_string("attachment_body", NULL);
-    cut_assert_not_null(expected_body);
-
-    body = mz_utils_get_attachment_body_place(content, &size);
-    cut_assert_not_null(body);
-    cut_assert_not_equal_int(0, size);
-
-    cut_assert_equal_int(strlen(expected_body), size);
-    cut_assert_equal_substring(expected_body, body, size);
-}
-
 static char *
 load_data (const char *path, unsigned int *size)
 {
@@ -119,7 +64,7 @@ load_data (const char *path, unsigned int *size)
     char *data_path;
     struct stat stat_buf;
     int fd;
-    unsigned int bytes_read;
+    unsigned int bytes_read = 0;
 
     data_path = cut_build_fixture_data_path(path, NULL);
     cut_take_string(data_path);
@@ -164,6 +109,64 @@ error:
 }
 
 void
+test_get_content_disposition (void)
+{
+    char *type = NULL, *filename = NULL;
+    const char *content;
+    unsigned int length;
+
+    cut_take_string(type);
+    cut_take_string(filename);
+
+    content = load_data("attachment", &length);
+    cut_assert_not_null(content);
+
+    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &filename));
+    cut_assert_equal_string("attachment", type);
+    cut_assert_equal_string("t.png", filename);
+}
+
+void
+test_get_content_disposition_with_line_feed (void)
+{
+    char *type = NULL, *filename = NULL;
+    const char *content;
+    unsigned int length;
+
+    cut_take_string(type);
+    cut_take_string(filename);
+
+    content = load_data("attachment_content_disposition_with_line_feed", &length);
+    cut_assert_not_null(content);
+
+    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &filename));
+    cut_assert_equal_string("attachment", type);
+    cut_assert_equal_string("t.png", filename);
+}
+
+void
+test_get_attachment_body_place (void)
+{
+    const char *content;
+    const char *body;
+    const char *expected_body;
+    unsigned int size = 0;
+
+    content = cut_get_fixture_data_string("attachment", NULL);
+    cut_assert_not_null(content);
+
+    expected_body = cut_get_fixture_data_string("attachment_body", NULL);
+    cut_assert_not_null(expected_body);
+
+    body = mz_utils_get_attachment_body_place(content, &size);
+    cut_assert_not_null(body);
+    cut_assert_not_equal_int(0, size);
+
+    cut_assert_equal_int(strlen(expected_body), size);
+    cut_assert_equal_substring(expected_body, body, size);
+}
+
+void
 test_get_decoded_attachment_body (void)
 {
     const char *content;
@@ -185,3 +188,15 @@ test_get_decoded_attachment_body (void)
 
     cut_assert_equal_memory(expected, expected_size, body, size);
 }
+
+void
+test_parse_body (void)
+{
+    const char *body;
+
+    body = cut_get_fixture_data_string("body", NULL);
+    cut_assert_not_null(body);
+
+    cut_assert_true(mz_utils_parse_body(body, "=-u231oNe9VILCVd42q7nh"));
+}
+
