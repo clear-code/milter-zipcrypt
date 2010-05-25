@@ -155,7 +155,7 @@ mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size)
 
     *size = 0;
 
-    body = mz_utils_get_attachment_body_place (contents, &encoded_body_length);
+    body = mz_utils_get_attachment_body_place(contents, &encoded_body_length);
     if (!body)
         return NULL;
 
