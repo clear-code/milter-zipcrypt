@@ -13,9 +13,10 @@ struct _MzAttachment
     unsigned int data_length;
 };
 
-MzAttachment *mz_attachment_new (const char *filename,
-                                 const char *data,
-                                 unsigned int data_length);
+MzAttachment *mz_attachment_new  (const char *filename,
+                                  const char *data,
+                                  unsigned int data_length);
+void          mz_attachment_free (MzAttachment *attachment);
 
 #endif /* __MZ_ATTACHMENT_H__ */
 

@@ -29,3 +29,12 @@ mz_attachment_new (const char *filename,
     return attachment;
 }
 
+void
+mz_attachment_free (MzAttachment *attachment)
+{
+    if (!attachment)
+        return;
+
+    free(attachment->filename);
+    free(attachment);
+}
