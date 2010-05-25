@@ -13,6 +13,7 @@
 void test_get_content_type (void);
 void test_get_content_transfer_encoding (void);
 void test_get_content_disposition (void);
+void test_get_content_disposition_with_line_feed (void);
 void test_get_attachment_body_place (void);
 void test_get_decoded_attachment_body (void);
 
@@ -65,6 +66,23 @@ test_get_content_disposition (void)
     cut_take_string(filename);
 
     content = cut_get_fixture_data_string("attachment", NULL);
+    cut_assert_not_null(content);
+
+    cut_assert_true(mz_utils_get_content_disposition(content, &type, &filename));
+    cut_assert_equal_string("attachment", type);
+    cut_assert_equal_string("t.png", filename);
+}
+
+void
+test_get_content_disposition_with_line_feed (void)
+{
+    char *type = NULL, *filename = NULL;
+    const char *content;
+
+    cut_take_string(type);
+    cut_take_string(filename);
+
+    content = cut_get_fixture_data_string("attachment_content_disposition_with_line_feed", NULL);
     cut_assert_not_null(content);
 
     cut_assert_true(mz_utils_get_content_disposition(content, &type, &filename));

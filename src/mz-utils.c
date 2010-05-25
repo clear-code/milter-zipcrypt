@@ -1,6 +1,7 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 
 #include <string.h>
+#include <ctype.h>
 #include "mz-utils.h"
 #include "base64.h"
 
@@ -55,26 +56,35 @@ mz_utils_get_content_transfer_encoding (const char *contents)
     return NULL;
 }
 
+#include <stdio.h>
 #define CONTENT_DISPOSITION_STRING "Content-Disposition:"
 static char *
-get_filename (const char *value, unsigned int length)
+get_filename (const char *value)
 {
     const char *filename;
     const char *quote_end;
     char quote;
+
+    while (*value != '\0' && isspace(*value))
+        value++;
+    if (*value == '\0')
+        return NULL;
 
     if (strncasecmp("filename=", value, strlen("filename=")))
         return NULL;
 
     filename = value + strlen("filename=");
 
-    if (*filename == '\'')
+    if (*filename == '\'') {
         quote = '\'';
-    else if (*filename == '"')
+    } else if (*filename == '"') {
         quote = '"';
-    else
-        return strndup(filename, length - strlen("filename="));
-
+    } else {
+        const char *end = filename;
+        while (*end != '\0' && !isspace(*end))
+            end++;
+        return strndup(filename, end - filename);
+    }
     filename++;
     quote_end = strchr(filename, quote);
     if (!quote_end)
@@ -115,7 +125,7 @@ mz_utils_get_content_disposition (const char *contents, char **type, char **file
                 semicolon++;
             }
 
-            *filename = get_filename(semicolon, line_feed - semicolon);
+            *filename = get_filename(semicolon);
 
             return true;
         }
