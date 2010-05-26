@@ -221,7 +221,7 @@ mz_utils_parse_body (const char *body, const char *boundary)
         free(type);
         free(filename);
         p = end_boundary;
-        if (!strcmp(p + boundary_line_length, "--"))
+        if (!strncmp(p + boundary_line_length, "--", 2))
             break;
     }
     free(boundary_line);
