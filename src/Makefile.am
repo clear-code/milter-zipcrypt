@@ -4,8 +4,8 @@ milter_zipcrypt_CFLAGS =	\
 	$(COVERAGE_CFLAGS)
 
 milter_zipcrypt_SOURCES =	\
-	mz-filter.h		\
-	mz-filter.c		\
+	mz-attachment.h		\
+	mz-attachment.c		\
 	mz-utils.h		\
 	mz-utils.c		\
 	base64.h		\
