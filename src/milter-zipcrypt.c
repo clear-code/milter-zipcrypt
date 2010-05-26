@@ -128,6 +128,7 @@ _eom (SMFICTX *context)
     if (!priv->body)
         return SMFIS_ACCEPT;
 
+    smfi_addheader(context, "X-ZIP-Crypted", "Yes");
     smfi_replacebody(context, priv->body, priv->body_length);
 
     return SMFIS_CONTINUE;
@@ -175,7 +176,7 @@ _cleanup (SMFICTX *context)
 struct smfiDesc smfilter = {
     "milter-zipcrypt",
     SMFI_VERSION,
-    SMFIF_CHGHDRS | SMFIF_CHGBODY,
+    SMFIF_CHGHDRS | SMFIF_ADDHDRS | SMFIF_CHGBODY,
     NULL, /* connect */
     NULL, /* helo */
     _envfrom,
