@@ -16,6 +16,7 @@ void test_get_content_disposition (void);
 void test_get_content_disposition_with_line_feed (void);
 void test_get_attachment_body_place (void);
 void test_get_decoded_attachment_body (void);
+void test_get_content_disposition_mime_encoded_filename (void);
 void test_parse_body (void);
 
 void
@@ -142,6 +143,24 @@ test_get_content_disposition_with_line_feed (void)
     cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &filename));
     cut_assert_equal_string("attachment", type);
     cut_assert_equal_string("t.png", filename);
+}
+
+void
+test_get_content_disposition_mime_encoded_filename (void)
+{
+    char *type = NULL, *filename = NULL;
+    const char *content;
+    unsigned int length;
+
+    cut_take_string(type);
+    cut_take_string(filename);
+
+    content = load_data("attachment_filename_is_mime_encoded", &length);
+    cut_assert_not_null(content);
+
+    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &filename));
+    cut_assert_equal_string("attachment", type);
+    cut_assert_equal_string("日本語.txt", filename);
 }
 
 void
