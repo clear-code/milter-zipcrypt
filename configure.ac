@@ -15,6 +15,8 @@ AC_PROG_MAKE_SET
 AC_CHECK_LIB(z, inflateInit2_)
 AC_CHECK_LIB(milter, mlfi_connect)
 
+AM_ICONV_LINK(iconv)
+
 if test "x$GCC" = "xyes"; then
   case " $CFLAGS " in
   *[[\ \	]]-Wall[[\ \	]]*) ;;
