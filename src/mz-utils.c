@@ -159,6 +159,9 @@ get_filename (const char *in)
             p++;
             if (*p == '*')
                 p++;
+            if (*p != '=')
+                return NULL;
+            p++; /* = */
             processed_length = get_rfc2231_filename(p, &filename);
             p += processed_length + 1;
             rest_filename = get_filename(p);
