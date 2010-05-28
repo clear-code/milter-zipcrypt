@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <iconv.h>
 #include "mz-utils.h"
 #include "mz-attachment.h"
 #include "base64.h"
@@ -59,7 +60,74 @@ mz_utils_get_content_transfer_encoding (const char *contents)
     return NULL;
 }
 
-#define CONTENT_DISPOSITION_STRING "Content-Disposition:"
+#define HEXVAL(c) (isdigit (c) ? (c) - '0' : tolower (c) - 'a' + 10)
+
+static size_t
+hex_decode (const char *in, size_t len, char *out)
+{
+    register const unsigned char *inptr = (const unsigned char *)in;
+    register unsigned char *outptr = (unsigned char *)out;
+    const unsigned char *inend = inptr + len;
+
+    while (inptr < inend) {
+        if (*inptr == '%') {
+            if (isxdigit(inptr[1]) && isxdigit(inptr[2])) {
+                *outptr++ = HEXVAL(inptr[1]) * 16 + HEXVAL(inptr[2]);
+                inptr += 3;
+            } else
+                *outptr++ = *inptr++;
+        } else
+            *outptr++ = *inptr++;
+    }
+
+    *outptr = '\0';
+
+    return ((char *) outptr) - out;
+}
+
+static bool
+get_rfc2231_values (const char *in, char **charset, char **language, char **value)
+{
+    const char *charset_begin, *charset_end;
+    const char *language_begin, *language_end;
+    const char *value_begin, *value_end;
+
+    charset_begin = in;
+    charset_end = strchr(charset_begin, '\'');
+
+    language_begin = charset_end ? charset_end + 1 : charset_begin;
+    language_end = strchr(language_begin, '\'');
+
+    value_begin = language_end ? language_end + 1 : language_begin;
+    value_end = value_begin;
+    while (*value_end && (*value_end != ';' && *value_end != '\n'))
+        value_end++;
+
+    if (charset_end)
+        *charset = strndup(charset_begin, charset_end - charset_begin);
+    if (language_end)
+        *language = strndup(language_begin, language_end - language_begin);
+    if (value_end)
+        *value = strndup(value_begin, value_end - value_begin);
+
+    return true;
+}
+
+static char *
+get_rfc2231_filename (const char *in)
+{
+    char *charset = NULL, *language = NULL, *value = NULL;
+    char *filename = NULL;
+
+    get_rfc2231_values(in, &charset, &language, &value);
+    if (value) {
+        filename = malloc(strlen(value) + 1);
+        hex_decode(value, strlen(value), filename);
+    }
+
+    return filename;
+}
+
 static char *
 get_filename (const char *value)
 {
@@ -72,20 +140,30 @@ get_filename (const char *value)
     if (*value == '\0')
         return NULL;
 
-    if (strncasecmp("filename=", value, strlen("filename=")))
+    if (strncasecmp("filename", value, strlen("filename")))
         return NULL;
 
-    filename = value + strlen("filename=");
+    filename = value + strlen("filename");
 
-    if (*filename == '\'') {
-        quote = '\'';
-    } else if (*filename == '"') {
-        quote = '"';
-    } else {
-        const char *end = filename;
-        while (*end != '\0' && !isspace(*end))
-            end++;
-        return strndup(filename, end - filename);
+    if (*filename == '*') { /* RFC 2231 */
+        filename++;
+        if (*filename == '=') {
+            filename++;
+            return get_rfc2231_filename(filename);
+        } else {
+        }
+    } else if (*filename == '=') {
+        filename++;
+        if (*filename == '\'') {
+            quote = '\'';
+        } else if (*filename == '"') {
+            quote = '"';
+        } else {
+            const char *end = filename;
+            while (*end != '\0' && !isspace(*end))
+                end++;
+            return strndup(filename, end - filename);
+        }
     }
     filename++;
     quote_end = strchr(filename, quote);
@@ -95,6 +173,7 @@ get_filename (const char *value)
     return strndup(filename, quote_end - filename);
 }
 
+#define CONTENT_DISPOSITION_STRING "Content-Disposition:"
 bool
 mz_utils_get_content_disposition (const char *contents,
                                   unsigned int contents_length,
