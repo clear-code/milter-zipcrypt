@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <ctype.h>
 #include "mz-utils.h"
 #include "mz-attachment.h"
@@ -58,7 +59,6 @@ mz_utils_get_content_transfer_encoding (const char *contents)
     return NULL;
 }
 
-#include <stdio.h>
 #define CONTENT_DISPOSITION_STRING "Content-Disposition:"
 static char *
 get_filename (const char *value)
