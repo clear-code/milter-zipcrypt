@@ -15,6 +15,13 @@ AC_PROG_MAKE_SET
 AC_CHECK_LIB(z, inflateInit2_)
 AC_CHECK_LIB(milter, mlfi_connect)
 
+if test "x$GCC" = "xyes"; then
+  case " $CFLAGS " in
+  *[[\ \	]]-Wall[[\ \	]]*) ;;
+  *) CFLAGS="$CFLAGS -Wall" ;;
+  esac
+fi
+
 m4_ifdef([AC_CHECK_CUTTER], [
 AC_CHECK_CUTTER(>= 1.0.6)
 ],
