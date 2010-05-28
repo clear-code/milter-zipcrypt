@@ -57,10 +57,10 @@ _header (SMFICTX *context, char *name, char *value)
     char *boundary;
 
     if (strcmp(name, "Content-type"))
-        return SMFIS_ACCEPT;
+        return SMFIS_CONTINUE;
 
     if (!strstr(value, "multipart/mixed;"))
-        return SMFIS_ACCEPT;
+        return SMFIS_CONTINUE;
 
     boundary = get_boundary(value);
     if (!boundary)
