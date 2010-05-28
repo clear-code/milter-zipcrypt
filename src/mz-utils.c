@@ -188,6 +188,8 @@ get_filename (const char *in)
                 end++;
             return strndup(p, end - p);
         }
+    } else {
+        return NULL;
     }
     p++;
     quote_end = strchr(p, quote);
