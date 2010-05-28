@@ -85,7 +85,7 @@ hex_decode (const char *in, size_t len, char *out)
     return ((char *) outptr) - out;
 }
 
-static bool
+static size_t
 get_rfc2231_values (const char *in, char **charset, char **language, char **value)
 {
     const char *charset_begin, *charset_end;
@@ -110,67 +110,88 @@ get_rfc2231_values (const char *in, char **charset, char **language, char **valu
     if (value_end)
         *value = strndup(value_begin, value_end - value_begin);
 
-    return true;
+    return (value_end - in);
 }
 
-static char *
-get_rfc2231_filename (const char *in)
+static size_t
+get_rfc2231_filename (const char *in, char **out)
 {
     char *charset = NULL, *language = NULL, *value = NULL;
-    char *filename = NULL;
+    size_t processed_length;
 
-    get_rfc2231_values(in, &charset, &language, &value);
+    processed_length = get_rfc2231_values(in, &charset, &language, &value);
     if (value) {
-        filename = malloc(strlen(value) + 1);
-        hex_decode(value, strlen(value), filename);
+        *out = malloc(strlen(value) + 1);
+        hex_decode(value, strlen(value), *out);
     }
 
-    return filename;
+    return processed_length;
 }
 
 static char *
-get_filename (const char *value)
+get_filename (const char *in)
 {
-    const char *filename;
+    const char *p;
     const char *quote_end;
     char quote;
 
-    while (*value != '\0' && isspace(*value))
-        value++;
-    if (*value == '\0')
+    while (*in != '\0' && isspace(*in))
+        in++;
+    if (*in == '\0')
         return NULL;
 
-    if (strncasecmp("filename", value, strlen("filename")))
+    if (strncasecmp("filename", in, strlen("filename")))
         return NULL;
 
-    filename = value + strlen("filename");
+    p = in + strlen("filename");
 
-    if (*filename == '*') { /* RFC 2231 */
-        filename++;
-        if (*filename == '=') {
-            filename++;
-            return get_rfc2231_filename(filename);
+    if (*p == '*') { /* RFC 2231 */
+        p++;
+        if (*p == '=') {
+            char *filename = NULL;
+            p++;
+            get_rfc2231_filename(p, &filename);
+            return filename;
+        } else if (*p >= '0' && *p <= '9'){
+            char *filename = NULL;
+            size_t processed_length;
+            char *rest_filename;
+            p++;
+            if (*p == '*')
+                p++;
+            processed_length = get_rfc2231_filename(p, &filename);
+            p += processed_length + 1;
+            rest_filename = get_filename(p);
+            if (rest_filename) {
+                char *new_filename = malloc(strlen(filename) + strlen(rest_filename));
+                sprintf(new_filename, "%s%s", filename, rest_filename);
+                free(filename);
+                free(rest_filename);
+                return new_filename;
+            }
+            return filename;
         } else {
+            return NULL;
         }
-    } else if (*filename == '=') {
-        filename++;
-        if (*filename == '\'') {
+    } else if (*p == '=') {
+        p++;
+        if (*p == '\'') {
             quote = '\'';
-        } else if (*filename == '"') {
+        } else if (*p == '"') {
             quote = '"';
         } else {
-            const char *end = filename;
+            const char *end = p;
             while (*end != '\0' && !isspace(*end))
                 end++;
-            return strndup(filename, end - filename);
+            return strndup(p, end - p);
         }
     }
-    filename++;
-    quote_end = strchr(filename, quote);
+    p++;
+    quote_end = strchr(p, quote);
     if (!quote_end)
         return NULL;
 
-    return strndup(filename, quote_end - filename);
+    return strndup(p, quote_end - p);
 }
 
 #define CONTENT_DISPOSITION_STRING "Content-Disposition:"
