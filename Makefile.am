@@ -1,4 +1,4 @@
-SUBDIRS = src test
+SUBDIRS = zip30 src test
 
 ACLOCAL_AMFLAGS = -I m4
 
