@@ -7,7 +7,7 @@
 #include <iconv.h>
 #include "mz-utils.h"
 #include "mz-attachment.h"
-#include "base64.h"
+#include "mz-base64.h"
 
 #define CONTENT_TYPE_STRING "Content-type:"
 
