@@ -21,10 +21,17 @@
 #ifndef __MZ_QUOTED_PRINTABLE_H__
 #define __MZ_QUOTED_PRINTABLE_H__
 
-unsigned int mz_quoted_printable_encode_step (const unsigned char *inbuf,
-                                              unsigned int         inlen,
-                                              unsigned char       *outbuf,
-                                              int                 *state,
-                                              unsigned int        *save);
+#define MZ_QP_ENCODE_LEN(x)     ((size_t) ((((x) / 24) * 74) + 74))
+
+unsigned int mz_quoted_printable_encode_step  (const unsigned char *inbuf,
+                                               unsigned int         inlen,
+                                               unsigned char       *outbuf,
+                                               int                 *state,
+                                               unsigned int        *save);
+unsigned int mz_quoted_printable_encode_close (const unsigned char *inbuf,
+                                               unsigned int         inlen,
+                                               unsigned char       *outbuf,
+                                               int                 *state,
+                                               unsigned int        *save);
 
 #endif /* __MZ_QUOTED_PRINTABLE_H__ */

@@ -8,7 +8,9 @@ char *mz_utils_get_content_type (const char *contents);
 char *mz_utils_get_content_transfer_encoding (const char *contents);
 bool  mz_utils_get_content_disposition (const char *contents,
                                         unsigned int contents_length,
-                                        char **type, char **filename);
+                                        char **type,
+                                        char **charset,
+                                        char **filename);
 
 const char *mz_utils_get_attachment_body_place (const char *contents, unsigned int *size);
 const char *mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size);

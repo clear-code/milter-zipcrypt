@@ -8,12 +8,14 @@ typedef struct _MzAttachment MzAttachment;
 
 struct _MzAttachment
 {
+    char *charset;
     char *filename;
     const char *data;
     unsigned int data_length;
 };
 
-MzAttachment *mz_attachment_new  (const char *filename,
+MzAttachment *mz_attachment_new  (const char *charset,
+                                  const char *filename,
                                   const char *data,
                                   unsigned int data_length);
 void          mz_attachment_free (MzAttachment *attachment);

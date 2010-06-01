@@ -114,22 +114,22 @@ get_rfc2231_values (const char *in, char **charset, char **language, char **valu
 }
 
 static size_t
-get_rfc2231_filename (const char *in, char **out)
+get_rfc2231_filename (const char *in, char **charset, char **filename)
 {
-    char *charset = NULL, *language = NULL, *value = NULL;
+    char *language = NULL, *value = NULL;
     size_t processed_length;
 
-    processed_length = get_rfc2231_values(in, &charset, &language, &value);
+    processed_length = get_rfc2231_values(in, charset, &language, &value);
     if (value) {
-        *out = malloc(strlen(value) + 1);
-        hex_decode(value, strlen(value), *out);
+        *filename = malloc(strlen(value) + 1);
+        hex_decode(value, strlen(value), *filename);
     }
 
     return processed_length;
 }
 
-static char *
-get_filename (const char *in)
+static size_t
+get_filename (const char *in, char **charset, char **filename)
 {
     const char *p;
     const char *quote_end;
@@ -138,43 +138,42 @@ get_filename (const char *in)
     while (*in != '\0' && isspace(*in))
         in++;
     if (*in == '\0')
-        return NULL;
+        return 0;
 
     if (strncasecmp("filename", in, strlen("filename")))
-        return NULL;
+        return 0;
 
     p = in + strlen("filename");
 
     if (*p == '*') { /* RFC 2231 */
         p++;
         if (*p == '=') {
-            char *filename = NULL;
             p++;
-            get_rfc2231_filename(p, &filename);
-            return filename;
+            return get_rfc2231_filename(p, charset, filename);
         } else if (*p >= '0' && *p <= '9'){
-            char *filename = NULL;
             size_t processed_length;
-            char *rest_filename;
+            char *charset = NULL;
+            char *rest_filename = NULL;
             p++;
             if (*p == '*')
                 p++;
             if (*p != '=')
-                return NULL;
+                return 0;
             p++; /* = */
-            processed_length = get_rfc2231_filename(p, &filename);
+            processed_length = get_rfc2231_filename(p, &charset, filename);
             p += processed_length + 1;
-            rest_filename = get_filename(p);
+            get_filename(p, &charset, &rest_filename);
             if (rest_filename) {
-                char *new_filename = malloc(strlen(filename) + strlen(rest_filename));
-                sprintf(new_filename, "%s%s", filename, rest_filename);
-                free(filename);
+                char *new_filename = malloc(strlen(*filename) + strlen(rest_filename));
+                sprintf(new_filename, "%s%s", *filename, rest_filename);
+                free(*filename);
                 free(rest_filename);
-                return new_filename;
+                *filename = new_filename;
+                return strlen(new_filename);
             }
-            return filename;
+            return *filename ? strlen(*filename) : 0;
         } else {
-            return NULL;
+            return 0;
         }
     } else if (*p == '=') {
         p++;
@@ -186,24 +185,28 @@ get_filename (const char *in)
             const char *end = p;
             while (*end != '\0' && !isspace(*end))
                 end++;
-            return strndup(p, end - p);
+            *filename = strndup(p, end - p);
+            return (end - p);
         }
     } else {
-        return NULL;
+        return 0;
     }
     p++;
     quote_end = strchr(p, quote);
     if (!quote_end)
-        return NULL;
+        return 0;
 
-    return strndup(p, quote_end - p);
+    *filename = strndup(p, quote_end - p);
+    return (quote_end - p);
 }
 
 #define CONTENT_DISPOSITION_STRING "Content-Disposition:"
 bool
 mz_utils_get_content_disposition (const char *contents,
                                   unsigned int contents_length,
-                                  char **type, char **filename)
+                                  char **type,
+                                  char **charset,
+                                  char **filename)
 {
     const char *line_feed;
     const char *line = contents;
@@ -234,7 +237,7 @@ mz_utils_get_content_disposition (const char *contents,
                 semicolon++;
             }
 
-            *filename = get_filename(semicolon);
+            get_filename(semicolon, charset, filename);
 
             return true;
         }
@@ -302,6 +305,7 @@ mz_utils_parse_body (const char *body, const char *boundary)
     p = body;
     while ((p = strstr(p, boundary_line))) {
         char *type = NULL;
+        char *charset = NULL;
         char *filename = NULL;
 
         p += boundary_line_length;
@@ -313,6 +317,7 @@ mz_utils_parse_body (const char *body, const char *boundary)
         if (mz_utils_get_content_disposition(start_boundary,
                                              end_boundary - start_boundary,
                                              &type,
+                                             &charset,
                                              &filename) &&
             !strcasecmp(type, "attachment") && filename) {
             const char *attachment;
@@ -320,7 +325,7 @@ mz_utils_parse_body (const char *body, const char *boundary)
             attachment = mz_utils_get_decoded_attachment_body(start_boundary, &length);
 
             if (attachment) {
-                mz_attachment_new(filename, attachment, length);
+                mz_attachment_new(charset, filename, attachment, length);
             }
         }
         free(type);
