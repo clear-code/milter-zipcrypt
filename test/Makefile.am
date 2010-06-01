@@ -3,6 +3,7 @@ TESTS = run-test.sh
 TESTS_ENVIRONMENT = NO_MAKE=yes CUTTER="$(CUTTER)"
 
 noinst_LTLIBRARIES =		\
+	test_base64.la		\
 	test_utils.la
 endif
 
@@ -29,6 +30,10 @@ LIBS =				\
 
 test_utils_la_SOURCES = test-utils.c
 test_utils_la_LIBADD =					\
+	$(top_builddir)/src/libmilter_zipcrypt.la
+
+test_base64_la_SOURCES = test-base64.c
+test_base64_la_LIBADD =					\
 	$(top_builddir)/src/libmilter_zipcrypt.la
 
 echo-cutter:
