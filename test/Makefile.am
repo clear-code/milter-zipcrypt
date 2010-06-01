@@ -28,10 +28,8 @@ LIBS =				\
 	$(CUTTER_LIBS)
 
 test_utils_la_SOURCES = test-utils.c
-test_utils_la_LIBADD =						\
-	$(top_builddir)/src/milter_zipcrypt-mz-attachment.o	\
-	$(top_builddir)/src/milter_zipcrypt-mz-utils.o		\
-	$(top_builddir)/src/milter_zipcrypt-base64.o
+test_utils_la_LIBADD =					\
+	$(top_builddir)/src/libmilter_zipcrypt.la
 
 echo-cutter:
 	@echo $(CUTTER)
