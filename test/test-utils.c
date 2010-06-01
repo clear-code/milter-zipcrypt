@@ -113,7 +113,7 @@ error:
 void
 test_get_content_disposition (void)
 {
-    char *type = NULL, *filename = NULL;
+    char *type = NULL, *filename = NULL, *charset = NULL;
     const char *content;
     unsigned int length;
 
@@ -123,7 +123,7 @@ test_get_content_disposition (void)
     content = load_data("attachment", &length);
     cut_assert_not_null(content);
 
-    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &filename));
+    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &charset, &filename));
     cut_assert_equal_string("attachment", type);
     cut_assert_equal_string("t.png", filename);
 }
@@ -131,7 +131,7 @@ test_get_content_disposition (void)
 void
 test_get_content_disposition_with_line_feed (void)
 {
-    char *type = NULL, *filename = NULL;
+    char *type = NULL, *filename = NULL, *charset = NULL;
     const char *content;
     unsigned int length;
 
@@ -141,7 +141,7 @@ test_get_content_disposition_with_line_feed (void)
     content = load_data("attachment_content_disposition_with_line_feed", &length);
     cut_assert_not_null(content);
 
-    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &filename));
+    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &charset, &filename));
     cut_assert_equal_string("attachment", type);
     cut_assert_equal_string("t.png", filename);
 }
@@ -149,7 +149,7 @@ test_get_content_disposition_with_line_feed (void)
 void
 test_get_content_disposition_mime_encoded_filename (void)
 {
-    char *type = NULL, *filename = NULL;
+    char *type = NULL, *filename = NULL, *charset = NULL;
     const char *content;
     unsigned int length;
 
@@ -159,7 +159,7 @@ test_get_content_disposition_mime_encoded_filename (void)
     content = load_data("attachment_filename_is_mime_encoded", &length);
     cut_assert_not_null(content);
 
-    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &filename));
+    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &charset, &filename));
     cut_assert_equal_string("attachment", type);
     cut_assert_equal_string("\x1B\x24\x42\x46\x7C\x4B\x5C\x38\x6C\x1B\x28\x42\x2e\x74\x78\x74", /* 日本語.txt */
                             filename);
@@ -168,7 +168,7 @@ test_get_content_disposition_mime_encoded_filename (void)
 void
 test_get_rfc2311_filename (void)
 {
-    char *type = NULL, *filename = NULL;
+    char *type = NULL, *filename = NULL, *charset = NULL;
     const char *content;
     unsigned int length;
 
@@ -178,7 +178,7 @@ test_get_rfc2311_filename (void)
     content = load_data("rfc2311", &length);
     cut_assert_not_null(content);
 
-    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &filename));
+    cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &charset, &filename));
     cut_assert_equal_string("attachment", type);
     cut_assert_equal_string("\x1B\x24\x42\x3F\x37\x24\x37\x24\x24\x25\x46\x25\x2D\x25" /* 新しいテキスト　ドキュメント.txt */
                             "\x39\x25\x48\x1B\x28\x42\x20\x1B\x24\x42\x25\x49\x25\x2D"
