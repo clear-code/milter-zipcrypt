@@ -28,7 +28,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "base64.h"
+#include "mz-base64.h"
 
 static const char base64_alphabet[] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
