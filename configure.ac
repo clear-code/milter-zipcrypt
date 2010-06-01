@@ -14,6 +14,7 @@ AC_PROG_MAKE_SET
 
 AC_CHECK_LIB(z, inflateInit2_)
 AC_CHECK_LIB(milter, mlfi_connect)
+AC_CHECK_HEADERS([libmilter/mfapi.h],,[AC_MSG_ERROR([libmilter/mfapi.h does not found.])])
 
 AM_ICONV_LINK(iconv)
 
