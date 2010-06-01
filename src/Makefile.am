@@ -19,12 +19,12 @@ milter_zipcrypt_LDADD =		\
 libmilter_zipcrypt_la_SOURCES =	\
 	mz-attachment.h		\
 	mz-attachment.c		\
+	mz-base64.h		\
+	mz-base64.c		\
 	mz-quoted-printable.h	\
 	mz-quoted-printable.c	\
 	mz-mime-private.h	\
 	mz-utils.h		\
-	mz-utils.c		\
-	base64.h		\
-	base64.c
+	mz-utils.c
 
 EXTRA_DIST = gen-table.c
