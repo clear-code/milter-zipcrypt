@@ -161,6 +161,7 @@ test_get_content_disposition_mime_encoded_filename (void)
 
     cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &charset, &filename));
     cut_assert_equal_string("attachment", type);
+    cut_assert_equal_string("iso-2022-jp", charset);
     cut_assert_equal_string("\x1B\x24\x42\x46\x7C\x4B\x5C\x38\x6C\x1B\x28\x42\x2e\x74\x78\x74", /* 日本語.txt */
                             filename);
 }
