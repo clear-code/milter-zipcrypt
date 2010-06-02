@@ -103,7 +103,7 @@ get_rfc2231_values (const char *in, char **charset, char **language, char **valu
     while (*value_end && (*value_end != ';' && *value_end != '\n'))
         value_end++;
 
-    if (charset_end)
+    if (charset_end && *charset == NULL)
         *charset = strndup(charset_begin, charset_end - charset_begin);
     if (language_end)
         *language = strndup(language_begin, language_end - language_begin);
@@ -152,7 +152,6 @@ get_filename (const char *in, char **charset, char **filename)
             return get_rfc2231_filename(p, charset, filename);
         } else if (*p >= '0' && *p <= '9'){
             size_t processed_length;
-            char *charset = NULL;
             char *rest_filename = NULL;
             p++;
             if (*p == '*')
@@ -160,9 +159,9 @@ get_filename (const char *in, char **charset, char **filename)
             if (*p != '=')
                 return 0;
             p++; /* = */
-            processed_length = get_rfc2231_filename(p, &charset, filename);
+            processed_length = get_rfc2231_filename(p, charset, filename);
             p += processed_length + 1;
-            get_filename(p, &charset, &rest_filename);
+            get_filename(p, charset, &rest_filename);
             if (rest_filename) {
                 char *new_filename = malloc(strlen(*filename) + strlen(rest_filename));
                 sprintf(new_filename, "%s%s", *filename, rest_filename);
