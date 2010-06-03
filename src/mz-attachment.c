@@ -28,6 +28,7 @@ mz_attachment_new (const char *charset,
     if (!attachment_filename)
         goto fail;
 
+    attachment->charset = filename_charset;
     attachment->filename = attachment_filename;
     attachment->data = data;
     attachment->data_length = data_length;

@@ -9,6 +9,7 @@
 #include <errno.h>
 
 #include "mz-utils.h"
+#include "mz-attachment.h"
 
 void test_get_content_type (void);
 void test_get_content_transfer_encoding (void);
@@ -237,14 +238,40 @@ test_get_decoded_attachment_body (void)
     cut_assert_equal_memory(expected, expected_size, body, size);
 }
 
+static void
+assert_equal_attachment (MzAttachment *expected, MzAttachment *actual)
+{
+    cut_assert_not_null(actual);
+    cut_assert_equal_string(expected->charset, actual->charset);
+    cut_assert_equal_string(expected->filename, actual->filename);
+    cut_assert_equal_memory(expected->data, expected->data_length,
+                            actual->data, actual->data_length);
+}
+
 void
 test_extract_attachments (void)
 {
     const char *body;
+    MzAttachment expected = { NULL, "t.png", NULL, 0 };
+    char *expected_data;
+    unsigned int expected_size = 0;
+    MzAttachment *actual;
+
+    expected_data = load_data("t.png", &expected_size);
+    cut_take_memory(expected_data);
+
+    expected.data = expected_data;
+    expected.data_length = expected_size;
 
     body = cut_get_fixture_data_string("body", NULL);
     cut_assert_not_null(body);
 
     actual_attachments = mz_utils_extract_attachments(body, "=-u231oNe9VILCVd42q7nh");
+    cut_assert_not_null(actual_attachments);
+
+    /* The first MzAttachmens is mail body itself so skip it. */
+    actual = mz_attachments_next(actual_attachments)->attachment;
+
+    assert_equal_attachment (&expected, actual);
 }
 
