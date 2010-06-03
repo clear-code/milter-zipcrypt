@@ -14,11 +14,25 @@ struct _MzAttachment
     unsigned int data_length;
 };
 
+typedef struct _MzAttachments MzAttachments;
+
+struct _MzAttachments
+{
+    MzAttachment *attachment;
+    MzAttachments *next;
+};
+
 MzAttachment *mz_attachment_new  (const char *charset,
                                   const char *filename,
                                   const char *data,
                                   unsigned int data_length);
 void          mz_attachment_free (MzAttachment *attachment);
+
+#define mz_attachments_next(attachments) ((attachments) ? (((MzAttachments*)(attachments))->next) : NULL)
+
+MzAttachments *mz_attachments_append (MzAttachments *attachments,
+                                      MzAttachment  *attachment);
+void           mz_attachments_free   (MzAttachments *attachments);
 
 #endif /* __MZ_ATTACHMENT_H__ */
 

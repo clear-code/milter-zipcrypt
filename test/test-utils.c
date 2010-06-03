@@ -18,17 +18,21 @@ void test_get_attachment_body_place (void);
 void test_get_decoded_attachment_body (void);
 void test_get_content_disposition_mime_encoded_filename (void);
 void test_get_rfc2311_filename (void);
-void test_parse_body (void);
+void test_extract_attachments (void);
+
+static MzAttachments *actual_attachments;
 
 void
 setup (void)
 {
     cut_set_fixture_data_dir("fixtures", NULL);
+    actual_attachments = NULL;
 }
 
 void
 teardown (void)
 {
+    mz_attachments_free(actual_attachments);
 }
 
 void
@@ -234,13 +238,13 @@ test_get_decoded_attachment_body (void)
 }
 
 void
-test_parse_body (void)
+test_extract_attachments (void)
 {
     const char *body;
 
     body = cut_get_fixture_data_string("body", NULL);
     cut_assert_not_null(body);
 
-    cut_assert_true(mz_utils_parse_body(body, "=-u231oNe9VILCVd42q7nh"));
+    actual_attachments = mz_utils_extract_attachments(body, "=-u231oNe9VILCVd42q7nh");
 }
 

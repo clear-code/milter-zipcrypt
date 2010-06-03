@@ -35,8 +35,10 @@ mz_attachment_new (const char *charset,
     return attachment;
 
 fail:
-    free(filename_charset);
-    free(attachment_filename);
+    if (filename_charset)
+        free(filename_charset);
+    if (attachment_filename)
+        free(attachment_filename);
     free(attachment);
 
     return NULL;
@@ -48,7 +50,54 @@ mz_attachment_free (MzAttachment *attachment)
     if (!attachment)
         return;
 
-    free(attachment->charset);
-    free(attachment->filename);
+    if (attachment->charset)
+        free(attachment->charset);
+    if (attachment->filename)
+        free(attachment->filename);
     free(attachment);
+}
+
+static MzAttachments *
+mz_attachments_last (MzAttachments *attachments)
+{
+    if (attachments) {
+        while (attachments->next)
+            attachments = attachments->next;
+    }
+
+    return attachments;
+}
+
+MzAttachments *
+mz_attachments_append (MzAttachments *attachments, MzAttachment  *attachment)
+{
+    MzAttachments *new;
+    MzAttachments *last;
+
+    new = malloc(sizeof(*new));
+    if (!new)
+        return NULL;
+
+    new->attachment = attachment;
+    new->next = NULL;
+
+    if (attachments) {
+        last = mz_attachments_last(attachments);
+        last->next = new;
+        return attachments;
+    } else {
+        return new;
+    }
+}
+
+void
+mz_attachments_free (MzAttachments *attachments)
+{
+    while (attachments) {
+        MzAttachments *next;
+        next = attachments->next;
+        mz_attachment_free(attachments->attachment);
+        free(attachments);
+        attachments = next;
+    }
 }
