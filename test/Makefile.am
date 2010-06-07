@@ -3,6 +3,7 @@ TESTS = run-test.sh
 TESTS_ENVIRONMENT = NO_MAKE=yes CUTTER="$(CUTTER)"
 
 noinst_LTLIBRARIES =		\
+	libmz_test_utils.la	\
 	test_base64.la		\
 	test_utils.la		\
 	test_zlib.la
@@ -25,21 +26,25 @@ AM_LDFLAGS =			\
 	-avoid-version		\
 	-no-undefined
 
-LIBS =				\
-	-L/usr/lib/libmilter	\
+LIBS =							\
+	-L/usr/lib/libmilter				\
 	$(CUTTER_LIBS)
+
+libmz_test_utils_la_SOURCES = mz-test-utils.c
+libmz_test_utils_la_LIBADD =				\
+	$(top_builddir)/src/libmilter_zipcrypt.la
 
 test_utils_la_SOURCES = test-utils.c
 test_utils_la_LIBADD =					\
-	$(top_builddir)/src/libmilter_zipcrypt.la
+	$(top_builddir)/test/libmz_test_utils.la
 
 test_base64_la_SOURCES = test-base64.c
 test_base64_la_LIBADD =					\
-	$(top_builddir)/src/libmilter_zipcrypt.la
+	$(top_builddir)/test/libmz_test_utils.la
 
 test_zlib_la_SOURCES = test-zlib.c
 test_zlib_la_LIBADD =					\
-	$(top_builddir)/src/libmilter_zipcrypt.la
+	$(top_builddir)/test/libmz_test_utils.la
 
 echo-cutter:
 	@echo $(CUTTER)

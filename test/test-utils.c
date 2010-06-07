@@ -1,15 +1,9 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 #include <cutter.h>
-#include <string.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
 
 #include "mz-utils.h"
 #include "mz-attachment.h"
+#include "mz-test-utils.h"
 
 void test_get_content_type (void);
 void test_get_content_transfer_encoding (void);
@@ -64,57 +58,6 @@ test_get_content_transfer_encoding (void)
     cut_assert_equal_string("base64", content_transfer_encoding);
 }
 
-static char *
-load_data (const char *path, unsigned int *size)
-{
-    char *data = NULL;
-    char *data_path;
-    struct stat stat_buf;
-    int fd;
-    unsigned int bytes_read = 0;
-
-    data_path = cut_build_fixture_data_path(path, NULL);
-    cut_take_string(data_path);
-
-    fd = open(data_path, O_RDONLY);
-    if (fd < 0)
-        return NULL;
-
-    if (fstat(fd, &stat_buf) < 0)
-        goto error;
-
-    if (stat_buf.st_size <= 0 || !S_ISREG (stat_buf.st_mode))
-        goto error;
-
-    data = malloc(stat_buf.st_size);
-    if (!data)
-        goto error;
-
-    *size = stat_buf.st_size;
-    while (bytes_read < *size) {
-        int rc;
-
-        rc = read(fd, data + bytes_read, *size - bytes_read);
-        if (rc < 0) {
-            if (errno != EINTR)
-                goto error;
-        } else if (rc == 0) {
-            break;
-        } else {
-            bytes_read += rc;
-        }
-    }
-
-    close(fd);
-    return data;
-
-error:
-    free(data);
-    close(fd);
-
-    return NULL;
-}
-
 void
 test_get_content_disposition (void)
 {
@@ -125,7 +68,7 @@ test_get_content_disposition (void)
     cut_take_string(type);
     cut_take_string(filename);
 
-    content = load_data("attachment", &length);
+    content = mz_test_utils_load_data("attachment", &length);
     cut_assert_not_null(content);
 
     cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &charset, &filename));
@@ -143,7 +86,7 @@ test_get_content_disposition_with_line_feed (void)
     cut_take_string(type);
     cut_take_string(filename);
 
-    content = load_data("attachment_content_disposition_with_line_feed", &length);
+    content = mz_test_utils_load_data("attachment_content_disposition_with_line_feed", &length);
     cut_assert_not_null(content);
 
     cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &charset, &filename));
@@ -161,7 +104,7 @@ test_get_content_disposition_mime_encoded_filename (void)
     cut_take_string(type);
     cut_take_string(filename);
 
-    content = load_data("attachment_filename_is_mime_encoded", &length);
+    content = mz_test_utils_load_data("attachment_filename_is_mime_encoded", &length);
     cut_assert_not_null(content);
 
     cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &charset, &filename));
@@ -181,7 +124,7 @@ test_get_rfc2311_filename (void)
     cut_take_string(type);
     cut_take_string(filename);
 
-    content = load_data("rfc2311", &length);
+    content = mz_test_utils_load_data("rfc2311", &length);
     cut_assert_not_null(content);
 
     cut_assert_true(mz_utils_get_content_disposition(content, length, &type, &charset, &filename));
@@ -227,7 +170,7 @@ test_get_decoded_attachment_body (void)
     content = cut_get_fixture_data_string("attachment", NULL);
     cut_assert_not_null(content);
 
-    expected = load_data("t.png", &expected_size);
+    expected = mz_test_utils_load_data("t.png", &expected_size);
     cut_take_string(expected);
     cut_assert_not_null(expected);
 
@@ -257,7 +200,7 @@ test_extract_attachments (void)
     unsigned int expected_size = 0;
     MzAttachment *actual;
 
-    expected_data = load_data("t.png", &expected_size);
+    expected_data = mz_test_utils_load_data("t.png", &expected_size);
     cut_take_memory(expected_data);
 
     expected.data = expected_data;
