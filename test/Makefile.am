@@ -4,7 +4,8 @@ TESTS_ENVIRONMENT = NO_MAKE=yes CUTTER="$(CUTTER)"
 
 noinst_LTLIBRARIES =		\
 	test_base64.la		\
-	test_utils.la
+	test_utils.la		\
+	test_zlib.la
 endif
 
 EXTRA_DIST =			\
@@ -34,6 +35,10 @@ test_utils_la_LIBADD =					\
 
 test_base64_la_SOURCES = test-base64.c
 test_base64_la_LIBADD =					\
+	$(top_builddir)/src/libmilter_zipcrypt.la
+
+test_zlib_la_SOURCES = test-zlib.c
+test_zlib_la_LIBADD =					\
 	$(top_builddir)/src/libmilter_zipcrypt.la
 
 echo-cutter:
