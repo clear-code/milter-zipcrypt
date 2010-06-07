@@ -162,7 +162,7 @@ void
 test_get_decoded_attachment_body (void)
 {
     const char *content;
-    char *expected;
+    const char *expected;
     const char *body;
     unsigned int size = 0;
     unsigned int expected_size = 0;
@@ -171,7 +171,6 @@ test_get_decoded_attachment_body (void)
     cut_assert_not_null(content);
 
     expected = mz_test_utils_load_data("t.png", &expected_size);
-    cut_take_string(expected);
     cut_assert_not_null(expected);
 
     body = mz_utils_get_decoded_attachment_body(content, &size);
@@ -196,12 +195,11 @@ test_extract_attachments (void)
 {
     const char *body;
     MzAttachment expected = { NULL, "t.png", NULL, 0 };
-    char *expected_data;
+    const char *expected_data;
     unsigned int expected_size = 0;
     MzAttachment *actual;
 
     expected_data = mz_test_utils_load_data("t.png", &expected_size);
-    cut_take_memory(expected_data);
 
     expected.data = expected_data;
     expected.data_length = expected_size;

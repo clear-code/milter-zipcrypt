@@ -3,6 +3,6 @@
 #ifndef __MZ_TEST_UTILS_H__
 #define __MZ_TEST_UTILS_H__
 
-char * mz_test_utils_load_data (const char *path, unsigned int *size);
+const char * mz_test_utils_load_data (const char *path, unsigned int *size);
 
 #endif /* __MZ_TEST_UTILS_H__ */

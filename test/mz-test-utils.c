@@ -9,7 +9,7 @@
 
 #include "mz-test-utils.h"
 
-char *
+const char *
 mz_test_utils_load_data (const char *path, unsigned int *size)
 {
     char *data = NULL;
@@ -35,6 +35,7 @@ mz_test_utils_load_data (const char *path, unsigned int *size)
     if (!data)
         goto error;
 
+    cut_take_memory(data);
     *size = stat_buf.st_size;
     while (bytes_read < *size) {
         int rc;
@@ -54,7 +55,6 @@ mz_test_utils_load_data (const char *path, unsigned int *size)
     return data;
 
 error:
-    free(data);
     close(fd);
 
     return NULL;
