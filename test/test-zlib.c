@@ -188,6 +188,5 @@ test_compress (void)
     expected_compressed_data += sizeof(expected_header);
 
     assert_equal_zip_header(&expected_header, header);
-
 }
 
