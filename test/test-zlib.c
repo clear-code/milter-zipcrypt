@@ -50,6 +50,7 @@ test_init (void)
 }
 
 #define GET_16BIT_VALUE(x) (((x[0]) & 0xff) | (((x[1]) << 8)))
+#define GET_32BIT_VALUE(x) (((x[0]) & 0xff) | (((x[1]) << 8)) | (((x[2] << 16)) | (((x[3]) << 24))))
 static void
 assert_equal_zip_header (MzZipHeader *expected, MzZipHeader *actual)
 {
@@ -198,7 +199,7 @@ test_compress (void)
     expected_compressed_data += GET_16BIT_VALUE(expected_header.filename_length);
     expected_compressed_data += GET_16BIT_VALUE(expected_header.extra_field_length);
 
-    cut_assert_equal_memory(expected_compressed_data, expected_compressed_data_length,
+    cut_assert_equal_memory(expected_compressed_data, GET_32BIT_VALUE(expected_header.compressed_size),
                             compressed_data, compressed_data_length);
 }
 
