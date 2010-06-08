@@ -172,7 +172,7 @@ create_zip_header (const char *path, unsigned int compressed_size)
 }
 
 static MzZipCentralDirectoryRecord *
-create_zip_central_directory_record (const char *path, MzZipHeader *header)
+create_zip_central_directory_record (const char *path, MzZipHeader *header, int data_type)
 {
     MzZipCentralDirectoryRecord *record;
     void *dest, *src;
@@ -205,8 +205,8 @@ create_zip_central_directory_record (const char *path, MzZipHeader *header)
     record->start_disk_num[0] = 0;
     record->start_disk_num[1] = 0;
 
-    record->internal_file_attributes[0] = Z_TEXT;
-    record->internal_file_attributes[1] = 0;
+    record->internal_file_attributes[0] = data_type & 0xff;
+    record->internal_file_attributes[1] = (data_type >> 8) & 0xff;
 
     file_attributes = mz_test_utils_get_file_attributes(path);
 
@@ -279,7 +279,9 @@ test_compress (void)
                             compressed_data, compressed_data_length);
     expected_compressed_data += GET_32BIT_VALUE(expected_header.compressed_size);
 
-    actual_directory_record = create_zip_central_directory_record("body", actual_header);
+    actual_directory_record = create_zip_central_directory_record("body",
+                                                                  actual_header,
+                                                                  zlib_stream.data_type);
     memcpy(&expected_directory_record, expected_compressed_data, sizeof(expected_directory_record));
     expected_compressed_data += sizeof(expected_directory_record);
 
