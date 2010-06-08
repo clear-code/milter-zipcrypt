@@ -179,11 +179,12 @@ create_zip_header (const char *path, unsigned int compressed_size)
 }
 
 static MzZipCentralDirectoryRecord *
-create_zip_central_directory_record (MzZipHeader *header)
+create_zip_central_directory_record (const char *path, MzZipHeader *header)
 {
     MzZipCentralDirectoryRecord *record;
     void *dest, *src;
     unsigned short extra_field_length;
+    unsigned int file_attributes;
 
     record = malloc(sizeof(*record));
 
@@ -214,10 +215,12 @@ create_zip_central_directory_record (MzZipHeader *header)
     record->internal_file_attributes[0] = Z_TEXT;
     record->internal_file_attributes[1] = 0;
 
-    record->external_file_attributes[0] = 0;
-    record->external_file_attributes[1] = 0;
-    record->external_file_attributes[2] = 0xa4; /* I do not know what this numbers means. */
-    record->external_file_attributes[3] = 0x81;
+    file_attributes = mz_test_utils_get_file_attributes(path);
+
+    record->external_file_attributes[0] = file_attributes & 0xff;
+    record->external_file_attributes[1] = (file_attributes >> 8) & 0xff;
+    record->external_file_attributes[2] = (file_attributes >> 16) & 0xff;
+    record->external_file_attributes[3] = (file_attributes >> 24) & 0xff;
 
     record->header_offset[0] = 0;
     record->header_offset[1] = 0;
@@ -283,7 +286,7 @@ test_compress (void)
                             compressed_data, compressed_data_length);
     expected_compressed_data += GET_32BIT_VALUE(expected_header.compressed_size);
 
-    actual_directory_record = create_zip_central_directory_record(actual_header);
+    actual_directory_record = create_zip_central_directory_record("body", actual_header);
     memcpy(&expected_directory_record, expected_compressed_data, sizeof(expected_directory_record));
     expected_compressed_data += sizeof(expected_directory_record);
 

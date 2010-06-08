@@ -75,3 +75,18 @@ mz_test_utils_get_last_modified_time (const char *path)
     return stat_buf.st_mtime;
 }
 
+unsigned int
+mz_test_utils_get_file_attributes (const char *path)
+{
+    char *data_path;
+    struct stat stat_buf;
+
+    data_path = cut_build_fixture_data_path(path, NULL);
+    cut_take_string(data_path);
+
+    if (stat(data_path, &stat_buf) < 0)
+        return 0;
+
+    return (stat_buf.st_mode << 16) | !(stat_buf.st_mode & S_IWRITE);
+}
+
