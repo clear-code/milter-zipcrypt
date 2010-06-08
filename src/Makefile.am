@@ -25,6 +25,7 @@ libmilter_zipcrypt_la_SOURCES =	\
 	mz-quoted-printable.c	\
 	mz-mime-private.h	\
 	mz-utils.h		\
-	mz-utils.c
+	mz-utils.c		\
+	mz-zip.h
 
 EXTRA_DIST = gen-table.c

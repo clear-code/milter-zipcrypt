@@ -4,29 +4,13 @@
 #include <time.h>
 
 #include "mz-test-utils.h"
+#include "mz-zip.h"
 
 void test_init (void);
 void test_compress (void);
 
-typedef struct _TestZipHeader
-{
-    unsigned char signature[4];
-    unsigned char need_version[2];
-    unsigned char flags[2];
-    unsigned char compression_method[2];
-    unsigned char last_modified_time[2];
-    unsigned char last_modified_date[2];
-    unsigned char crc[4];
-    unsigned char compressed_size[4];
-    unsigned char uncompressed_size[4];
-    unsigned char filename_length[2];
-
-    /* unsigned char extra_field_length[2]; */
-
-} TestZipHeader;
-
 static z_stream zlib_stream;
-static TestZipHeader *header;
+static MzZipHeader *header;
 
 void
 setup (void)
@@ -65,17 +49,18 @@ test_init (void)
     assert_z_ok(ret);
 }
 
-static TestZipHeader *
+static MzZipHeader *
 create_zip_header (const char *path)
 {
     const char *raw_data;
     unsigned int raw_data_length;
+    unsigned int compressed_size;
     time_t last_modification;
     struct tm tm;
     unsigned short msdos_time, msdos_date;
     unsigned short filename_length;
     uLong crc;
-    TestZipHeader *header;
+    MzZipHeader *header;
 
     header = malloc(sizeof(*header));
 
@@ -114,10 +99,10 @@ create_zip_header (const char *path)
     header->crc[2] = (crc >> 16) & 0xff;
     header->crc[3] = (crc >> 24) & 0xff;
 
-    header->compressed_size[0] = raw_data_length & 0xff;
-    header->compressed_size[1] = (raw_data_length >> 8) & 0xff;
-    header->compressed_size[2] = (raw_data_length >> 16) & 0xff;
-    header->compressed_size[3] = (raw_data_length >> 24) & 0xff;
+    header->compressed_size[0] = compressed_size & 0xff;
+    header->compressed_size[1] = (compressed_size >> 8) & 0xff;
+    header->compressed_size[2] = (compressed_size >> 16) & 0xff;
+    header->compressed_size[3] = (compressed_size >> 24) & 0xff;
 
     header->uncompressed_size[0] = raw_data_length & 0xff;
     header->uncompressed_size[1] = (raw_data_length >> 8) & 0xff;
@@ -157,7 +142,7 @@ test_compress (void)
     cut_assert_not_null(expected_compressed_data);
 
     header = create_zip_header("body");
-    cut_assert_equal_memory(expected_compressed_data, sizeof(TestZipHeader),
+    cut_assert_equal_memory(expected_compressed_data, sizeof(MzZipHeader),
                             header, sizeof(*header));
 
     expected_compressed_data += sizeof(*header);

@@ -1,0 +1,40 @@
+/* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
+#ifndef __MZ_ZIP_H__
+#define __MZ_ZIP_H__
+
+typedef struct _MzZipHeader MzZipHeader;
+
+struct _MzZipHeader
+{
+    unsigned char signature[4];
+    unsigned char need_version[2];
+    unsigned char flags[2];
+    unsigned char compression_method[2];
+    unsigned char last_modified_time[2];
+    unsigned char last_modified_date[2];
+    unsigned char crc[4];
+    unsigned char compressed_size[4];
+    unsigned char uncompressed_size[4];
+    unsigned char filename_length[2];
+
+    /* unsigned char extra_field_length[2]; */
+
+};
+
+typedef struct _MzZipEndOfCentralDirectoryRecord MzZipEndOfEntralDirectoryRecord;
+
+struct _MzZipEndOfCentralDirectoryRecord
+{
+    unsigned char signature[4];
+    unsigned char num_disk[2];
+    unsigned char start_disk_num[2];
+    unsigned char total_disk_num[2];
+    unsigned char total_entry_num[2];
+    unsigned char entry_size[2];
+    unsigned char offset[4];
+    unsigned char comment_length[2];
+    unsigned char *comment;
+};
+
+#endif /* __MZ_ZIP_H__ */
+
