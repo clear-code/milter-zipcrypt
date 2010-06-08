@@ -77,8 +77,8 @@ create_zip_header (const char *path)
     header->flags[0] = 0x04; /* Fast compression mode */
     header->flags[1] = 0x00;
 
-    header->compression_method[0] = (char)Z_DEFLATED & 0xff;
-    header->compression_method[1] = (char)(Z_DEFLATED >> 8) & 0xff;
+    header->compression_method[0] = Z_DEFLATED & 0xff;
+    header->compression_method[1] = (Z_DEFLATED >> 8) & 0xff;
 
     last_modification = mz_test_utils_get_last_modified_time(path);
     localtime_r(&last_modification, &tm);
