@@ -18,7 +18,29 @@ struct _MzZipHeader
     unsigned char filename_length[2];
 
     unsigned char extra_field_length[2];
+};
 
+typedef struct _MzZipCentralDirectoryRecord MzZipCentralDirectoryRecord;
+
+struct _MzZipCentralDirectoryRecord
+{
+    unsigned char signature[4];
+    unsigned char made_version[2];
+    unsigned char need_version[2];
+    unsigned char flags[2];
+    unsigned char compression_method[2];
+    unsigned char last_modified_time[2];
+    unsigned char last_modified_date[2];
+    unsigned char crc[4];
+    unsigned char compressed_size[4];
+    unsigned char uncompressed_size[4];
+    unsigned char filename_length[2];
+    unsigned char extra_field_length[2];
+    unsigned char file_comment_length[2];
+    unsigned char start_disk_num[2];
+    unsigned char internal_file_attributes[2];
+    unsigned char external_file_attributes[4];
+    unsigned char header_offset[4];
 };
 
 typedef struct _MzZipEndOfCentralDirectoryRecord MzZipEndOfEntralDirectoryRecord;
