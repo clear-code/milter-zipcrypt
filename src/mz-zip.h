@@ -17,7 +17,7 @@ struct _MzZipHeader
     unsigned char uncompressed_size[4];
     unsigned char filename_length[2];
 
-    /* unsigned char extra_field_length[2]; */
+    unsigned char extra_field_length[2];
 
 };
 
