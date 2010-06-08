@@ -21,15 +21,15 @@ mz_test_utils_load_data (const char *path, unsigned int *size)
     data_path = cut_build_fixture_data_path(path, NULL);
     cut_take_string(data_path);
 
+    if (stat(data_path, &stat_buf) < 0)
+        return NULL;
+
+    if (stat_buf.st_size <= 0 || !S_ISREG (stat_buf.st_mode))
+        return NULL;
+
     fd = open(data_path, O_RDONLY);
     if (fd < 0)
         return NULL;
-
-    if (fstat(fd, &stat_buf) < 0)
-        goto error;
-
-    if (stat_buf.st_size <= 0 || !S_ISREG (stat_buf.st_mode))
-        goto error;
 
     data = malloc(stat_buf.st_size);
     if (!data)
