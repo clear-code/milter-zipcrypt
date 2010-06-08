@@ -1,7 +1,6 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 #include <cutter.h>
 #include <zlib.h>
-#include <time.h>
 
 #include "mz-test-utils.h"
 #include "mz-zip.h"
@@ -113,8 +112,6 @@ create_zip_header (const char *path, unsigned int compressed_size)
     const char *raw_data;
     unsigned int raw_data_length;
     unsigned short extra_field_length;
-    time_t last_modification;
-    struct tm tm;
     unsigned short msdos_time, msdos_date;
     unsigned short filename_length;
     uLong crc;
@@ -138,11 +135,7 @@ create_zip_header (const char *path, unsigned int compressed_size)
     header->compression_method[0] = Z_DEFLATED & 0xff;
     header->compression_method[1] = (Z_DEFLATED >> 8) & 0xff;
 
-    last_modification = mz_test_utils_get_last_modified_time(path);
-    localtime_r(&last_modification, &tm);
-
-    msdos_time = (tm.tm_hour << 11) | (tm.tm_min << 5) | ((tm.tm_sec + 1) >> 1);
-    msdos_date = ((tm.tm_year - 80) << 9) | ((tm.tm_mon  + 1) << 5) | tm.tm_mday;
+    cut_assert_true(mz_test_utils_get_last_modified_time(path, &msdos_time, &msdos_date));
 
     header->last_modified_time[0] = msdos_time & 0xff;
     header->last_modified_time[1] = (msdos_time >> 8) & 0xff;
