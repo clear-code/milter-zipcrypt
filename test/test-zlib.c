@@ -10,12 +10,12 @@ void test_init (void);
 void test_compress (void);
 
 static z_stream zlib_stream;
-static MzZipHeader *header;
+static MzZipHeader *actual_header;
 
 void
 setup (void)
 {
-    header = NULL;
+    actual_header = NULL;
     cut_set_fixture_data_dir("fixtures", NULL);
     memset(&zlib_stream, 0, sizeof(zlib_stream));
 }
@@ -24,8 +24,8 @@ void
 teardown (void)
 {
     deflateEnd(&zlib_stream);
-    if (header)
-        free(header);
+    if (actual_header)
+        free(actual_header);
 }
 
 static void
@@ -49,9 +49,13 @@ test_init (void)
     assert_z_ok(ret);
 }
 
+#define GET_16BIT_VALUE(x) (((x[0]) & 0xff) | (((x[1]) << 8)))
 static void
 assert_equal_zip_header (MzZipHeader *expected, MzZipHeader *actual)
 {
+    unsigned short actual_filename_length;
+    unsigned short expected_filename_length;
+
 #define CHECK_PARAM(name)                                           \
     cut_assert_equal_memory(expected->name, sizeof(expected->name), \
                             actual->name, sizeof(actual->name));
@@ -66,6 +70,10 @@ assert_equal_zip_header (MzZipHeader *expected, MzZipHeader *actual)
     CHECK_PARAM(compressed_size);
     CHECK_PARAM(uncompressed_size);
     CHECK_PARAM(filename_length);
+    CHECK_PARAM(extra_field_length);
+
+    expected_filename_length = GET_16BIT_VALUE(expected->filename_length);
+    actual_filename_length = GET_16BIT_VALUE(actual->filename_length);
 }
 
 static MzZipHeader *
@@ -132,8 +140,9 @@ create_zip_header (const char *path, unsigned int compressed_size)
     header->filename_length[0] = filename_length & 0xff;
     header->filename_length[1] = (filename_length >> 8) & 0xff;
 
+    extra_field_length = 28;
     header->extra_field_length[0] = extra_field_length & 0xff;
-    header->extra_field_length[1] = (extra_field_length >> 8) &0xff;
+    header->extra_field_length[1] = (extra_field_length >> 8) & 0xff;
 
     return header;
 }
@@ -142,7 +151,7 @@ void
 test_compress (void)
 {
 #define BUFFER_SIZE 4096
-    char compressed_data[BUFFER_SIZE];
+    char compressed_data[8192]; /* enough space to store the data */
     const char *raw_data;
     const char *expected_compressed_data;
     unsigned int raw_data_length;
@@ -168,14 +177,9 @@ test_compress (void)
         ret = deflate(&zlib_stream, Z_FINISH);
 
         written_bytes = BUFFER_SIZE - zlib_stream.avail_out;
-        /*
-        cut_assert_equal_memory(expected_compressed_data, expected_compressed_data_length,
-                                compressed_data, written_bytes);
-        expected_compressed_data += written_bytes;
-        */
-        zlib_stream.next_out = (Bytef*)compressed_data;
-        zlib_stream.avail_out = BUFFER_SIZE;
         compressed_data_length += written_bytes;
+        zlib_stream.next_out = (Bytef*)compressed_data + compressed_data_length;
+        zlib_stream.avail_out = BUFFER_SIZE;
         if (ret == Z_STREAM_END)
             break;
     }
@@ -183,10 +187,18 @@ test_compress (void)
     expected_compressed_data = mz_test_utils_load_data("body.zip", &expected_compressed_data_length);
     cut_assert_not_null(expected_compressed_data);
 
-    header = create_zip_header("body", compressed_data_length);
+    actual_header = create_zip_header("body", compressed_data_length);
     memcpy(&expected_header, expected_compressed_data, sizeof(expected_header));
     expected_compressed_data += sizeof(expected_header);
 
-    assert_equal_zip_header(&expected_header, header);
+    assert_equal_zip_header(&expected_header, actual_header);
+
+    cut_assert_equal_memory("body", strlen("body"),
+                            expected_compressed_data, GET_16BIT_VALUE(expected_header.filename_length));
+    expected_compressed_data += GET_16BIT_VALUE(expected_header.filename_length);
+    expected_compressed_data += GET_16BIT_VALUE(expected_header.extra_field_length);
+
+    cut_assert_equal_memory(expected_compressed_data, expected_compressed_data_length,
+                            compressed_data, compressed_data_length);
 }
 
