@@ -52,26 +52,20 @@ test_init (void)
 static void
 assert_equal_zip_header (MzZipHeader *expected, MzZipHeader *actual)
 {
-    cut_assert_equal_memory(expected->signature, sizeof(expected->signature),
-                            actual->signature, sizeof(actual->signature));
-    cut_assert_equal_memory(expected->need_version, sizeof(expected->need_version),
-                            actual->need_version, sizeof(actual->need_version));
-    cut_assert_equal_memory(expected->flags, sizeof(expected->flags),
-                            actual->flags, sizeof(actual->flags));
-    cut_assert_equal_memory(expected->compression_method, sizeof(expected->compression_method),
-                            actual->compression_method, sizeof(actual->compression_method));
-    cut_assert_equal_memory(expected->last_modified_time, sizeof(expected->last_modified_time),
-                            actual->last_modified_time, sizeof(actual->last_modified_time));
-    cut_assert_equal_memory(expected->last_modified_date, sizeof(expected->last_modified_date),
-                            actual->last_modified_date, sizeof(actual->last_modified_date));
-    cut_assert_equal_memory(expected->crc, sizeof(expected->crc),
-                            actual->crc, sizeof(actual->crc));
-    cut_assert_equal_memory(expected->compressed_size, sizeof(expected->compressed_size),
-                            actual->compressed_size, sizeof(actual->compressed_size));
-    cut_assert_equal_memory(expected->uncompressed_size, sizeof(expected->uncompressed_size),
-                            actual->uncompressed_size, sizeof(actual->uncompressed_size));
-    cut_assert_equal_memory(expected->filename_length, sizeof(expected->filename_length),
-                            actual->filename_length, sizeof(actual->filename_length));
+#define CHECK_PARAM(name)                                           \
+    cut_assert_equal_memory(expected->name, sizeof(expected->name), \
+                            actual->name, sizeof(actual->name));
+
+    CHECK_PARAM(signature);
+    CHECK_PARAM(need_version);
+    CHECK_PARAM(flags);
+    CHECK_PARAM(compression_method);
+    CHECK_PARAM(last_modified_time);
+    CHECK_PARAM(last_modified_date);
+    CHECK_PARAM(crc);
+    CHECK_PARAM(compressed_size);
+    CHECK_PARAM(uncompressed_size);
+    CHECK_PARAM(filename_length);
 }
 
 static MzZipHeader *
