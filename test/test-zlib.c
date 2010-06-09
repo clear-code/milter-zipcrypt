@@ -5,10 +5,8 @@
 #include "mz-test-utils.h"
 #include "mz-zip.h"
 
-void test_init (void);
 void test_compress (void);
 
-static z_stream zlib_stream;
 static MzZipHeader *actual_header;
 static MzZipCentralDirectoryRecord *actual_directory_record;
 static MzZipEndOfCentralDirectoryRecord *actual_end_of_directory_record;
@@ -20,40 +18,17 @@ setup (void)
     actual_directory_record = NULL;
     actual_end_of_directory_record = NULL;
     cut_set_fixture_data_dir("fixtures", NULL);
-    memset(&zlib_stream, 0, sizeof(zlib_stream));
 }
 
 void
 teardown (void)
 {
-    deflateEnd(&zlib_stream);
     if (actual_header)
         free(actual_header);
     if (actual_directory_record)
         free(actual_directory_record);
     if (actual_end_of_directory_record)
         free(actual_end_of_directory_record);
-}
-
-static void
-assert_z_ok (int zlib_code)
-{
-    cut_assert_equal_int(Z_OK, zlib_code);
-}
-
-void
-test_init (void)
-{
-    int compression_level = 1;
-    int ret;
-
-    ret = deflateInit2(&zlib_stream,
-                       compression_level,
-                       Z_DEFLATED,
-                       -14, /* zip on Linux seems to use -14. */
-                       9, /* Use maximum memory for optimal speed.*/
-                       Z_DEFAULT_STRATEGY);
-    assert_z_ok(ret);
 }
 
 #define GET_16BIT_VALUE(x) (((x[0]) & 0xff) | (((x[1]) << 8)))
@@ -297,35 +272,16 @@ test_compress (void)
     const char *expected_compressed_data;
     unsigned int raw_data_length;
     unsigned int expected_compressed_data_length;
-    unsigned int compressed_data_length = 0;
-    int ret = Z_OK;
+    unsigned int compressed_data_length;
     MzZipHeader expected_header;
     MzZipCentralDirectoryRecord expected_directory_record;
     MzZipEndOfCentralDirectoryRecord expected_end_of_directory_record;
 
-    test_init();
-
     raw_data = mz_test_utils_load_data("body", &raw_data_length);
     cut_assert_not_null(raw_data);
 
-    zlib_stream.next_in = (Bytef*)raw_data;
-    zlib_stream.avail_in = raw_data_length;
-
-    zlib_stream.next_out = (Bytef*)compressed_data;
-    zlib_stream.avail_out = BUFFER_SIZE;
-
-    while (ret  == Z_OK || ret == Z_STREAM_END) {
-        unsigned int written_bytes;
-
-        ret = deflate(&zlib_stream, Z_FINISH);
-
-        written_bytes = BUFFER_SIZE - zlib_stream.avail_out;
-        compressed_data_length += written_bytes;
-        zlib_stream.next_out = (Bytef*)compressed_data + compressed_data_length;
-        zlib_stream.avail_out = BUFFER_SIZE;
-        if (ret == Z_STREAM_END)
-            break;
-    }
+    compressed_data_length = mz_zip_compress(raw_data, raw_data_length, (char**)&compressed_data);
+    cut_assert_not_equal_int(0, compressed_data_length);
 
     expected_compressed_data = mz_test_utils_load_data("body.zip", &expected_compressed_data_length);
     cut_assert_not_null(expected_compressed_data);
@@ -347,7 +303,7 @@ test_compress (void)
 
     actual_directory_record = create_zip_central_directory_record("body",
                                                                   actual_header,
-                                                                  zlib_stream.data_type);
+                                                                  1/* zlib_stream.data_type */); /* Use 1 for now */
     memcpy(&expected_directory_record, expected_compressed_data, sizeof(expected_directory_record));
     expected_compressed_data += sizeof(expected_directory_record);
 
