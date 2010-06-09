@@ -43,7 +43,7 @@ struct _MzZipCentralDirectoryRecord
     unsigned char header_offset[4];
 };
 
-typedef struct _MzZipEndOfCentralDirectoryRecord MzZipEndOfEntralDirectoryRecord;
+typedef struct _MzZipEndOfCentralDirectoryRecord MzZipEndOfCentralDirectoryRecord;
 
 struct _MzZipEndOfCentralDirectoryRecord
 {
@@ -55,7 +55,6 @@ struct _MzZipEndOfCentralDirectoryRecord
     unsigned char entry_size[2];
     unsigned char offset[4];
     unsigned char comment_length[2];
-    unsigned char *comment;
 };
 
 #endif /* __MZ_ZIP_H__ */
