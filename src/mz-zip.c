@@ -8,7 +8,8 @@
 unsigned int
 mz_zip_compress_in_memory (const char *data,
                            unsigned int data_length,
-                           char **compressed_data)
+                           char **compressed_data,
+                           int *guessed_data_type)
 {
 #define BUFFER_SIZE 4096
     z_stream zlib_stream;
@@ -41,6 +42,8 @@ mz_zip_compress_in_memory (const char *data,
         if (ret == Z_STREAM_END)
             break;
     }
+
+    *guessed_data_type = zlib_stream.data_type;
 
     deflateEnd(&zlib_stream);
 

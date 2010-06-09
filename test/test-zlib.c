@@ -112,6 +112,7 @@ test_compress (void)
     unsigned int raw_data_length;
     unsigned int expected_compressed_data_length;
     unsigned int compressed_data_length;
+    int guessed_data_type;
     time_t last_modified_time;
     MzZipHeader expected_header;
     MzZipCentralDirectoryRecord expected_directory_record;
@@ -122,7 +123,8 @@ test_compress (void)
 
     compressed_data_length = mz_zip_compress_in_memory(raw_data,
                                                        raw_data_length,
-                                                       (char**)&compressed_data);
+                                                       (char**)&compressed_data,
+                                                       &guessed_data_type);
     cut_assert_not_equal_int(0, compressed_data_length);
 
     expected_compressed_data = mz_test_utils_load_data("body.zip", &expected_compressed_data_length);
@@ -151,7 +153,7 @@ test_compress (void)
     actual_directory_record = mz_zip_create_central_directory_record("body",
                                                                      actual_header,
                                                                      mz_test_utils_get_file_attributes("body"),
-                                                                     1/* zlib_stream.data_type */); /* Use 1 for now */
+                                                                     guessed_data_type);
     memcpy(&expected_directory_record, expected_compressed_data, sizeof(expected_directory_record));
     expected_compressed_data += sizeof(expected_directory_record);
 

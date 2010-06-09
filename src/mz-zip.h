@@ -60,7 +60,8 @@ struct _MzZipEndOfCentralDirectoryRecord
 unsigned int mz_zip_compress_in_memory
                                   (const char  *data,
                                    unsigned int data_length,
-                                   char       **compressed_data);
+                                   char       **compressed_data,
+                                   int         *guessed_data_type);
 MzZipHeader *mz_zip_create_header (const char *filename,
                                    const char *data,
                                    unsigned int data_length,
