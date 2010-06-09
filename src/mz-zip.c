@@ -47,8 +47,8 @@ mz_zip_compress (const char *data, unsigned int data_length, char **compressed_d
 
 static void
 convert_time_to_msdos_time_and_date (time_t time,
-                                              unsigned short *msdos_time,
-                                              unsigned short *msdos_date)
+                                     unsigned short *msdos_time,
+                                     unsigned short *msdos_date)
 {
     struct tm tm;
     localtime_r(&time, &tm);
