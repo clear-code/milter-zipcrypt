@@ -120,7 +120,9 @@ test_compress (void)
     raw_data = mz_test_utils_load_data("body", &raw_data_length);
     cut_assert_not_null(raw_data);
 
-    compressed_data_length = mz_zip_compress(raw_data, raw_data_length, (char**)&compressed_data);
+    compressed_data_length = mz_zip_compress_in_memory(raw_data,
+                                                       raw_data_length,
+                                                       (char**)&compressed_data);
     cut_assert_not_equal_int(0, compressed_data_length);
 
     expected_compressed_data = mz_test_utils_load_data("body.zip", &expected_compressed_data_length);

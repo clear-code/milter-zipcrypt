@@ -6,7 +6,9 @@
 #include "mz-zip.h"
 
 unsigned int
-mz_zip_compress (const char *data, unsigned int data_length, char **compressed_data)
+mz_zip_compress_in_memory (const char *data,
+                           unsigned int data_length,
+                           char **compressed_data)
 {
 #define BUFFER_SIZE 4096
     z_stream zlib_stream;
