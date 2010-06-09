@@ -57,9 +57,14 @@ struct _MzZipEndOfCentralDirectoryRecord
     unsigned char comment_length[2];
 };
 
-unsigned int mz_zip_compress    (const char  *data,
-                                 unsigned int data_length,
-                                 char       **compressed_data);
+unsigned int mz_zip_compress      (const char  *data,
+                                   unsigned int data_length,
+                                   char       **compressed_data);
+MzZipHeader *mz_zip_create_header (const char *filename,
+                                   const char *data,
+                                   unsigned int data_length,
+                                   time_t last_modified_time,
+                                   unsigned int compressed_size);
 
 #endif /* __MZ_ZIP_H__ */
 

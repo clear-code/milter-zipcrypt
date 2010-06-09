@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <time.h>
 
 #include "mz-test-utils.h"
 
@@ -61,27 +60,19 @@ error:
     return NULL;
 }
 
-bool
-mz_test_utils_get_last_modified_time (const char *path,
-                                      unsigned short *msdos_time,
-                                      unsigned short *msdos_date)
+time_t
+mz_test_utils_get_last_modified_time (const char *path)
 {
     char *data_path;
     struct stat stat_buf;
-    struct tm tm;
 
     data_path = cut_build_fixture_data_path(path, NULL);
     cut_take_string(data_path);
 
     if (stat(data_path, &stat_buf) < 0)
-        return false;
+        return 0;
 
-    localtime_r(&stat_buf.st_mtime, &tm);
-
-    *msdos_time = (tm.tm_hour << 11) | (tm.tm_min << 5) | ((tm.tm_sec + 1) >> 1);
-    *msdos_date = ((tm.tm_year - 80) << 9) | ((tm.tm_mon  + 1) << 5) | tm.tm_mday;
-
-    return true;
+    return stat_buf.st_mtime;
 }
 
 unsigned int

@@ -103,71 +103,6 @@ assert_equal_zip_end_of_central_directory_record (MzZipEndOfCentralDirectoryReco
     CHECK_PARAM(comment_length);
 }
 
-static MzZipHeader *
-create_zip_header (const char *path, unsigned int compressed_size)
-{
-    const char *raw_data;
-    unsigned int raw_data_length;
-    unsigned short extra_field_length;
-    unsigned short msdos_time, msdos_date;
-    unsigned short filename_length;
-    uLong crc;
-    MzZipHeader *header;
-
-    header = malloc(sizeof(*header));
-
-    raw_data = mz_test_utils_load_data(path, &raw_data_length);
-
-    header->signature[0] = 0x50;
-    header->signature[1] = 0x4b;
-    header->signature[2] = 0x03;
-    header->signature[3] = 0x04;
-
-    header->need_version[0] = 0x14;
-    header->need_version[1] = 0x00;
-
-    header->flags[0] = 0x04; /* Fast compression mode */
-    header->flags[1] = 0x00;
-
-    header->compression_method[0] = Z_DEFLATED & 0xff;
-    header->compression_method[1] = (Z_DEFLATED >> 8) & 0xff;
-
-    cut_assert_true(mz_test_utils_get_last_modified_time(path, &msdos_time, &msdos_date));
-
-    header->last_modified_time[0] = msdos_time & 0xff;
-    header->last_modified_time[1] = (msdos_time >> 8) & 0xff;
-
-    header->last_modified_date[0] = msdos_date & 0xff;
-    header->last_modified_date[1] = (msdos_date >> 8) & 0xff;
-
-    crc = crc32(0, NULL, 0);
-    crc = crc32(crc, (unsigned char*)raw_data, raw_data_length);
-    header->crc[0] = crc & 0xff;
-    header->crc[1] = (crc >> 8) & 0xff;
-    header->crc[2] = (crc >> 16) & 0xff;
-    header->crc[3] = (crc >> 24) & 0xff;
-
-    header->compressed_size[0] = compressed_size & 0xff;
-    header->compressed_size[1] = (compressed_size >> 8) & 0xff;
-    header->compressed_size[2] = (compressed_size >> 16) & 0xff;
-    header->compressed_size[3] = (compressed_size >> 24) & 0xff;
-
-    header->uncompressed_size[0] = raw_data_length & 0xff;
-    header->uncompressed_size[1] = (raw_data_length >> 8) & 0xff;
-    header->uncompressed_size[2] = (raw_data_length >> 16) & 0xff;
-    header->uncompressed_size[3] = (raw_data_length >> 24) & 0xff;
-
-    filename_length = strlen(path);
-    header->filename_length[0] = filename_length & 0xff;
-    header->filename_length[1] = (filename_length >> 8) & 0xff;
-
-    extra_field_length = 28;
-    header->extra_field_length[0] = extra_field_length & 0xff;
-    header->extra_field_length[1] = (extra_field_length >> 8) & 0xff;
-
-    return header;
-}
-
 static MzZipCentralDirectoryRecord *
 create_zip_central_directory_record (const char *path, MzZipHeader *header, int data_type)
 {
@@ -272,6 +207,7 @@ test_compress (void)
     unsigned int raw_data_length;
     unsigned int expected_compressed_data_length;
     unsigned int compressed_data_length;
+    time_t last_modified_time;
     MzZipHeader expected_header;
     MzZipCentralDirectoryRecord expected_directory_record;
     MzZipEndOfCentralDirectoryRecord expected_end_of_directory_record;
@@ -285,7 +221,12 @@ test_compress (void)
     expected_compressed_data = mz_test_utils_load_data("body.zip", &expected_compressed_data_length);
     cut_assert_not_null(expected_compressed_data);
 
-    actual_header = create_zip_header("body", compressed_data_length);
+    last_modified_time = mz_test_utils_get_last_modified_time("body");
+    actual_header = mz_zip_create_header("body",
+                                         raw_data,
+                                         raw_data_length,
+                                         last_modified_time,
+                                         compressed_data_length);
     memcpy(&expected_header, expected_compressed_data, sizeof(expected_header));
     expected_compressed_data += sizeof(expected_header);
 
