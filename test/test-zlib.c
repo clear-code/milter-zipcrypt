@@ -103,49 +103,6 @@ assert_equal_zip_end_of_central_directory_record (MzZipEndOfCentralDirectoryReco
     CHECK_PARAM(comment_length);
 }
 
-static MzZipEndOfCentralDirectoryRecord *
-create_zip_end_of_central_directory_record (MzZipCentralDirectoryRecord *central_record)
-{
-    MzZipEndOfCentralDirectoryRecord *record;
-    unsigned short central_record_length;
-
-    record = malloc(sizeof(*record));
-
-    record->signature[0] = 0x50;
-    record->signature[1] = 0x4b;
-    record->signature[2] = 0x05;
-    record->signature[3] = 0x06;
-
-    record->num_disk[0] = 0;
-    record->num_disk[1] = 0;
-
-    record->start_disk_num[0] = 0;
-    record->start_disk_num[1] = 0;
-
-    record->total_disk_num[0] = 0x01;
-    record->total_disk_num[1] = 0;
-
-    record->total_entry_num[0] = 0x01;
-    record->total_entry_num[1] = 0;
-
-    central_record_length = sizeof(*central_record) +
-                            GET_16BIT_VALUE(central_record->filename_length) +
-                            GET_16BIT_VALUE(central_record->extra_field_length);
-
-    record->entry_size[0] = central_record_length & 0xff;
-    record->entry_size[1] = (central_record_length >> 8) & 0xff;
-
-    record->offset[0] = 0;
-    record->offset[1] = 0;
-    record->offset[2] = 0xa0;
-    record->offset[3] = 0x12;
-
-    record->comment_length[0] = 0;
-    record->comment_length[1] = 0;
-
-    return record;
-}
-
 void
 test_compress (void)
 {
@@ -204,7 +161,7 @@ test_compress (void)
     expected_compressed_data += GET_16BIT_VALUE(expected_directory_record.filename_length);
     expected_compressed_data += GET_16BIT_VALUE(expected_directory_record.extra_field_length);
 
-    actual_end_of_directory_record = create_zip_end_of_central_directory_record(actual_directory_record);
+    actual_end_of_directory_record = mz_zip_create_end_of_central_directory_record(actual_directory_record);
     memcpy(&expected_end_of_directory_record,
            expected_compressed_data,
            sizeof(expected_end_of_directory_record));

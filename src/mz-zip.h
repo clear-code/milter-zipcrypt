@@ -71,6 +71,9 @@ MzZipCentralDirectoryRecord *
                                    MzZipHeader *header,
                                    int file_attributes,
                                    int data_type);
+MzZipEndOfCentralDirectoryRecord *
+            mz_zip_create_end_of_central_directory_record
+                                  (MzZipCentralDirectoryRecord *central_record);
 
 #endif /* __MZ_ZIP_H__ */
 
