@@ -18,9 +18,6 @@
 export BASE_DIR="`dirname $0`"
 top_dir="$BASE_DIR/.."
 top_dir="`cd $top_dir; pwd`"
-export GPDS_MODULE_DIR="$top_dir/modules/.libs"
-export GPDS_UI_DIR="$top_dir/data"
-export GPDS_ICON_DIR="$top_dir/data"
 
 if test x"$NO_MAKE" != x"yes"; then
     if which gmake > /dev/null; then
