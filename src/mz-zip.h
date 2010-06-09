@@ -65,6 +65,12 @@ MzZipHeader *mz_zip_create_header (const char *filename,
                                    unsigned int data_length,
                                    time_t last_modified_time,
                                    unsigned int compressed_size);
+MzZipCentralDirectoryRecord *
+             mz_zip_create_central_directory_record
+                                  (const char *filename,
+                                   MzZipHeader *header,
+                                   int file_attributes,
+                                   int data_type);
 
 #endif /* __MZ_ZIP_H__ */
 

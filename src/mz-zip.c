@@ -122,3 +122,55 @@ mz_zip_create_header (const char *filename,
     return header;
 }
 
+MzZipCentralDirectoryRecord *
+mz_zip_create_central_directory_record (const char *filename,
+                                        MzZipHeader *header,
+                                        int file_attributes,
+                                        int data_type)
+{
+    MzZipCentralDirectoryRecord *record;
+    void *dest, *src;
+    unsigned short extra_field_length;
+
+    record = malloc(sizeof(*record));
+
+    record->signature[0] = 0x50;
+    record->signature[1] = 0x4b;
+    record->signature[2] = 0x01;
+    record->signature[3] = 0x02;
+
+    record->made_version[0] = 0x1e;
+    record->made_version[1] = 0x03;
+
+    dest = record;
+    dest += 6;
+    src = header;
+    src += 4;
+    memcpy(dest, src, sizeof(*header) - 4);
+
+    extra_field_length = 24;
+    record->extra_field_length[0] = extra_field_length & 0xff;
+    record->extra_field_length[1] = (extra_field_length >> 8) & 0xff;
+
+    record->file_comment_length[0] = 0;
+    record->file_comment_length[1] = 0;
+
+    record->start_disk_num[0] = 0;
+    record->start_disk_num[1] = 0;
+
+    record->internal_file_attributes[0] = data_type & 0xff;
+    record->internal_file_attributes[1] = (data_type >> 8) & 0xff;
+
+    record->external_file_attributes[0] = file_attributes & 0xff;
+    record->external_file_attributes[1] = (file_attributes >> 8) & 0xff;
+    record->external_file_attributes[2] = (file_attributes >> 16) & 0xff;
+    record->external_file_attributes[3] = (file_attributes >> 24) & 0xff;
+
+    record->header_offset[0] = 0;
+    record->header_offset[1] = 0;
+    record->header_offset[2] = 0;
+    record->header_offset[3] = 0;
+
+    return record;
+}
+
