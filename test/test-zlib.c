@@ -5,7 +5,7 @@
 #include "mz-test-utils.h"
 #include "mz-zip.h"
 
-void test_compress (void);
+void test_compress_in_memory (void);
 
 static MzZipHeader *actual_header;
 static MzZipCentralDirectoryRecord *actual_directory_record;
@@ -104,7 +104,7 @@ assert_equal_zip_end_of_central_directory_record (MzZipEndOfCentralDirectoryReco
 }
 
 void
-test_compress (void)
+test_compress_in_memory (void)
 {
     char compressed_data[8192]; /* enough space to store the data */
     const char *raw_data;
