@@ -266,7 +266,6 @@ create_zip_end_of_central_directory_record (MzZipCentralDirectoryRecord *central
 void
 test_compress (void)
 {
-#define BUFFER_SIZE 4096
     char compressed_data[8192]; /* enough space to store the data */
     const char *raw_data;
     const char *expected_compressed_data;
