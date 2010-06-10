@@ -26,7 +26,7 @@ if test "x$GCC" = "xyes"; then
 fi
 
 m4_ifdef([AC_CHECK_CUTTER], [
-AC_CHECK_CUTTER(>= 1.0.6)
+AC_CHECK_CUTTER(>= 1.1.4)
 ],
 [ac_cv_use_cutter="no"])
 AM_CONDITIONAL([WITH_CUTTER], [test "$ac_cv_use_cutter" != "no"])
