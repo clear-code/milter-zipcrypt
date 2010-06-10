@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <zlib.h>
 #include <time.h>
 #include "mz-zip.h"
@@ -297,6 +298,11 @@ mz_zip_compress_into_file (int fd,
         zlib_stream.avail_out = BUFFER_SIZE;
         if (ret == Z_STREAM_END)
             break;
+    }
+
+    if (compressed_data_length > 0) {
+        lseek(fd, offsetof(MzZipHeader, compressed_size), SEEK_SET);
+        written_bytes = write(fd, &compressed_data_length, sizeof(compressed_data_length));
     }
 
     deflateEnd(&zlib_stream);
