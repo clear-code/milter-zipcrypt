@@ -307,8 +307,11 @@ mz_zip_compress_into_file (int fd,
             break;
     }
 
-    memcpy(&header->compressed_size, &compressed_data_length, sizeof(compressed_data_length));
+    lseek(fd, offsetof(MzZipHeader, compressed_size), SEEK_SET);
+    if (!_write_data(fd, &compressed_data_length, sizeof(compressed_data_length), &written_bytes))
+        goto end;
 
+    memcpy(&header->compressed_size, &compressed_data_length, sizeof(compressed_data_length));
     record = mz_zip_create_central_directory_record(filename,
                                                     header,
                                                     file_attributes,
@@ -322,10 +325,6 @@ mz_zip_compress_into_file (int fd,
     if (!end_of_record)
         goto end;
     if (!_write_data(fd, end_of_record, sizeof(*end_of_record), &written_bytes))
-        goto end;
-
-    lseek(fd, offsetof(MzZipHeader, compressed_size), SEEK_SET);
-    if (!_write_data(fd, &compressed_data_length, sizeof(compressed_data_length), &written_bytes))
         goto end;
 
     success = true;
