@@ -6,10 +6,13 @@
 #include "mz-zip.h"
 
 void test_compress_in_memory (void);
+void test_compress_into_file (void);
 
 static MzZipHeader *actual_header;
 static MzZipCentralDirectoryRecord *actual_directory_record;
 static MzZipEndOfCentralDirectoryRecord *actual_end_of_directory_record;
+static int zip_fd;
+static char template[] = "MzTestXXXXXX";
 
 void
 setup (void)
@@ -17,6 +20,7 @@ setup (void)
     actual_header = NULL;
     actual_directory_record = NULL;
     actual_end_of_directory_record = NULL;
+    zip_fd = -1;
     cut_set_fixture_data_dir("fixtures", NULL);
 }
 
@@ -29,6 +33,10 @@ teardown (void)
         free(actual_directory_record);
     if (actual_end_of_directory_record)
         free(actual_end_of_directory_record);
+    if (zip_fd != -1) {
+        close(zip_fd);
+        cut_remove_path(template, NULL);
+    }
 }
 
 #define GET_16BIT_VALUE(x) (((x[0]) & 0xff) | (((x[1]) << 8)))
@@ -171,5 +179,30 @@ test_compress_in_memory (void)
            sizeof(expected_end_of_directory_record));
     assert_equal_zip_end_of_central_directory_record(&expected_end_of_directory_record,
                                                      actual_end_of_directory_record);
+}
+
+void
+test_compress_into_file (void)
+{
+    const char *raw_data;
+    unsigned int raw_data_length;
+    const char *expected_file;
+
+    raw_data = mz_test_utils_load_data("body", &raw_data_length);
+    cut_assert_not_null(raw_data);
+
+    zip_fd = mkstemp(template);
+    cut_assert_errno();
+
+    mz_zip_compress_into_file(zip_fd,
+                              "body",
+                              mz_test_utils_get_file_attributes("body"),
+                              mz_test_utils_get_last_modified_time("body"),
+                              raw_data, raw_data_length);
+    expected_file = cut_build_path(cut_get_test_directory(),
+                                   "fixtures",
+                                   "body.zip",
+                                   NULL);
+    cut_assert_equal_file_raw(expected_file, template);
 }
 

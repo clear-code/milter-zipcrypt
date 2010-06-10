@@ -1,9 +1,24 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <zlib.h>
 #include <time.h>
 #include "mz-zip.h"
+
+static int
+init_z_stream (z_stream *stream)
+{
+    memset(stream, 0, sizeof(*stream));
+    return deflateInit2(stream,
+                        1, /*  We always use fast compression */
+                        Z_DEFLATED,
+                        -14, /* zip on Linux seems to use -14. */
+                        9, /* Use maximum memory for optimal speed.*/
+                        Z_DEFAULT_STRATEGY);
+
+}
 
 unsigned int
 mz_zip_compress_in_memory (const char *data,
@@ -16,13 +31,7 @@ mz_zip_compress_in_memory (const char *data,
     int ret;
     unsigned int compressed_data_length = 0;
 
-    memset(&zlib_stream, 0, sizeof(zlib_stream));
-    ret = deflateInit2(&zlib_stream,
-                       1, /*  We always use fast compression */ 
-                       Z_DEFLATED,
-                       -14, /* zip on Linux seems to use -14. */
-                       9, /* Use maximum memory for optimal speed.*/
-                       Z_DEFAULT_STRATEGY);
+    ret = init_z_stream(&zlib_stream);
 
     zlib_stream.next_in = (Bytef*)data;
     zlib_stream.avail_in = data_length;
@@ -76,6 +85,8 @@ mz_zip_create_header (const char *filename,
     MzZipHeader *header;
 
     header = malloc(sizeof(*header));
+    if (!header)
+        return NULL;
 
     header->signature[0] = 0x50;
     header->signature[1] = 0x4b;
@@ -138,6 +149,8 @@ mz_zip_create_central_directory_record (const char *filename,
     unsigned short extra_field_length;
 
     record = malloc(sizeof(*record));
+    if (!record)
+        return NULL;
 
     record->signature[0] = 0x50;
     record->signature[1] = 0x4b;
@@ -189,6 +202,8 @@ mz_zip_create_end_of_central_directory_record (MzZipCentralDirectoryRecord *cent
     unsigned short central_record_length;
 
     record = malloc(sizeof(*record));
+    if (!record)
+        return NULL;
 
     record->signature[0] = 0x50;
     record->signature[1] = 0x4b;
@@ -223,5 +238,65 @@ mz_zip_create_end_of_central_directory_record (MzZipCentralDirectoryRecord *cent
     record->comment_length[1] = 0;
 
     return record;
+}
+
+unsigned int
+mz_zip_compress_into_file (int fd,
+                           const char *filename,
+                           int file_attributes,
+                           time_t last_modified_time,
+                           const char *data,
+                           unsigned int data_length)
+{
+    char compressed_data[BUFFER_SIZE];
+    z_stream zlib_stream;
+    int ret;
+    ssize_t written_bytes;
+    unsigned int compressed_data_length = 0;
+    MzZipHeader *header;
+
+    header = mz_zip_create_header(filename,
+                                  data,
+                                  data_length,
+                                  file_attributes,
+                                  0); /* compressed_size will be replaced later. */
+    if (!header)
+        return -1;
+
+    written_bytes = write(fd, header, sizeof(*header));
+    free(header);
+    if (written_bytes != sizeof(*header))
+        return -1;
+
+    ret = init_z_stream(&zlib_stream);
+
+    zlib_stream.next_in = (Bytef*)data;
+    zlib_stream.avail_in = data_length;
+
+    zlib_stream.next_out = (Bytef*)compressed_data;
+    zlib_stream.avail_out = BUFFER_SIZE;
+
+    while (ret  == Z_OK || ret == Z_STREAM_END) {
+        unsigned int compressed_bytes;
+
+        ret = deflate(&zlib_stream, Z_FINISH);
+
+        compressed_bytes = BUFFER_SIZE - zlib_stream.avail_out;
+        written_bytes = write(fd, compressed_data, compressed_bytes);
+        if (written_bytes != compressed_bytes) {
+            compressed_data_length = -1;
+            break;
+        }
+
+        compressed_data_length += written_bytes;
+        zlib_stream.next_out = (Bytef*)compressed_data;
+        zlib_stream.avail_out = BUFFER_SIZE;
+        if (ret == Z_STREAM_END)
+            break;
+    }
+
+    deflateEnd(&zlib_stream);
+
+    return compressed_data_length;
 }
 

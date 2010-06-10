@@ -77,5 +77,13 @@ MzZipEndOfCentralDirectoryRecord *
             mz_zip_create_end_of_central_directory_record
                                   (MzZipCentralDirectoryRecord *central_record);
 
+unsigned int mz_zip_compress_into_file
+                                  (int fd,
+                                   const char *filename,
+                                   int file_attributes,
+                                   time_t last_modified_time,
+                                   const char *data,
+                                   unsigned int data_length);
+
 #endif /* __MZ_ZIP_H__ */
 
