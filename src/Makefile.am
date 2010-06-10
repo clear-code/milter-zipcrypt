@@ -20,7 +20,9 @@ libmilter_zipcrypt_la_SOURCES =	\
 	mz-attachment.h		\
 	mz-attachment.c		\
 	mz-base64.h		\
-	mz-base64.c		\
+	mz-base64.h		\
+	mz-list.c		\
+	mz-list.c		\
 	mz-quoted-printable.h	\
 	mz-quoted-printable.c	\
 	mz-mime-private.h	\
