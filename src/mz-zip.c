@@ -268,6 +268,10 @@ mz_zip_compress_into_file (int fd,
     if (written_bytes != sizeof(*header))
         return -1;
 
+    written_bytes = write(fd, filename, strlen(filename));
+    if (written_bytes != strlen(filename))
+        return -1;
+
     ret = init_z_stream(&zlib_stream);
 
     zlib_stream.next_in = (Bytef*)data;
