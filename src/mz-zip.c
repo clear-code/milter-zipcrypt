@@ -80,7 +80,6 @@ mz_zip_create_header (const char *filename,
                       time_t last_modified_time,
                       unsigned int compressed_size)
 {
-    unsigned short extra_field_length;
     unsigned short msdos_time, msdos_date;
     unsigned short filename_length;
     uLong crc;
@@ -133,9 +132,8 @@ mz_zip_create_header (const char *filename,
     header->filename_length[0] = filename_length & 0xff;
     header->filename_length[1] = (filename_length >> 8) & 0xff;
 
-    extra_field_length = 28;
-    header->extra_field_length[0] = extra_field_length & 0xff;
-    header->extra_field_length[1] = (extra_field_length >> 8) & 0xff;
+    header->extra_field_length[0] = 0;
+    header->extra_field_length[1] = 0;
 
     return header;
 }
@@ -148,7 +146,6 @@ mz_zip_create_central_directory_record (const char *filename,
 {
     MzZipCentralDirectoryRecord *record;
     void *dest, *src;
-    unsigned short extra_field_length;
 
     record = malloc(sizeof(*record));
     if (!record)
@@ -168,9 +165,8 @@ mz_zip_create_central_directory_record (const char *filename,
     src += 4;
     memcpy(dest, src, sizeof(*header) - 4);
 
-    extra_field_length = 24;
-    record->extra_field_length[0] = extra_field_length & 0xff;
-    record->extra_field_length[1] = (extra_field_length >> 8) & 0xff;
+    record->extra_field_length[0] = 0;
+    record->extra_field_length[1] = 0;
 
     record->file_comment_length[0] = 0;
     record->file_comment_length[1] = 0;
