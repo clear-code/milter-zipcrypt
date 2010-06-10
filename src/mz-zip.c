@@ -258,7 +258,7 @@ mz_zip_compress_into_file (int fd,
     header = mz_zip_create_header(filename,
                                   data,
                                   data_length,
-                                  file_attributes,
+                                  last_modified_time,
                                   0); /* compressed_size will be replaced later. */
     if (!header)
         return -1;
