@@ -227,6 +227,8 @@ mz_zip_create_end_of_central_directory_record (MzZipCentralDirectoryRecord *cent
 
     record->entry_size[0] = central_record_length & 0xff;
     record->entry_size[1] = (central_record_length >> 8) & 0xff;
+    record->entry_size[2] = (central_record_length >> 16) & 0xff;
+    record->entry_size[3] = (central_record_length >> 24) & 0xff;
 
     record->offset[0] = central_directory_record_start_pos & 0xff;
     record->offset[1] = (central_directory_record_start_pos >> 8) & 0xff;

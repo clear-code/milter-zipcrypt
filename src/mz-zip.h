@@ -52,7 +52,7 @@ struct _MzZipEndOfCentralDirectoryRecord
     unsigned char start_disk_num[2];
     unsigned char total_disk_num[2];
     unsigned char total_entry_num[2];
-    unsigned char entry_size[2];
+    unsigned char entry_size[4];
     unsigned char offset[4];
     unsigned char comment_length[2];
 };
