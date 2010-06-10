@@ -199,6 +199,9 @@ test_compress_into_file (void)
                               mz_test_utils_get_file_attributes("body"),
                               mz_test_utils_get_last_modified_time("body"),
                               raw_data, raw_data_length);
+    close(zip_fd);
+    zip_fd = -1;
+
     expected_file = cut_build_path(cut_get_test_directory(),
                                    "fixtures",
                                    "body.zip",
