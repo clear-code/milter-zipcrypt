@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include <zlib.h>
 #include <time.h>
 #include "mz-zip.h"
@@ -252,9 +253,10 @@ mz_zip_compress_into_file (int fd,
     char compressed_data[BUFFER_SIZE];
     z_stream zlib_stream;
     int ret;
+    bool success = false;
     ssize_t written_bytes;
     unsigned int compressed_data_length = 0;
-    MzZipHeader *header;
+    MzZipHeader *header = NULL;
 
     header = mz_zip_create_header(filename,
                                   data,
@@ -265,13 +267,12 @@ mz_zip_compress_into_file (int fd,
         return -1;
 
     written_bytes = write(fd, header, sizeof(*header));
-    free(header);
     if (written_bytes != sizeof(*header))
-        return -1;
+        goto end;
 
     written_bytes = write(fd, filename, strlen(filename));
     if (written_bytes != strlen(filename))
-        return -1;
+        goto end;
 
     ret = init_z_stream(&zlib_stream);
 
@@ -281,6 +282,8 @@ mz_zip_compress_into_file (int fd,
     zlib_stream.next_out = (Bytef*)compressed_data;
     zlib_stream.avail_out = BUFFER_SIZE;
 
+    compressed_data_length = 0;
+
     while (ret  == Z_OK || ret == Z_STREAM_END) {
         unsigned int compressed_bytes;
 
@@ -288,10 +291,8 @@ mz_zip_compress_into_file (int fd,
 
         compressed_bytes = BUFFER_SIZE - zlib_stream.avail_out;
         written_bytes = write(fd, compressed_data, compressed_bytes);
-        if (written_bytes != compressed_bytes) {
-            compressed_data_length = -1;
-            break;
-        }
+        if (written_bytes != compressed_bytes)
+            goto end;
 
         compressed_data_length += written_bytes;
         zlib_stream.next_out = (Bytef*)compressed_data;
@@ -300,13 +301,17 @@ mz_zip_compress_into_file (int fd,
             break;
     }
 
-    if (compressed_data_length > 0) {
-        lseek(fd, offsetof(MzZipHeader, compressed_size), SEEK_SET);
-        written_bytes = write(fd, &compressed_data_length, sizeof(compressed_data_length));
-    }
+    lseek(fd, offsetof(MzZipHeader, compressed_size), SEEK_SET);
+    written_bytes = write(fd, &compressed_data_length, sizeof(compressed_data_length));
+
+    success = true;
+
+end:
+    if (header)
+        free(header);
 
     deflateEnd(&zlib_stream);
 
-    return compressed_data_length;
+    return success ? compressed_data_length : -1;
 }
 
