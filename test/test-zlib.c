@@ -1,6 +1,7 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 #include <cutter.h>
 #include <zlib.h>
+#include <errno.h>
 
 #include "mz-test-utils.h"
 #include "mz-zip.h"
@@ -35,8 +36,8 @@ teardown (void)
         free(actual_end_of_directory_record);
     if (zip_fd != -1) {
         close(zip_fd);
-        cut_remove_path(template, NULL);
     }
+    cut_remove_path(template, NULL);
 }
 
 #define GET_16BIT_VALUE(x) (((x[0]) & 0xff) | (((x[1]) << 8)))
@@ -194,6 +195,7 @@ test_compress_into_file (void)
     raw_data = mz_test_utils_load_data("body", &raw_data_length);
     cut_assert_not_null(raw_data);
 
+    errno = 0;
     zip_fd = mkstemp(template);
     cut_assert_errno();
 
