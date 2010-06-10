@@ -321,6 +321,8 @@ mz_zip_compress_into_file (int fd,
     central_directory_record_start_pos = lseek(fd, 0, SEEK_END);
     if (!_write_data(fd, record, sizeof(*record), &written_bytes))
         goto end;
+    if (!_write_data(fd, (void*)filename, strlen(filename), &written_bytes))
+        goto end;
 
     end_of_record = mz_zip_create_end_of_central_directory_record(record,
                                                                   central_directory_record_start_pos);
