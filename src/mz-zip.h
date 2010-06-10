@@ -75,7 +75,8 @@ MzZipCentralDirectoryRecord *
                                    int data_type);
 MzZipEndOfCentralDirectoryRecord *
             mz_zip_create_end_of_central_directory_record
-                                  (MzZipCentralDirectoryRecord *central_record);
+                                  (MzZipCentralDirectoryRecord *central_record,
+                                   unsigned int central_directory_record_start_pos);
 
 unsigned int mz_zip_compress_into_file
                                   (int fd,

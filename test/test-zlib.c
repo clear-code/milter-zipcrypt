@@ -173,7 +173,10 @@ test_compress_in_memory (void)
     expected_compressed_data += GET_16BIT_VALUE(expected_directory_record.filename_length);
     expected_compressed_data += GET_16BIT_VALUE(expected_directory_record.extra_field_length);
 
-    actual_end_of_directory_record = mz_zip_create_end_of_central_directory_record(actual_directory_record);
+    actual_end_of_directory_record = mz_zip_create_end_of_central_directory_record(actual_directory_record,
+                                                                                   compressed_data_length +
+                                                                                   sizeof(*actual_header) +
+                                                                                   strlen("body"));
     memcpy(&expected_end_of_directory_record,
            expected_compressed_data,
            sizeof(expected_end_of_directory_record));

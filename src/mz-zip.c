@@ -194,7 +194,8 @@ mz_zip_create_central_directory_record (const char *filename,
 #define GET_32BIT_VALUE(x) (((x[0]) & 0xff) | (((x[1]) << 8)) | (((x[2] << 16)) | (((x[3]) << 24))))
 
 MzZipEndOfCentralDirectoryRecord *
-mz_zip_create_end_of_central_directory_record (MzZipCentralDirectoryRecord *central_record)
+mz_zip_create_end_of_central_directory_record (MzZipCentralDirectoryRecord *central_record,
+                                               unsigned int central_directory_record_start_pos)
 {
     MzZipEndOfCentralDirectoryRecord *record;
     unsigned short central_record_length;
@@ -227,10 +228,10 @@ mz_zip_create_end_of_central_directory_record (MzZipCentralDirectoryRecord *cent
     record->entry_size[0] = central_record_length & 0xff;
     record->entry_size[1] = (central_record_length >> 8) & 0xff;
 
-    record->offset[0] = 0;
-    record->offset[1] = 0;
-    record->offset[2] = 0xa0;
-    record->offset[3] = 0x12;
+    record->offset[0] = central_directory_record_start_pos & 0xff;
+    record->offset[1] = (central_directory_record_start_pos >> 8) & 0xff;
+    record->offset[2] = (central_directory_record_start_pos >> 16) & 0xff;
+    record->offset[3] = (central_directory_record_start_pos >> 24) & 0xff;
 
     record->comment_length[0] = 0;
     record->comment_length[1] = 0;
@@ -259,6 +260,7 @@ mz_zip_compress_into_file (int fd,
     bool success = false;
     ssize_t written_bytes;
     unsigned int compressed_data_length = 0;
+    off_t central_directory_record_start_pos;
     MzZipHeader *header = NULL;
     MzZipCentralDirectoryRecord *record = NULL;
     MzZipEndOfCentralDirectoryRecord *end_of_record = NULL;
@@ -314,11 +316,12 @@ mz_zip_compress_into_file (int fd,
                                                     zlib_stream.data_type);
     if (!record)
         goto end;
-    lseek(fd, 0, SEEK_END);
+    central_directory_record_start_pos = lseek(fd, 0, SEEK_END);
     if (!_write_data(fd, record, sizeof(*record), &written_bytes))
         goto end;
 
-    end_of_record = mz_zip_create_end_of_central_directory_record(record);
+    end_of_record = mz_zip_create_end_of_central_directory_record(record,
+                                                                  central_directory_record_start_pos);
     if (!end_of_record)
         goto end;
     if (!_write_data(fd, end_of_record, sizeof(*end_of_record), &written_bytes))
