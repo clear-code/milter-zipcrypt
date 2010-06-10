@@ -19,7 +19,7 @@ milter_zipcrypt_LDADD =		\
 libmilter_zipcrypt_la_SOURCES =	\
 	mz-attachment.h		\
 	mz-attachment.c		\
-	mz-base64.h		\
+	mz-base64.c		\
 	mz-base64.h		\
 	mz-list.c		\
 	mz-list.h		\
