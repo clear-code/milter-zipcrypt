@@ -318,6 +318,7 @@ mz_zip_compress_into_file (int fd,
                                                     zlib_stream.data_type);
     if (!record)
         goto end;
+    lseek(fd, 0, SEEK_END);
     if (!_write_data(fd, record, sizeof(*record), &written_bytes))
         goto end;
 
