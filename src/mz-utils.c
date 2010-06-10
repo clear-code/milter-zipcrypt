@@ -285,10 +285,10 @@ mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size)
     return body;
 }
 
-MzAttachments *
+MzList *
 mz_utils_extract_attachments (const char *body, const char *boundary)
 {
-    MzAttachments *attachments = NULL;
+    MzList *attachments = NULL;
     char *boundary_line;
     const char *p;
     unsigned int boundary_line_length;
@@ -325,8 +325,8 @@ mz_utils_extract_attachments (const char *body, const char *boundary)
             attachment = mz_utils_get_decoded_attachment_body(start_boundary, &length);
 
             if (attachment) {
-                attachments = mz_attachments_append(attachments,
-                                                    mz_attachment_new(charset, filename, attachment, length));
+                attachments = mz_list_append(attachments,
+                                             mz_attachment_new(charset, filename, attachment, length));
             }
         }
         free(type);

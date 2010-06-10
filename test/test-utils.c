@@ -4,6 +4,7 @@
 #include "mz-utils.h"
 #include "mz-attachment.h"
 #include "mz-test-utils.h"
+#include "mz-list.h"
 
 void test_get_content_type (void);
 void test_get_content_transfer_encoding (void);
@@ -15,7 +16,7 @@ void test_get_content_disposition_mime_encoded_filename (void);
 void test_get_rfc2311_filename (void);
 void test_extract_attachments (void);
 
-static MzAttachments *actual_attachments;
+static MzList *actual_attachments;
 
 void
 setup (void)
@@ -27,7 +28,7 @@ setup (void)
 void
 teardown (void)
 {
-    mz_attachments_free(actual_attachments);
+    mz_list_free(actual_attachments);
 }
 
 void
@@ -210,8 +211,8 @@ test_extract_attachments (void)
     actual_attachments = mz_utils_extract_attachments(body, "=-u231oNe9VILCVd42q7nh");
     cut_assert_not_null(actual_attachments);
 
-    /* The first MzAttachmens is mail body itself so skip it. */
-    actual = mz_attachments_next(actual_attachments)->attachment;
+    /* The first MzList data is mail body itself so skip it. */
+    actual = mz_list_next(actual_attachments)->data;
 
     assert_equal_attachment (&expected, actual);
 }

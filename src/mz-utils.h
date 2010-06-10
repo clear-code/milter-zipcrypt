@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 #include "mz-attachment.h"
+#include "mz-list.h"
 
 char *mz_utils_get_content_type (const char *contents);
 char *mz_utils_get_content_transfer_encoding (const char *contents);
@@ -16,7 +17,7 @@ bool  mz_utils_get_content_disposition (const char *contents,
 const char *mz_utils_get_attachment_body_place (const char *contents, unsigned int *size);
 const char *mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size);
 
-MzAttachments *mz_utils_extract_attachments (const char *body, const char *boundary);
+MzList *mz_utils_extract_attachments (const char *body, const char *boundary);
 
 #endif /* __MZ_UTILS_H__ */
 
