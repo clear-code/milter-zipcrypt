@@ -242,6 +242,13 @@ mz_zip_create_end_of_central_directory_record (MzZipCentralDirectoryRecord *cent
     return record;
 }
 
+static bool
+_write_data (int fd, void *data, size_t data_size, ssize_t *written_size)
+{
+    *written_size = write(fd, data, data_size);
+    return (*written_size != data_size);
+}
+
 unsigned int
 mz_zip_compress_into_file (int fd,
                            const char *filename,
@@ -266,12 +273,10 @@ mz_zip_compress_into_file (int fd,
     if (!header)
         return -1;
 
-    written_bytes = write(fd, header, sizeof(*header));
-    if (written_bytes != sizeof(*header))
+    if (!_write_data(fd, header, sizeof(*header), &written_bytes))
         goto end;
 
-    written_bytes = write(fd, filename, strlen(filename));
-    if (written_bytes != strlen(filename))
+    if (!_write_data(fd, (void*)filename, strlen(filename), &written_bytes))
         goto end;
 
     ret = init_z_stream(&zlib_stream);
@@ -290,8 +295,7 @@ mz_zip_compress_into_file (int fd,
         ret = deflate(&zlib_stream, Z_FINISH);
 
         compressed_bytes = BUFFER_SIZE - zlib_stream.avail_out;
-        written_bytes = write(fd, compressed_data, compressed_bytes);
-        if (written_bytes != compressed_bytes)
+        if (!_write_data(fd, compressed_data, compressed_bytes, &written_bytes))
             goto end;
 
         compressed_data_length += written_bytes;
@@ -302,7 +306,8 @@ mz_zip_compress_into_file (int fd,
     }
 
     lseek(fd, offsetof(MzZipHeader, compressed_size), SEEK_SET);
-    written_bytes = write(fd, &compressed_data_length, sizeof(compressed_data_length));
+    if (!_write_data(fd, &compressed_data_length, sizeof(compressed_data_length), &written_bytes))
+        goto end;
 
     success = true;
 
