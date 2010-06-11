@@ -17,6 +17,7 @@ struct _MzZipStream
     MzZipHeader *current_header;
     unsigned int written_header_bytes;
     bool written_header;
+    unsigned int data_size;
 };
 
 static int
@@ -475,6 +476,7 @@ mz_zip_stream_start_compress_file (MzZipStream *zip,
     zip->current_header = header;
     zip->written_header = false;
     zip->written_header_bytes = 0;
+    zip->data_size = 0;
 
     return true;
 }
@@ -517,6 +519,7 @@ mz_zip_stream_compress_step (MzZipStream  *zip,
 
     *written_size = output_buffer_size - zip->zlib_stream.avail_out;
     *processed_size = input_buffer_size - zip->zlib_stream.avail_in;
+    zip->data_size += *processed_size;
 
     return ((ret == Z_STREAM_END) || (ret == Z_OK));
 }
