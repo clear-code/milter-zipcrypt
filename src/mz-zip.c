@@ -158,7 +158,7 @@ mz_zip_create_central_directory_record (const char *filename,
     record->signature[3] = 0x02;
 
     record->made_version[0] = 0x1e;
-    record->made_version[1] = 0x03;
+    record->made_version[1] = 0x03; /* UNIX */
 
     dest = record;
     dest += 6;
