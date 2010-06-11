@@ -15,7 +15,7 @@ init_z_stream (z_stream *stream)
 {
     memset(stream, 0, sizeof(*stream));
     return deflateInit2(stream,
-                        1, /*  We always use fast compression */
+                        Z_BEST_SPEED, /*  We always use fast compression */
                         Z_DEFLATED,
                         -14, /* zip on Linux seems to use -14. */
                         9, /* Use maximum memory for optimal speed.*/
