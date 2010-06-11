@@ -402,6 +402,8 @@ end:
         mz_list_free_with_free_func(headers, free);
     if (central_records)
         mz_list_free_with_free_func(central_records, free);
+    if (end_of_record)
+        free(end_of_record);
 
     deflateEnd(&zlib_stream);
 
