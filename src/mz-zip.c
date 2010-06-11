@@ -83,7 +83,6 @@ mz_zip_create_header (const char *filename,
 {
     unsigned short msdos_time, msdos_date;
     unsigned short filename_length;
-    uLong crc;
     MzZipHeader *header;
 
     header = malloc(sizeof(*header));
@@ -101,6 +100,22 @@ mz_zip_create_header (const char *filename,
     header->flags[0] = 0x04; /* Fast compression mode */
     header->flags[1] = 0x00;
 
+    if (data_length == 0) { /* for stream data */
+        header->flags[0] |= (1 << 3);
+        header->crc[0] = 0;
+        header->crc[1] = 0;
+        header->crc[2] = 0;
+        header->crc[3] = 0;
+    } else {
+        uLong crc;
+        crc = crc32(0, NULL, 0);
+        crc = crc32(crc, (unsigned char*)data, data_length);
+        header->crc[0] = crc & 0xff;
+        header->crc[1] = (crc >> 8) & 0xff;
+        header->crc[2] = (crc >> 16) & 0xff;
+        header->crc[3] = (crc >> 24) & 0xff;
+    }
+
     header->compression_method[0] = Z_DEFLATED & 0xff;
     header->compression_method[1] = (Z_DEFLATED >> 8) & 0xff;
 
@@ -111,13 +126,6 @@ mz_zip_create_header (const char *filename,
 
     header->last_modified_date[0] = msdos_date & 0xff;
     header->last_modified_date[1] = (msdos_date >> 8) & 0xff;
-
-    crc = crc32(0, NULL, 0);
-    crc = crc32(crc, (unsigned char*)data, data_length);
-    header->crc[0] = crc & 0xff;
-    header->crc[1] = (crc >> 8) & 0xff;
-    header->crc[2] = (crc >> 16) & 0xff;
-    header->crc[3] = (crc >> 24) & 0xff;
 
     header->compressed_size[0] = compressed_size & 0xff;
     header->compressed_size[1] = (compressed_size >> 8) & 0xff;
@@ -137,6 +145,17 @@ mz_zip_create_header (const char *filename,
     header->extra_field_length[1] = 0;
 
     return header;
+}
+
+static MzZipHeader *
+mz_zip_create_stream_header (const char *filename,
+                             const char *data,
+                             time_t last_modified_time)
+{
+    return mz_zip_create_header(filename,
+                                data, 0,
+                                last_modified_time, 0);
+
 }
 
 MzZipCentralDirectoryRecord *
