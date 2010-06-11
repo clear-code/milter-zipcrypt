@@ -330,7 +330,6 @@ mz_zip_compress_attachments (int fd, MzList *attachments)
     off_t central_record_start_pos = 0;
     MzList *headers = NULL;
     MzList *central_records = NULL;
-    MzList *filenames = NULL;
     MzList *node;
     MzZipEndOfCentralDirectoryRecord *end_of_record = NULL;
     MzList *first_attachments;
@@ -367,16 +366,18 @@ mz_zip_compress_attachments (int fd, MzList *attachments)
         headers = mz_list_append(headers, header);
         central_records = mz_list_append(central_records, central_record);
         attachments = mz_list_next(attachments);
-        filenames = mz_list_append(filenames, attachment->filename);
         if (attachments)
             deflateReset(&zlib_stream);
     }
 
     central_record_start_pos = lseek(fd, 0, SEEK_CUR);
 
-    for (node = central_records; node; node = mz_list_next(node)) {
+    for (attachments = first_attachments, node = central_records;
+         node;
+         node = mz_list_next(node), attachments = mz_list_next(attachments)) {
         MzZipCentralDirectoryRecord *record = central_records->data;
-        const char *filename = filenames->data;
+        MzAttachment *attachment = attachments->data;
+        const char *filename = attachment->filename;
 
         if (!_write_data(fd, record, sizeof(*record), &written_bytes))
             goto end;
@@ -385,7 +386,6 @@ mz_zip_compress_attachments (int fd, MzList *attachments)
         central_records_length += sizeof(*record) +
                                   GET_16BIT_VALUE(record->filename_length) +
                                   GET_16BIT_VALUE(record->extra_field_length);
-        filenames = mz_list_next(filenames);
     }
 
     end_of_record = mz_zip_create_end_of_central_directory_record(central_records_length,
