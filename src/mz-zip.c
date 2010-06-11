@@ -10,6 +10,15 @@
 #include "mz-zip.h"
 #include "mz-attachment.h"
 
+struct _MzZipStream
+{
+    z_stream zlib_stream;
+    MzList *headers;
+    MzZipHeader *current_header;
+    unsigned int written_header_bytes;
+    bool written_header;
+};
+
 static int
 init_z_stream (z_stream *stream)
 {
@@ -100,7 +109,7 @@ mz_zip_create_header (const char *filename,
     header->flags[0] = 0x04; /* Fast compression mode */
     header->flags[1] = 0x00;
 
-    if (data_length == 0) { /* for stream data */
+    if (!data && data_length == 0) { /* for stream data */
         header->flags[0] |= (1 << 3);
         header->crc[0] = 0;
         header->crc[1] = 0;
@@ -148,13 +157,12 @@ mz_zip_create_header (const char *filename,
 }
 
 static MzZipHeader *
-mz_zip_create_stream_header (const char *filename,
-                             const char *data,
-                             time_t last_modified_time)
+mz_zip_create_stream_header (const char *filename)
 {
     return mz_zip_create_header(filename,
-                                data, 0,
-                                last_modified_time, 0);
+                                NULL, 0,
+                                0,
+                                0);
 
 }
 
@@ -427,5 +435,89 @@ end:
     deflateEnd(&zlib_stream);
 
     return success ? compressed_data_length : -1;
+}
+
+MzZipStream *
+mz_zip_stream_init (void)
+{
+    MzZipStream *zip;
+
+    zip = malloc(sizeof(*zip));
+    if (!zip)
+        return NULL;
+
+    zip->headers = NULL;
+    zip->current_header = NULL;
+    zip->written_header_bytes = 0;
+    zip->written_header = false;
+    if (init_z_stream(&zip->zlib_stream) != Z_OK) {
+        free(zip);
+        return NULL;
+    }
+
+    return zip;
+}
+
+bool
+mz_zip_stream_start_compress_file (MzZipStream *zip,
+                                   const char  *filename)
+{
+    MzZipHeader *header;
+
+    if (!zip)
+        return false;
+
+    header = mz_zip_create_stream_header(filename);
+    if (!header)
+        return false;
+
+    zip->headers = mz_list_append(zip->headers, header);
+    zip->current_header = header;
+    zip->written_header = false;
+    zip->written_header_bytes = 0;
+
+    return true;
+}
+
+#ifndef MIN
+#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
+#endif
+bool
+mz_zip_stream_compress_step (MzZipStream  *zip,
+                             const char   *input_buffer,
+                             unsigned int  input_buffer_size,
+                             char          *output_buffer,
+                             unsigned int  output_buffer_size,
+                             unsigned int *processed_size,
+                             unsigned int *written_size)
+{
+    int ret;
+
+    if (!zip->written_header) {
+
+        *written_size = MIN(output_buffer_size, sizeof(*zip->current_header) - zip->written_header_bytes);
+        memcpy(output_buffer,
+               zip->current_header + zip->written_header_bytes,
+               *written_size);
+
+        *processed_size = 0;
+        zip->written_header_bytes += *written_size;
+        if (zip->written_header_bytes == sizeof(*zip->current_header))
+            zip->written_header = true;
+
+        return true;
+    }
+
+    zip->zlib_stream.next_in = (Bytef*)input_buffer;
+    zip->zlib_stream.avail_in = input_buffer_size;
+    zip->zlib_stream.next_out = (Bytef*)output_buffer;
+    zip->zlib_stream.avail_out = output_buffer_size;
+
+    ret = deflate(&zip->zlib_stream, Z_FINISH);
+
+    *written_size = output_buffer_size - zip->zlib_stream.avail_out;
+    *processed_size = input_buffer_size - zip->zlib_stream.avail_in;
+
+    return ((ret == Z_STREAM_END) || (ret == Z_OK));
 }
 

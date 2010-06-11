@@ -3,6 +3,9 @@
 #define __MZ_ZIP_H__
 
 #include "mz-list.h"
+#include <stdbool.h>
+
+typedef struct _MzZipStream MzZipStream;
 
 typedef struct _MzZipHeader MzZipHeader;
 
@@ -83,6 +86,18 @@ MzZipEndOfCentralDirectoryRecord *
 unsigned int mz_zip_compress_attachments
                                   (int fd,
                                    MzList *attachments);
+
+MzZipStream *mz_zip_stream_init (void);
+bool         mz_zip_stream_start_compress_file (MzZipStream *zip,
+                                                const char  *filename);
+bool         mz_zip_stream_compress_step       (MzZipStream  *zip,
+                                                const char   *input_buffer,
+                                                unsigned int  input_buffer_size,
+                                                char         *output_buffer,
+                                                unsigned int  output_buffer_size,
+                                                unsigned int *processed_size,
+                                                unsigned int *written_size);
+bool         mz_zip_stream_end_compress_file   (MzZipStream *zip);
 
 #endif /* __MZ_ZIP_H__ */
 

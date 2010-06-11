@@ -6,6 +6,7 @@ noinst_LTLIBRARIES =		\
 	libmz_test_utils.la	\
 	test_base64.la		\
 	test_utils.la		\
+	test_zip_stream.la	\
 	test_zlib.la
 endif
 
@@ -44,6 +45,10 @@ test_base64_la_LIBADD =					\
 
 test_zlib_la_SOURCES = test-zlib.c
 test_zlib_la_LIBADD =					\
+	$(top_builddir)/test/libmz_test_utils.la
+
+test_zip_stream_la_SOURCES = test-zip-stream.c
+test_zip_stream_la_LIBADD =				\
 	$(top_builddir)/test/libmz_test_utils.la
 
 echo-cutter:
