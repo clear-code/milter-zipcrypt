@@ -32,6 +32,8 @@ mz_attachment_new (const char *charset,
     attachment->filename = attachment_filename;
     attachment->data = data;
     attachment->data_length = data_length;
+    attachment->last_modified_time = 0;
+    attachment->file_attributes = 0;
 
     return attachment;
 

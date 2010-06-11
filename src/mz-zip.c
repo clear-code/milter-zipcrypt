@@ -8,6 +8,7 @@
 #include <zlib.h>
 #include <time.h>
 #include "mz-zip.h"
+#include "mz-attachment.h"
 
 static int
 init_z_stream (z_stream *stream)
@@ -194,11 +195,10 @@ mz_zip_create_central_directory_record (const char *filename,
 #define GET_32BIT_VALUE(x) (((x[0]) & 0xff) | (((x[1]) << 8)) | (((x[2] << 16)) | (((x[3]) << 24))))
 
 MzZipEndOfCentralDirectoryRecord *
-mz_zip_create_end_of_central_directory_record (MzZipCentralDirectoryRecord *central_record,
+mz_zip_create_end_of_central_directory_record (unsigned int central_directory_records_length,
                                                unsigned int central_directory_record_start_pos)
 {
     MzZipEndOfCentralDirectoryRecord *record;
-    unsigned short central_record_length;
 
     record = malloc(sizeof(*record));
     if (!record)
@@ -221,14 +221,10 @@ mz_zip_create_end_of_central_directory_record (MzZipCentralDirectoryRecord *cent
     record->total_entry_num[0] = 0x01;
     record->total_entry_num[1] = 0;
 
-    central_record_length = sizeof(*central_record) +
-                            GET_16BIT_VALUE(central_record->filename_length) +
-                            GET_16BIT_VALUE(central_record->extra_field_length);
-
-    record->entry_size[0] = central_record_length & 0xff;
-    record->entry_size[1] = (central_record_length >> 8) & 0xff;
-    record->entry_size[2] = (central_record_length >> 16) & 0xff;
-    record->entry_size[3] = (central_record_length >> 24) & 0xff;
+    record->entry_size[0] = central_directory_records_length & 0xff;
+    record->entry_size[1] = (central_directory_records_length >> 8) & 0xff;
+    record->entry_size[2] = (central_directory_records_length >> 16) & 0xff;
+    record->entry_size[3] = (central_directory_records_length >> 24) & 0xff;
 
     record->offset[0] = central_directory_record_start_pos & 0xff;
     record->offset[1] = (central_directory_record_start_pos >> 8) & 0xff;
@@ -248,84 +244,152 @@ _write_data (int fd, void *data, size_t data_size, ssize_t *written_size)
     return (*written_size == data_size);
 }
 
-unsigned int
-mz_zip_compress_into_file (int fd,
-                           const char *filename,
-                           int file_attributes,
-                           time_t last_modified_time,
-                           const char *data,
-                           unsigned int data_length)
+static MzZipHeader *
+create_zip_header_from_attachment (MzAttachment *attachment)
 {
-    char compressed_data[BUFFER_SIZE];
+    return mz_zip_create_header(attachment->filename,
+                                attachment->data,
+                                attachment->data_length,
+                                attachment->last_modified_time, /* Should set current time? */
+                                0); /* compressed_size will be replaced later. */
+}
+
+MzZipHeader *
+_compress_attachment (int fd,
+                      z_stream *zlib_stream,
+                      MzAttachment *attachment,
+                      unsigned int *compressed_size)
+{
+    unsigned int compressed_data_length = 0;
+    MzZipHeader *header = NULL;
+    ssize_t written_bytes;
+    off_t header_pos = 0;
+    bool success = false;
+    int ret = Z_OK;
+
+    header = create_zip_header_from_attachment(attachment);
+    if (!header)
+        return NULL;
+
+    /* We need current file postition to store compressed size later. */
+    header_pos = lseek(fd, 0, SEEK_CUR);
+    if (!_write_data(fd, header, sizeof(*header), &written_bytes))
+        goto end;
+    if (!_write_data(fd, (void*)attachment->filename, strlen(attachment->filename), &written_bytes))
+        goto end;
+
+    zlib_stream->next_in = (Bytef*)attachment->data;
+    zlib_stream->avail_in = attachment->data_length;
+
+    while (ret  == Z_OK || ret == Z_STREAM_END) {
+        char compressed_data[BUFFER_SIZE];
+        unsigned int compressed_bytes;
+
+        zlib_stream->next_out = (Bytef*)compressed_data;
+        zlib_stream->avail_out = BUFFER_SIZE;
+
+        ret = deflate(zlib_stream, Z_FINISH);
+
+        compressed_bytes = BUFFER_SIZE - zlib_stream->avail_out;
+        if (!_write_data(fd, compressed_data, compressed_bytes, &written_bytes))
+            goto end;
+
+        compressed_data_length += written_bytes;
+        if (ret == Z_STREAM_END)
+            break;
+    }
+
+    lseek(fd, header_pos + offsetof(MzZipHeader, compressed_size), SEEK_SET);
+    if (!_write_data(fd, &compressed_data_length, sizeof(compressed_data_length), &written_bytes))
+        goto end;
+
+    memcpy(&header->compressed_size, &compressed_data_length, sizeof(compressed_data_length));
+    lseek(fd, 0, SEEK_END);
+
+    success = true;
+end:
+
+    if (!success) {
+        if (header)
+            free(header);
+        header = NULL;
+    }
+
+    return header;
+}
+
+unsigned int
+mz_zip_compress_attachments (int fd, MzList *attachments)
+{
     z_stream zlib_stream;
     int ret;
     bool success = false;
     ssize_t written_bytes;
     unsigned int compressed_data_length = 0;
-    off_t central_directory_record_start_pos;
-    MzZipHeader *header = NULL;
-    MzZipCentralDirectoryRecord *record = NULL;
+    unsigned int central_records_length = 0;
+    off_t central_record_start_pos = 0;
+    MzList *headers = NULL;
+    MzList *central_records = NULL;
+    MzList *filenames = NULL;
+    MzList *node;
     MzZipEndOfCentralDirectoryRecord *end_of_record = NULL;
+    MzList *first_attachments;
 
-    header = mz_zip_create_header(filename,
-                                  data,
-                                  data_length,
-                                  last_modified_time,
-                                  0); /* compressed_size will be replaced later. */
-    if (!header)
+    if (!attachments)
         return -1;
 
+    /* skip mail body */
+    attachments = mz_list_next(attachments);
+    if (!attachments)
+        return -1;
+
+    first_attachments = attachments;
     ret = init_z_stream(&zlib_stream);
+    if (ret != Z_OK)
+        return -1;
 
-    if (!_write_data(fd, header, sizeof(*header), &written_bytes))
-        goto end;
+    while (attachments) {
+        MzZipHeader *header;
+        MzZipCentralDirectoryRecord *central_record = NULL;
+        MzAttachment *attachment = attachments->data;
 
-    if (!_write_data(fd, (void*)filename, strlen(filename), &written_bytes))
-        goto end;
-
-    zlib_stream.next_in = (Bytef*)data;
-    zlib_stream.avail_in = data_length;
-
-    zlib_stream.next_out = (Bytef*)compressed_data;
-    zlib_stream.avail_out = BUFFER_SIZE;
-
-    compressed_data_length = 0;
-
-    while (ret  == Z_OK || ret == Z_STREAM_END) {
-        unsigned int compressed_bytes;
-
-        ret = deflate(&zlib_stream, Z_FINISH);
-
-        compressed_bytes = BUFFER_SIZE - zlib_stream.avail_out;
-        if (!_write_data(fd, compressed_data, compressed_bytes, &written_bytes))
+        header = _compress_attachment(fd, &zlib_stream, attachment, &compressed_data_length);
+        if (!header)
             goto end;
 
-        compressed_data_length += written_bytes;
-        zlib_stream.next_out = (Bytef*)compressed_data;
-        zlib_stream.avail_out = BUFFER_SIZE;
-        if (ret == Z_STREAM_END)
-            break;
+        central_record = mz_zip_create_central_directory_record(attachment->filename,
+                                                                header,
+                                                                attachment->file_attributes,
+                                                                zlib_stream.data_type);
+        if (!central_record)
+            goto end;
+
+        headers = mz_list_append(headers, header);
+        central_records = mz_list_append(central_records, central_record);
+        attachments = mz_list_next(attachments);
+        filenames = mz_list_append(filenames, attachment->filename);
+        if (attachments)
+            deflateReset(&zlib_stream);
     }
 
-    lseek(fd, offsetof(MzZipHeader, compressed_size), SEEK_SET);
-    if (!_write_data(fd, &compressed_data_length, sizeof(compressed_data_length), &written_bytes))
-        goto end;
+    central_record_start_pos = lseek(fd, 0, SEEK_CUR);
 
-    memcpy(&header->compressed_size, &compressed_data_length, sizeof(compressed_data_length));
-    record = mz_zip_create_central_directory_record(filename,
-                                                    header,
-                                                    file_attributes,
-                                                    zlib_stream.data_type);
-    if (!record)
-        goto end;
-    central_directory_record_start_pos = lseek(fd, 0, SEEK_END);
-    if (!_write_data(fd, record, sizeof(*record), &written_bytes))
-        goto end;
-    if (!_write_data(fd, (void*)filename, strlen(filename), &written_bytes))
-        goto end;
+    for (node = central_records; node; node = mz_list_next(node)) {
+        MzZipCentralDirectoryRecord *record = central_records->data;
+        const char *filename = filenames->data;
 
-    end_of_record = mz_zip_create_end_of_central_directory_record(record,
-                                                                  central_directory_record_start_pos);
+        if (!_write_data(fd, record, sizeof(*record), &written_bytes))
+            goto end;
+        if (!_write_data(fd, (void*)filename, strlen(filename), &written_bytes))
+            goto end;
+        central_records_length += sizeof(*record) +
+                                  GET_16BIT_VALUE(record->filename_length) +
+                                  GET_16BIT_VALUE(record->extra_field_length);
+        filenames = mz_list_next(filenames);
+    }
+
+    end_of_record = mz_zip_create_end_of_central_directory_record(central_records_length,
+                                                                  central_record_start_pos);
     if (!end_of_record)
         goto end;
     if (!_write_data(fd, end_of_record, sizeof(*end_of_record), &written_bytes))
@@ -334,10 +398,10 @@ mz_zip_compress_into_file (int fd,
     success = true;
 
 end:
-    if (header)
-        free(header);
-    if (record)
-        free(record);
+    if (headers)
+        mz_list_free_with_free_func(headers, free);
+    if (central_records)
+        mz_list_free_with_free_func(central_records, free);
 
     deflateEnd(&zlib_stream);
 

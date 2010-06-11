@@ -12,6 +12,8 @@ struct _MzAttachment
     char *filename;
     const char *data;
     unsigned int data_length;
+    time_t last_modified_time; /* Use only for test */
+    unsigned int file_attributes; /* Use only for test */
 };
 
 typedef struct _MzAttachments MzAttachments;

@@ -2,6 +2,8 @@
 #ifndef __MZ_ZIP_H__
 #define __MZ_ZIP_H__
 
+#include "mz-list.h"
+
 typedef struct _MzZipHeader MzZipHeader;
 
 struct _MzZipHeader
@@ -75,16 +77,12 @@ MzZipCentralDirectoryRecord *
                                    int data_type);
 MzZipEndOfCentralDirectoryRecord *
             mz_zip_create_end_of_central_directory_record
-                                  (MzZipCentralDirectoryRecord *central_record,
+                                  (unsigned int central_directory_records_length,
                                    unsigned int central_directory_record_start_pos);
 
-unsigned int mz_zip_compress_into_file
+unsigned int mz_zip_compress_attachments
                                   (int fd,
-                                   const char *filename,
-                                   int file_attributes,
-                                   time_t last_modified_time,
-                                   const char *data,
-                                   unsigned int data_length);
+                                   MzList *attachments);
 
 #endif /* __MZ_ZIP_H__ */
 

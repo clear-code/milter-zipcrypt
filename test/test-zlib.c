@@ -5,9 +5,10 @@
 
 #include "mz-test-utils.h"
 #include "mz-zip.h"
+#include "mz-attachment.h"
 
 void test_compress_in_memory (void);
-void test_compress_into_file (void);
+void test_compress_attachments (void);
 
 static MzZipHeader *actual_header;
 static MzZipCentralDirectoryRecord *actual_directory_record;
@@ -121,6 +122,7 @@ test_compress_in_memory (void)
     unsigned int raw_data_length;
     unsigned int expected_compressed_data_length;
     unsigned int compressed_data_length;
+    unsigned int actual_central_records_length = 0;
     int guessed_data_type;
     time_t last_modified_time;
     MzZipHeader expected_header;
@@ -174,7 +176,10 @@ test_compress_in_memory (void)
     expected_compressed_data += GET_16BIT_VALUE(expected_directory_record.filename_length);
     expected_compressed_data += GET_16BIT_VALUE(expected_directory_record.extra_field_length);
 
-    actual_end_of_directory_record = mz_zip_create_end_of_central_directory_record(actual_directory_record,
+    actual_central_records_length = sizeof(*actual_directory_record) +
+                                    GET_16BIT_VALUE(actual_directory_record->filename_length) +
+                                    GET_16BIT_VALUE(actual_directory_record->extra_field_length);
+    actual_end_of_directory_record = mz_zip_create_end_of_central_directory_record(actual_central_records_length,
                                                                                    compressed_data_length +
                                                                                    sizeof(*actual_header) +
                                                                                    strlen("body"));
@@ -186,24 +191,29 @@ test_compress_in_memory (void)
 }
 
 void
-test_compress_into_file (void)
+test_compress_attachments (void)
 {
     const char *raw_data;
     unsigned int raw_data_length;
     const char *expected_file;
+    MzAttachment attachment = { NULL, NULL, NULL, 0 };
+    MzList attachments2 = { &attachment, NULL };
+    MzList attachments1 = { NULL, &attachments2 };
 
     raw_data = mz_test_utils_load_data("body", &raw_data_length);
     cut_assert_not_null(raw_data);
+
+    attachment.data = raw_data;
+    attachment.data_length = raw_data_length;
+    attachment.filename = "body";
+    attachment.last_modified_time = mz_test_utils_get_last_modified_time("body");
+    attachment.file_attributes = mz_test_utils_get_file_attributes("body");
 
     errno = 0;
     zip_fd = mkstemp(template);
     cut_assert_errno();
 
-    mz_zip_compress_into_file(zip_fd,
-                              "body",
-                              mz_test_utils_get_file_attributes("body"),
-                              mz_test_utils_get_last_modified_time("body"),
-                              raw_data, raw_data_length);
+    mz_zip_compress_attachments(zip_fd, &attachments1);
     close(zip_fd);
     zip_fd = -1;
 
