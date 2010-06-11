@@ -1,7 +1,7 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 #include <cutter.h>
-#include <zlib.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "mz-test-utils.h"
 #include "mz-zip.h"
