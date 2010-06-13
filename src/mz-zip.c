@@ -19,6 +19,7 @@ struct _MzZipStream
     bool written_header;
     unsigned int data_size;
     unsigned int compressed_size;
+    uLong crc;
 };
 
 static int
@@ -479,6 +480,7 @@ mz_zip_stream_start_compress_file (MzZipStream *zip,
     zip->written_header_bytes = 0;
     zip->data_size = 0;
     zip->compressed_size = 0;
+    zip->crc = crc32(0, NULL, 0);
 
     return true;
 }
@@ -523,11 +525,12 @@ mz_zip_stream_compress_step (MzZipStream  *zip,
     *processed_size = input_buffer_size - zip->zlib_stream.avail_in;
     zip->data_size += *processed_size;
     zip->compressed_size += *written_size;
+    zip->crc = crc32(zip->crc, (unsigned char*)input_buffer, *processed_size);
 
     return ((ret == Z_STREAM_END) || (ret == Z_OK));
 }
 
-struct _MzZipDataDescriptor
+typedef struct _MzZipDataDescriptor
 {
     unsigned int crc;
     unsigned int uncompressed_size;
