@@ -93,7 +93,7 @@ mz_zip_create_header (const char *filename,
                       time_t last_modified_time,
                       unsigned int compressed_size)
 {
-    unsigned short msdos_time, msdos_date;
+    unsigned short msdos_time = 0, msdos_date = 0;
     unsigned short filename_length;
     MzZipHeader *header;
 
@@ -131,7 +131,8 @@ mz_zip_create_header (const char *filename,
     header->compression_method[0] = Z_DEFLATED & 0xff;
     header->compression_method[1] = (Z_DEFLATED >> 8) & 0xff;
 
-    convert_time_to_msdos_time_and_date(last_modified_time, &msdos_time, &msdos_date);
+    if (last_modified_time != 0)
+        convert_time_to_msdos_time_and_date(last_modified_time, &msdos_time, &msdos_date);
 
     header->last_modified_time[0] = msdos_time & 0xff;
     header->last_modified_time[1] = (msdos_time >> 8) & 0xff;
