@@ -527,3 +527,10 @@ mz_zip_stream_compress_step (MzZipStream  *zip,
     return ((ret == Z_STREAM_END) || (ret == Z_OK));
 }
 
+struct _MzZipDataDescriptor
+{
+    unsigned int crc;
+    unsigned int uncompressed_size;
+    unsigned int compressed_size;
+} MzZipDataDescriptor;
+
