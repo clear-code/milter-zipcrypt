@@ -107,7 +107,7 @@ bool         mz_zip_stream_end_archive         (MzZipStream  *zip,
                                                 char         *output_buffer,
                                                 unsigned int  output_buffer_size,
                                                 unsigned int *written_size);
-void         mz_zip_stream_destroy             (void);
+void         mz_zip_stream_destroy             (MzZipStream  *zip);
 
 #endif /* __MZ_ZIP_H__ */
 

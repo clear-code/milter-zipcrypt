@@ -465,6 +465,13 @@ mz_zip_stream_create (void)
 }
 
 bool
+mz_zip_stream_begin_archive (MzZipStream *zip)
+{
+    /* Nothing to do here. */
+    return true;
+}
+
+bool
 mz_zip_stream_begin_file (MzZipStream *zip,
                           const char  *filename)
 {
@@ -587,5 +594,34 @@ mz_zip_stream_end_file (MzZipStream  *zip,
     }
 
     return true;
+}
+
+bool
+mz_zip_stream_end_archive (MzZipStream  *zip,
+                           char         *output_buffer,
+                           unsigned int  output_buffer_size,
+                           unsigned int *written_size)
+{
+    /* output central directory record and end of central directory record */
+    return true;
+}
+
+void
+mz_zip_stream_destroy (MzZipStream *zip)
+{
+    if (!zip)
+        return;
+
+    if (zip->headers) {
+        mz_list_free(zip->headers);
+        zip->headers = NULL;
+    }
+
+    if (zip->current_filename) {
+        free(zip->current_filename);
+        zip->current_filename = NULL;
+    }
+
+    free(zip);
 }
 

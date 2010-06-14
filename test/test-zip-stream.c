@@ -22,10 +22,11 @@ setup (void)
 void
 teardown (void)
 {
+    mz_zip_stream_destroy(zip);
     if (zip_fd != -1) {
         close(zip_fd);
     }
-    //cut_remove_path(template, NULL);
+    cut_remove_path(template, NULL);
 }
 
 void
@@ -47,6 +48,8 @@ test_compress (void)
     zip_fd = mkstemp(template);
     cut_assert_errno();
 
+    cut_assert_true(mz_zip_stream_begin_archive(zip));
+
     cut_assert_true(mz_zip_stream_begin_file(zip, "body"));
 
     while (raw_data_position < raw_data_length) {
@@ -61,12 +64,24 @@ test_compress (void)
         write(zip_fd, output, written_size);
     }
 
+    cut_assert_true(mz_zip_stream_end_file(zip,
+                                           output,
+                                           BUFFER_SIZE,
+                                           &written_size));
+    write(zip_fd, output, written_size);
+
+    cut_assert_true(mz_zip_stream_end_archive(zip,
+                                              output,
+                                              BUFFER_SIZE,
+                                              &written_size));
+    write(zip_fd, output, written_size);
+
     close(zip_fd);
     zip_fd = -1;
 
     expected_file = cut_build_path(cut_get_test_directory(),
                                    "fixtures",
-                                   "body.zip",
+                                   "stream.zip",
                                    NULL);
     cut_assert_equal_file_raw(expected_file, template);
 }
