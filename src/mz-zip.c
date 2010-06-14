@@ -632,6 +632,9 @@ mz_zip_stream_end_archive (MzZipStream  *zip,
     MzZipEndOfCentralDirectoryRecord *end_of_record = NULL;
     unsigned int filenames_length = 0;
     unsigned int central_records_length = 0;
+    unsigned int headers_length = 0;
+    unsigned int compressed_length = 0;
+    unsigned int descriptors_length = 0;
 
     if (!zip)
         return MZ_ZIP_STREAM_STATUS_INVALID_HANDLE;
@@ -639,10 +642,12 @@ mz_zip_stream_end_archive (MzZipStream  *zip,
     for (node = zip->headers; node; node = mz_list_next(node)) {
         MzZipHeader *header = node->data;
         filenames_length += GET_16BIT_VALUE(header->filename_length);
+        headers_length += sizeof(MzZipHeader);
+        descriptors_length += sizeof(MzZipDataDescriptor);
+        compressed_length += GET_32BIT_VALUE(header->compressed_size);
     }
 
     central_records_length = sizeof(MzZipCentralDirectoryRecord) * mz_list_length(zip->central_directory_records);
-
     /* insufficient buffer size */
     /* TODO: We should output data in chunks */
     if (output_buffer_size < central_records_length + filenames_length)
@@ -667,7 +672,7 @@ mz_zip_stream_end_archive (MzZipStream  *zip,
     }
 
     end_of_record = mz_zip_create_end_of_central_directory_record(central_records_length + filenames_length,
-                                                                  0);
+                                                                  compressed_length + headers_length + filenames_length + descriptors_length);
     memcpy(output_buffer + *written_size,
            end_of_record, sizeof(*end_of_record));
     *written_size += sizeof(*end_of_record);
