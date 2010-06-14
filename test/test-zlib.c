@@ -179,7 +179,8 @@ test_compress_in_memory (void)
     actual_central_records_length = sizeof(*actual_directory_record) +
                                     GET_16BIT_VALUE(actual_directory_record->filename_length) +
                                     GET_16BIT_VALUE(actual_directory_record->extra_field_length);
-    actual_end_of_directory_record = mz_zip_create_end_of_central_directory_record(actual_central_records_length,
+    actual_end_of_directory_record = mz_zip_create_end_of_central_directory_record(1,
+                                                                                   actual_central_records_length,
                                                                                    compressed_data_length +
                                                                                    sizeof(*actual_header) +
                                                                                    strlen("body"));

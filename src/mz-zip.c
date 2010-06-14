@@ -229,7 +229,8 @@ mz_zip_create_central_directory_record (const char *filename,
 #define GET_32BIT_VALUE(x) (((x[0]) & 0xff) | (((x[1]) << 8)) | (((x[2] << 16)) | (((x[3]) << 24))))
 
 MzZipEndOfCentralDirectoryRecord *
-mz_zip_create_end_of_central_directory_record (unsigned int central_directory_records_length,
+mz_zip_create_end_of_central_directory_record (unsigned short entry_num,
+                                               unsigned int central_directory_records_length,
                                                unsigned int central_directory_record_start_pos)
 {
     MzZipEndOfCentralDirectoryRecord *record;
@@ -422,7 +423,8 @@ mz_zip_compress_attachments (int fd, MzList *attachments)
                                   GET_16BIT_VALUE(record->extra_field_length);
     }
 
-    end_of_record = mz_zip_create_end_of_central_directory_record(central_records_length,
+    end_of_record = mz_zip_create_end_of_central_directory_record(mz_list_length(central_records),
+                                                                  central_records_length,
                                                                   central_record_start_pos);
     if (!end_of_record)
         goto end;
@@ -671,7 +673,8 @@ mz_zip_stream_end_archive (MzZipStream  *zip,
         *written_size += filename_length;
     }
 
-    end_of_record = mz_zip_create_end_of_central_directory_record(central_records_length + filenames_length,
+    end_of_record = mz_zip_create_end_of_central_directory_record(mz_list_length(zip->central_directory_records),
+                                                                  central_records_length + filenames_length,
                                                                   compressed_length + headers_length + filenames_length + descriptors_length);
     memcpy(output_buffer + *written_size,
            end_of_record, sizeof(*end_of_record));
