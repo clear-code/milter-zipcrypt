@@ -496,7 +496,7 @@ bool
 mz_zip_stream_compress_step (MzZipStream  *zip,
                              const char   *input_buffer,
                              unsigned int  input_buffer_size,
-                             char          *output_buffer,
+                             char         *output_buffer,
                              unsigned int  output_buffer_size,
                              unsigned int *processed_size,
                              unsigned int *written_size)
@@ -562,4 +562,30 @@ typedef struct _MzZipDataDescriptor
     unsigned int uncompressed_size;
     unsigned int compressed_size;
 } MzZipDataDescriptor;
+
+bool
+mz_zip_stream_end_compress_file (MzZipStream  *zip,
+                                 char         *output_buffer,
+                                 unsigned int  output_buffer_size,
+                                 unsigned int *written_size)
+{
+    MzZipDataDescriptor descriptor;
+
+    if (!zip)
+        return false;
+
+    if (output_buffer_size >= sizeof(descriptor)) {
+        descriptor.crc = zip->crc;
+        descriptor.uncompressed_size = zip->data_size;
+        descriptor.compressed_size = zip->compressed_size;
+        memcpy(output_buffer,
+               &descriptor, sizeof(descriptor));
+        *written_size = sizeof(descriptor);
+    } else {
+        /* error? */
+        return false;
+    }
+
+    return true;
+}
 
