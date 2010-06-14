@@ -88,8 +88,9 @@ unsigned int mz_zip_compress_attachments
                                   (int fd,
                                    MzList *attachments);
 
-MzZipStream *mz_zip_stream_init (void);
-bool         mz_zip_stream_start_compress_file (MzZipStream *zip,
+MzZipStream *mz_zip_stream_create              (void);
+bool         mz_zip_stream_begin_archive       (MzZipStream *zip);
+bool         mz_zip_stream_begin_file          (MzZipStream *zip,
                                                 const char  *filename);
 bool         mz_zip_stream_compress_step       (MzZipStream  *zip,
                                                 const char   *input_buffer,
@@ -98,10 +99,15 @@ bool         mz_zip_stream_compress_step       (MzZipStream  *zip,
                                                 unsigned int  output_buffer_size,
                                                 unsigned int *processed_size,
                                                 unsigned int *written_size);
-bool         mz_zip_stream_end_compress_file   (MzZipStream  *zip,
+bool         mz_zip_stream_end_file            (MzZipStream  *zip,
                                                 char         *output_buffer,
                                                 unsigned int  output_buffer_size,
                                                 unsigned int *written_size);
+bool         mz_zip_stream_end_archive         (MzZipStream  *zip,
+                                                char         *output_buffer,
+                                                unsigned int  output_buffer_size,
+                                                unsigned int *written_size);
+void         mz_zip_stream_destroy             (void);
 
 #endif /* __MZ_ZIP_H__ */
 

@@ -16,7 +16,7 @@ void
 setup (void)
 {
     cut_set_fixture_data_dir("fixtures", NULL);
-    zip = mz_zip_stream_init();
+    zip = mz_zip_stream_create();
 }
 
 void
@@ -47,7 +47,7 @@ test_compress (void)
     zip_fd = mkstemp(template);
     cut_assert_errno();
 
-    cut_assert_true(mz_zip_stream_start_compress_file(zip, "body"));
+    cut_assert_true(mz_zip_stream_begin_file(zip, "body"));
 
     while (raw_data_position < raw_data_length) {
         cut_assert_true(mz_zip_stream_compress_step(zip,

@@ -443,7 +443,7 @@ end:
 }
 
 MzZipStream *
-mz_zip_stream_init (void)
+mz_zip_stream_create (void)
 {
     MzZipStream *zip;
 
@@ -465,8 +465,8 @@ mz_zip_stream_init (void)
 }
 
 bool
-mz_zip_stream_start_compress_file (MzZipStream *zip,
-                                   const char  *filename)
+mz_zip_stream_begin_file (MzZipStream *zip,
+                          const char  *filename)
 {
     MzZipHeader *header;
 
@@ -564,10 +564,10 @@ typedef struct _MzZipDataDescriptor
 } MzZipDataDescriptor;
 
 bool
-mz_zip_stream_end_compress_file (MzZipStream  *zip,
-                                 char         *output_buffer,
-                                 unsigned int  output_buffer_size,
-                                 unsigned int *written_size)
+mz_zip_stream_end_file (MzZipStream  *zip,
+                        char         *output_buffer,
+                        unsigned int  output_buffer_size,
+                        unsigned int *written_size)
 {
     MzZipDataDescriptor descriptor;
 
