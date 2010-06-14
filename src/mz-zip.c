@@ -610,7 +610,7 @@ mz_zip_stream_end_file (MzZipStream  *zip,
         central_record = mz_zip_create_central_directory_record(zip->current_filename,
                                                                 zip->current_header,
                                                                 0,
-                                                                0);
+                                                                zip->zlib_stream.data_type);
         zip->central_directory_records = mz_list_append(zip->central_directory_records,
                                                         central_record);
     } else {
