@@ -88,26 +88,33 @@ unsigned int mz_zip_compress_attachments
                                   (int fd,
                                    MzList *attachments);
 
-MzZipStream *mz_zip_stream_create              (void);
-bool         mz_zip_stream_begin_archive       (MzZipStream *zip);
-bool         mz_zip_stream_begin_file          (MzZipStream *zip,
-                                                const char  *filename);
-bool         mz_zip_stream_compress_step       (MzZipStream  *zip,
-                                                const char   *input_buffer,
-                                                unsigned int  input_buffer_size,
-                                                char         *output_buffer,
-                                                unsigned int  output_buffer_size,
-                                                unsigned int *processed_size,
-                                                unsigned int *written_size);
-bool         mz_zip_stream_end_file            (MzZipStream  *zip,
-                                                char         *output_buffer,
-                                                unsigned int  output_buffer_size,
-                                                unsigned int *written_size);
-bool         mz_zip_stream_end_archive         (MzZipStream  *zip,
-                                                char         *output_buffer,
-                                                unsigned int  output_buffer_size,
-                                                unsigned int *written_size);
-void         mz_zip_stream_destroy             (MzZipStream  *zip);
+typedef enum
+{
+    MZ_ZIP_STREAM_STATUS_SUCCESS        = 0,
+    MZ_ZIP_STREAM_STATUS_INVALID_HANDLE = 1,
+    MZ_ZIP_STREAM_STATUS_NO_MEMORY      = 2
+} MzZipStreamStatus;
+
+MzZipStream      *mz_zip_stream_create        (void);
+MzZipStreamStatus mz_zip_stream_begin_archive (MzZipStream *zip);
+MzZipStreamStatus mz_zip_stream_begin_file    (MzZipStream *zip,
+                                               const char  *filename);
+MzZipStreamStatus mz_zip_stream_compress_step (MzZipStream  *zip,
+                                               const char   *input_buffer,
+                                               unsigned int  input_buffer_size,
+                                               char         *output_buffer,
+                                               unsigned int  output_buffer_size,
+                                               unsigned int *processed_size,
+                                               unsigned int *written_size);
+MzZipStreamStatus mz_zip_stream_end_file      (MzZipStream  *zip,
+                                               char         *output_buffer,
+                                               unsigned int  output_buffer_size,
+                                               unsigned int *written_size);
+MzZipStreamStatus mz_zip_stream_end_archive   (MzZipStream  *zip,
+                                               char         *output_buffer,
+                                               unsigned int  output_buffer_size,
+                                               unsigned int *written_size);
+void              mz_zip_stream_destroy       (MzZipStream  *zip);
 
 #endif /* __MZ_ZIP_H__ */
 

@@ -466,25 +466,25 @@ mz_zip_stream_create (void)
     return zip;
 }
 
-bool
+MzZipStreamStatus
 mz_zip_stream_begin_archive (MzZipStream *zip)
 {
     /* Nothing to do here. */
-    return true;
+    return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
 
-bool
+MzZipStreamStatus
 mz_zip_stream_begin_file (MzZipStream *zip,
                           const char  *filename)
 {
     MzZipHeader *header;
 
     if (!zip)
-        return false;
+        return MZ_ZIP_STREAM_STATUS_INVALID_HANDLE;
 
     header = mz_zip_create_stream_header(filename);
     if (!header)
-        return false;
+        return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
 
     zip->headers = mz_list_append(zip->headers, header);
     if (zip->current_filename)
@@ -497,13 +497,13 @@ mz_zip_stream_begin_file (MzZipStream *zip,
     zip->compressed_size = 0;
     zip->crc = crc32(0, NULL, 0);
 
-    return true;
+    return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
 
 #ifndef MIN
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
-static bool
+static MzZipStreamStatus
 write_header (MzZipStream *zip,
               char         *output_buffer,
               unsigned int  output_buffer_size,
@@ -543,10 +543,10 @@ write_header (MzZipStream *zip,
     if (zip->written_header_size >= sizeof(*zip->current_header) + filename_length)
         zip->written_header = true;
 
-    return true;
+    return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
 
-bool
+MzZipStreamStatus
 mz_zip_stream_compress_step (MzZipStream  *zip,
                              const char   *input_buffer,
                              unsigned int  input_buffer_size,
@@ -573,7 +573,8 @@ mz_zip_stream_compress_step (MzZipStream  *zip,
     zip->compressed_size += *written_size;
     zip->crc = crc32(zip->crc, (unsigned char*)input_buffer, *processed_size);
 
-    return ((ret == Z_STREAM_END) || (ret == Z_OK));
+    return MZ_ZIP_STREAM_STATUS_SUCCESS;
+    /* return ((ret == Z_STREAM_END) || (ret == Z_OK)); */
 }
 
 typedef struct _MzZipDataDescriptor
@@ -583,7 +584,7 @@ typedef struct _MzZipDataDescriptor
     unsigned int compressed_size;
 } MzZipDataDescriptor;
 
-bool
+MzZipStreamStatus
 mz_zip_stream_end_file (MzZipStream  *zip,
                         char         *output_buffer,
                         unsigned int  output_buffer_size,
@@ -592,7 +593,7 @@ mz_zip_stream_end_file (MzZipStream  *zip,
     MzZipDataDescriptor descriptor;
 
     if (!zip)
-        return false;
+        return MZ_ZIP_STREAM_STATUS_INVALID_HANDLE;
 
     if (output_buffer_size >= sizeof(descriptor)) {
         MzZipCentralDirectoryRecord *central_record;
@@ -612,13 +613,13 @@ mz_zip_stream_end_file (MzZipStream  *zip,
                                                         central_record);
     } else {
         /* error? */
-        return false;
+        return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
     }
 
-    return true;
+    return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
 
-bool
+MzZipStreamStatus
 mz_zip_stream_end_archive (MzZipStream  *zip,
                            char         *output_buffer,
                            unsigned int  output_buffer_size,
@@ -626,10 +627,13 @@ mz_zip_stream_end_archive (MzZipStream  *zip,
 {
     MzList *node;
 
+    if (!zip)
+        return MZ_ZIP_STREAM_STATUS_INVALID_HANDLE;
+
     /* insufficient buffer size */
     /* TODO: We should output data in chunks */
     if (output_buffer_size < sizeof(MzZipCentralDirectoryRecord) * mz_list_length(zip->central_directory_records))
-        return false;
+        return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
 
     /* output central directory record and end of central directory record */
     *written_size = 0;
@@ -641,7 +645,7 @@ mz_zip_stream_end_archive (MzZipStream  *zip,
         memcpy(output_buffer, record, sizeof(*record));
         *written_size += sizeof(*record);
     }
-    return true;
+    return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
 
 void

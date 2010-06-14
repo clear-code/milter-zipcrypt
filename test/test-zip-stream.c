@@ -29,6 +29,12 @@ teardown (void)
     cut_remove_path(template, NULL);
 }
 
+static void
+assert_success (MzZipStreamStatus status)
+{
+    cut_assert_equal_int(MZ_ZIP_STREAM_STATUS_SUCCESS, status);
+}
+
 void
 test_compress (void)
 {
@@ -48,32 +54,32 @@ test_compress (void)
     zip_fd = mkstemp(template);
     cut_assert_errno();
 
-    cut_assert_true(mz_zip_stream_begin_archive(zip));
+    assert_success(mz_zip_stream_begin_archive(zip));
 
-    cut_assert_true(mz_zip_stream_begin_file(zip, "body"));
+    assert_success(mz_zip_stream_begin_file(zip, "body"));
 
     while (raw_data_position < raw_data_length) {
-        cut_assert_true(mz_zip_stream_compress_step(zip,
-                                                    raw_data + raw_data_position,
-                                                    raw_data_length - raw_data_position,
-                                                    output,
-                                                    BUFFER_SIZE,
-                                                    &processed_size,
-                                                    &written_size));
+        assert_success(mz_zip_stream_compress_step(zip,
+                                                   raw_data + raw_data_position,
+                                                   raw_data_length - raw_data_position,
+                                                   output,
+                                                   BUFFER_SIZE,
+                                                   &processed_size,
+                                                   &written_size));
         raw_data_position += processed_size;
         write(zip_fd, output, written_size);
     }
 
-    cut_assert_true(mz_zip_stream_end_file(zip,
-                                           output,
-                                           BUFFER_SIZE,
-                                           &written_size));
+    assert_success(mz_zip_stream_end_file(zip,
+                                          output,
+                                          BUFFER_SIZE,
+                                          &written_size));
     write(zip_fd, output, written_size);
 
-    cut_assert_true(mz_zip_stream_end_archive(zip,
-                                              output,
-                                              BUFFER_SIZE,
-                                              &written_size));
+    assert_success(mz_zip_stream_end_archive(zip,
+                                             output,
+                                             BUFFER_SIZE,
+                                             &written_size));
     write(zip_fd, output, written_size);
 
     close(zip_fd);
