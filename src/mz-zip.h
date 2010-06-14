@@ -89,9 +89,11 @@ unsigned int mz_zip_compress_attachments
 
 typedef enum
 {
-    MZ_ZIP_STREAM_STATUS_SUCCESS        = 0,
-    MZ_ZIP_STREAM_STATUS_INVALID_HANDLE = 1,
-    MZ_ZIP_STREAM_STATUS_NO_MEMORY      = 2
+    MZ_ZIP_STREAM_STATUS_SUCCESS            = 0,
+    MZ_ZIP_STREAM_STATUS_INVALID_HANDLE     = 1,
+    MZ_ZIP_STREAM_STATUS_NO_MEMORY          = 2,
+    MZ_ZIP_STREAM_STATUS_REMAIN_OUTPUT_DATA = 3,
+    MZ_ZIP_STREAM_STATUS_UNKNOWN_ERROR      = 4
 } MzZipStreamStatus;
 
 MzZipStream      *mz_zip_stream_create        (void);

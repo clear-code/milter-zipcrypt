@@ -46,6 +46,7 @@ test_compress (void)
     unsigned int written_size;
     unsigned int processed_size;
     const char *expected_file;
+    MzZipStreamStatus status = MZ_ZIP_STREAM_STATUS_SUCCESS;
     
     raw_data = mz_test_utils_load_data("body", &raw_data_length);
     cut_assert_not_null(raw_data);
@@ -58,14 +59,14 @@ test_compress (void)
 
     assert_success(mz_zip_stream_begin_file(zip, "body"));
 
-    while (raw_data_position < raw_data_length) {
-        assert_success(mz_zip_stream_compress_step(zip,
-                                                   raw_data + raw_data_position,
-                                                   raw_data_length - raw_data_position,
-                                                   output,
-                                                   BUFFER_SIZE,
-                                                   &processed_size,
-                                                   &written_size));
+    while (status == MZ_ZIP_STREAM_STATUS_SUCCESS) {
+        status = mz_zip_stream_compress_step(zip,
+                                             raw_data + raw_data_position,
+                                             raw_data_length - raw_data_position,
+                                             output,
+                                             BUFFER_SIZE,
+                                             &processed_size,
+                                             &written_size);
         raw_data_position += processed_size;
         write(zip_fd, output, written_size);
     }
