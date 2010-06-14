@@ -581,8 +581,8 @@ mz_zip_stream_compress_step (MzZipStream  *zip,
 typedef struct _MzZipDataDescriptor
 {
     unsigned int crc;
-    unsigned int uncompressed_size;
     unsigned int compressed_size;
+    unsigned int uncompressed_size;
 } MzZipDataDescriptor;
 
 MzZipStreamStatus
@@ -600,8 +600,8 @@ mz_zip_stream_end_file (MzZipStream  *zip,
         MzZipCentralDirectoryRecord *central_record;
 
         descriptor.crc = zip->crc;
-        descriptor.uncompressed_size = zip->data_size;
         descriptor.compressed_size = zip->compressed_size;
+        descriptor.uncompressed_size = zip->data_size;
         memcpy(output_buffer,
                &descriptor, sizeof(descriptor));
         *written_size = sizeof(descriptor);
