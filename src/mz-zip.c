@@ -662,7 +662,7 @@ mz_zip_stream_end_archive (MzZipStream  *zip,
 
         MzZipCentralDirectoryRecord *record = node->data;
 
-        memcpy(output_buffer, record, sizeof(*record));
+        memcpy(output_buffer + *written_size, record, sizeof(*record));
         *written_size += sizeof(*record);
 
         filename_length = GET_16BIT_VALUE(record->filename_length);
