@@ -613,6 +613,7 @@ mz_zip_stream_end_file (MzZipStream  *zip,
                                                                 zip->zlib_stream.data_type);
         zip->central_directory_records = mz_list_append(zip->central_directory_records,
                                                         central_record);
+        deflateReset(&zip->zlib_stream);
     } else {
         /* error? */
         return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
@@ -689,6 +690,8 @@ mz_zip_stream_destroy (MzZipStream *zip)
         mz_list_free_with_free_func(zip->filenames, free);
         zip->filenames = NULL;
     }
+
+    deflateEnd(&zip->zlib_stream);
 
     free(zip);
 }
