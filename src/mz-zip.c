@@ -485,6 +485,8 @@ mz_zip_stream_begin_file (MzZipStream *zip,
         return false;
 
     zip->headers = mz_list_append(zip->headers, header);
+    if (zip->current_filename)
+        free(zip->current_filename);
     zip->current_filename = strdup(filename);
     zip->current_header = header;
     zip->written_header = false;
