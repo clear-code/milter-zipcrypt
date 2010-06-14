@@ -3,7 +3,6 @@
 #define __MZ_ZIP_H__
 
 #include "mz-list.h"
-#include <stdbool.h>
 
 typedef struct _MzZipStream MzZipStream;
 
