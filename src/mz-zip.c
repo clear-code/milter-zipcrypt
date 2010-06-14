@@ -250,11 +250,11 @@ mz_zip_create_end_of_central_directory_record (unsigned short entry_num,
     record->start_disk_num[0] = 0;
     record->start_disk_num[1] = 0;
 
-    record->total_disk_num[0] = 0x01;
-    record->total_disk_num[1] = 0;
+    record->total_disk_num[0] = entry_num & 0xff;
+    record->total_disk_num[1] = (entry_num >> 8) & 0xff;
 
-    record->total_entry_num[0] = 0x01;
-    record->total_entry_num[1] = 0;
+    record->total_entry_num[0] = entry_num & 0xff;
+    record->total_entry_num[1] = (entry_num >> 8) & 0xff;
 
     record->entry_size[0] = central_directory_records_length & 0xff;
     record->entry_size[1] = (central_directory_records_length >> 8) & 0xff;
