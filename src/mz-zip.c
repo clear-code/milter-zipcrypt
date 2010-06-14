@@ -15,6 +15,7 @@ struct _MzZipStream
     z_stream zlib_stream;
     MzList *headers;
     MzList *central_directory_records;
+    MzList *filenames;
     char *current_filename;
     MzZipHeader *current_header;
     unsigned int written_header_size;
@@ -454,6 +455,7 @@ mz_zip_stream_create (void)
 
     zip->headers = NULL;
     zip->central_directory_records = NULL;
+    zip->filenames = NULL;
     zip->current_filename = NULL;
     zip->current_header = NULL;
     zip->written_header_size = 0;
@@ -487,9 +489,8 @@ mz_zip_stream_begin_file (MzZipStream *zip,
         return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
 
     zip->headers = mz_list_append(zip->headers, header);
-    if (zip->current_filename)
-        free(zip->current_filename);
     zip->current_filename = strdup(filename);
+    zip->filenames = mz_list_append(zip->filenames, zip->current_filename);
     zip->current_header = header;
     zip->written_header = false;
     zip->written_header_size = 0;
@@ -625,26 +626,50 @@ mz_zip_stream_end_archive (MzZipStream  *zip,
                            unsigned int  output_buffer_size,
                            unsigned int *written_size)
 {
-    MzList *node;
+    MzList *node, *filename;
+    MzZipEndOfCentralDirectoryRecord *end_of_record = NULL;
+    unsigned int filenames_length = 0;
+    unsigned int central_records_length = 0;
 
     if (!zip)
         return MZ_ZIP_STREAM_STATUS_INVALID_HANDLE;
 
+    for (node = zip->headers; node; node = mz_list_next(node)) {
+        MzZipHeader *header = node->data;
+        filenames_length += GET_16BIT_VALUE(header->filename_length);
+    }
+
+    central_records_length = sizeof(MzZipCentralDirectoryRecord) * mz_list_length(zip->central_directory_records);
+
     /* insufficient buffer size */
     /* TODO: We should output data in chunks */
-    if (output_buffer_size < sizeof(MzZipCentralDirectoryRecord) * mz_list_length(zip->central_directory_records))
+    if (output_buffer_size < central_records_length + filenames_length)
         return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
 
     /* output central directory record and end of central directory record */
     *written_size = 0;
-    for (node = zip->central_directory_records;
-         node;
-         node = mz_list_next(node)) {
+    for (node = zip->central_directory_records, filename = zip->filenames;
+         node && filename;
+         node = mz_list_next(node), filename = mz_list_next(filename)) {
+        unsigned int filename_length;
+
         MzZipCentralDirectoryRecord *record = node->data;
 
         memcpy(output_buffer, record, sizeof(*record));
         *written_size += sizeof(*record);
+
+        filename_length = GET_16BIT_VALUE(record->filename_length);
+        memcpy(output_buffer + *written_size,
+               filename->data, filename_length);
+        *written_size += filename_length;
     }
+
+    end_of_record = mz_zip_create_end_of_central_directory_record(central_records_length + filenames_length,
+                                                                  0);
+    memcpy(output_buffer + *written_size,
+           end_of_record, sizeof(*end_of_record));
+    *written_size += sizeof(*end_of_record);
+
     return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
 
@@ -659,9 +684,9 @@ mz_zip_stream_destroy (MzZipStream *zip)
         zip->headers = NULL;
     }
 
-    if (zip->current_filename) {
-        free(zip->current_filename);
-        zip->current_filename = NULL;
+    if (zip->filenames) {
+        mz_list_free_with_free_func(zip->filenames, free);
+        zip->filenames = NULL;
     }
 
     free(zip);
