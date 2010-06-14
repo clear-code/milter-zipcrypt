@@ -14,6 +14,7 @@ struct _MzZipStream
 {
     z_stream zlib_stream;
     MzList *headers;
+    MzList *central_directory_records;
     char *current_filename;
     MzZipHeader *current_header;
     unsigned int written_header_size;
@@ -452,6 +453,7 @@ mz_zip_stream_create (void)
         return NULL;
 
     zip->headers = NULL;
+    zip->central_directory_records = NULL;
     zip->current_filename = NULL;
     zip->current_header = NULL;
     zip->written_header_size = 0;
@@ -593,12 +595,21 @@ mz_zip_stream_end_file (MzZipStream  *zip,
         return false;
 
     if (output_buffer_size >= sizeof(descriptor)) {
+        MzZipCentralDirectoryRecord *central_record;
+
         descriptor.crc = zip->crc;
         descriptor.uncompressed_size = zip->data_size;
         descriptor.compressed_size = zip->compressed_size;
         memcpy(output_buffer,
                &descriptor, sizeof(descriptor));
         *written_size = sizeof(descriptor);
+
+        central_record = mz_zip_create_central_directory_record(zip->current_filename,
+                                                                zip->current_header,
+                                                                0,
+                                                                0);
+        zip->central_directory_records = mz_list_append(zip->central_directory_records,
+                                                        central_record);
     } else {
         /* error? */
         return false;
@@ -613,7 +624,23 @@ mz_zip_stream_end_archive (MzZipStream  *zip,
                            unsigned int  output_buffer_size,
                            unsigned int *written_size)
 {
+    MzList *node;
+
+    /* insufficient buffer size */
+    /* TODO: We should output data in chunks */
+    if (output_buffer_size < sizeof(MzZipCentralDirectoryRecord) * mz_list_length(zip->central_directory_records))
+        return false;
+
     /* output central directory record and end of central directory record */
+    *written_size = 0;
+    for (node = zip->central_directory_records;
+         node;
+         node = mz_list_next(node)) {
+        MzZipCentralDirectoryRecord *record = node->data;
+
+        memcpy(output_buffer, record, sizeof(*record));
+        *written_size += sizeof(*record);
+    }
     return true;
 }
 
