@@ -501,6 +501,49 @@ mz_zip_stream_begin_file (MzZipStream *zip,
 #ifndef MIN
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
+static bool
+write_header (MzZipStream *zip,
+              char         *output_buffer,
+              unsigned int  output_buffer_size,
+              unsigned int *processed_size,
+              unsigned int *written_size)
+{
+    unsigned int filename_length;
+
+    *written_size = 0;
+    *processed_size = 0;
+
+    if (zip->written_header_size < sizeof(*zip->current_header)) {
+        *written_size = MIN(output_buffer_size, sizeof(*zip->current_header) - zip->written_header_size);
+        memcpy(output_buffer,
+               zip->current_header + zip->written_header_size,
+               *written_size);
+        zip->written_header_size += *written_size;
+    }
+
+    filename_length = GET_16BIT_VALUE(zip->current_header->filename_length);
+    if (zip->written_header_size >= sizeof(*zip->current_header)) {
+        if (output_buffer_size - *written_size > 0) {
+            unsigned int written_filename_size;
+            unsigned int rest_filename_size;
+
+            written_filename_size = zip->written_header_size - sizeof(*zip->current_header);
+            rest_filename_size = MIN(output_buffer_size - *written_size,
+                                     filename_length - written_filename_size);
+            memcpy(output_buffer + *written_size,
+                   zip->current_filename + written_filename_size,
+                   rest_filename_size);
+            *written_size += rest_filename_size;
+            zip->written_header_size += rest_filename_size;
+        }
+    }
+
+    if (zip->written_header_size >= sizeof(*zip->current_header) + filename_length)
+        zip->written_header = true;
+
+    return true;
+}
+
 bool
 mz_zip_stream_compress_step (MzZipStream  *zip,
                              const char   *input_buffer,
@@ -512,42 +555,8 @@ mz_zip_stream_compress_step (MzZipStream  *zip,
 {
     int ret;
 
-    if (!zip->written_header) {
-        unsigned int filename_length;
-
-        *written_size = 0;
-        *processed_size = 0;
-
-        if (zip->written_header_size < sizeof(*zip->current_header)) {
-            *written_size = MIN(output_buffer_size, sizeof(*zip->current_header) - zip->written_header_size);
-            memcpy(output_buffer,
-                   zip->current_header + zip->written_header_size,
-                   *written_size);
-            zip->written_header_size += *written_size;
-        }
-
-        filename_length = GET_16BIT_VALUE(zip->current_header->filename_length);
-        if (zip->written_header_size >= sizeof(*zip->current_header)) {
-            if (output_buffer_size - *written_size > 0) {
-                unsigned int written_filename_size;
-                unsigned int rest_filename_size;
-
-                written_filename_size = zip->written_header_size - sizeof(*zip->current_header);
-                rest_filename_size = MIN(output_buffer_size - *written_size,
-                                         filename_length - written_filename_size);
-                memcpy(output_buffer + *written_size,
-                       zip->current_filename + written_filename_size,
-                       rest_filename_size);
-                *written_size += rest_filename_size;
-                zip->written_header_size += rest_filename_size;
-            }
-        }
-
-        if (zip->written_header_size >= sizeof(*zip->current_header) + filename_length)
-            zip->written_header = true;
-
-        return true;
-    }
+    if (!zip->written_header)
+        return write_header(zip, output_buffer, output_buffer_size, processed_size, written_size);
 
     zip->zlib_stream.next_in = (Bytef*)input_buffer;
     zip->zlib_stream.avail_in = input_buffer_size;
