@@ -606,6 +606,7 @@ mz_zip_stream_end_file (MzZipStream  *zip,
                &descriptor, sizeof(descriptor));
         *written_size = sizeof(descriptor);
 
+        memcpy((void*)zip->current_header + offsetof(MzZipHeader, crc), &descriptor, sizeof(descriptor));
         central_record = mz_zip_create_central_directory_record(zip->current_filename,
                                                                 zip->current_header,
                                                                 0,
