@@ -83,8 +83,8 @@ init_encryption_header (MzZipStream *zip, uLong crc)
     srand((unsigned)time(NULL));
     for (i = 0; i < 10; i++)
         zip->encryption_header.data[i] = zencode(zip, rand(), t);
-    zip->encryption_header.data[10] = zencode(zip, (crc & 0xff), t);
-    zip->encryption_header.data[11] = zencode(zip, ((crc >> 8) & 0xff), t);
+    zip->encryption_header.data[10] = zencode(zip, ((crc >> 16) & 0xff), t);
+    zip->encryption_header.data[11] = zencode(zip, ((crc >> 24) & 0xff), t);
 }
 
 static int
