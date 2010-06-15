@@ -10,6 +10,11 @@
 #include "mz-zip.h"
 #include "mz-attachment.h"
 
+typedef struct _MzZipEncryptionHeader
+{
+    unsigned char data[12];
+} MzZipEncryptionHeader;
+
 struct _MzZipStream
 {
     z_stream zlib_stream;
@@ -24,6 +29,7 @@ struct _MzZipStream
     unsigned int data_size;
     unsigned int compressed_size;
     uLong crc;
+    MzZipEncryptionHeader encryption_header;
     uLong keys[3];
     const uLongf *crc_table;
 };
@@ -64,7 +70,18 @@ init_keys (MzZipStream *zip, const char *passwd)
     }
 }
 
-#define zencode(z,k,c,t)  (t=decrypt_byte(k), update_keys(z,c), t^(k))
+#define zencode(z,c,t)  (t=decrypt_byte(z->keys), update_keys(z,c), t^(c))
+
+static void
+init_encryption_header (MzZipStream *zip, uLong crc)
+{
+    int i;
+    srand((unsigned)time(NULL));
+    for (i = 0; i < 12; i++) {
+        int t;
+        zip->encryption_header.data[i] = zencode(zip, rand(), t);
+    }
+}
 
 static int
 init_z_stream (z_stream *stream)
@@ -544,6 +561,8 @@ mz_zip_stream_begin_file (MzZipStream *zip,
     zip->data_size = 0;
     zip->compressed_size = 0;
     zip->crc = crc32(0, NULL, 0);
+
+    init_encryption_header(zip, zip->crc);
 
     return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
