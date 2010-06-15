@@ -25,7 +25,6 @@ struct _MzZipStream
     MzZipHeader *current_header;
     unsigned int current_header_position;
     unsigned int written_header_size;
-    bool written_header;
     unsigned int data_size;
     unsigned int compressed_size;
     uLong crc;
@@ -525,7 +524,6 @@ mz_zip_stream_create (const char *password)
     zip->current_header = NULL;
     zip->current_header_position = 0;
     zip->written_header_size = 0;
-    zip->written_header = false;
     if (init_z_stream(&zip->zlib_stream) != Z_OK) {
         free(zip);
         return NULL;
@@ -580,9 +578,6 @@ write_header (MzZipStream *zip,
         }
     }
 
-    if (zip->written_header_size >= sizeof(*zip->current_header) + filename_length)
-        zip->written_header = true;
-
     return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
 
@@ -606,7 +601,6 @@ mz_zip_stream_begin_file (MzZipStream *zip,
     zip->current_filename = strdup(filename);
     zip->filenames = mz_list_append(zip->filenames, zip->current_filename);
     zip->current_header = header;
-    zip->written_header = false;
     zip->written_header_size = 0;
     zip->data_size = 0;
     zip->compressed_size = 0;
