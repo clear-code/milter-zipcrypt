@@ -62,6 +62,8 @@ compress (void)
 
     assert_success(mz_zip_stream_begin_file(zip,
                                             "body",
+                                            raw_data,
+                                            raw_data_length,
                                             output,
                                             BUFFER_SIZE,
                                             &written_size));
