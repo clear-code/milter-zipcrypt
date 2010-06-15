@@ -10,13 +10,14 @@ void test_compress (void);
 
 static MzZipStream *zip;
 static int zip_fd;
-static char template[] = "MzZipStreamTestXXXXXX";
+static char *template;
 
 void
 setup (void)
 {
     cut_set_fixture_data_dir("fixtures", NULL);
     zip = mz_zip_stream_create(NULL);
+    template = strdup("MzZipStreamTestXXXXXX");
 }
 
 void
@@ -27,6 +28,7 @@ teardown (void)
         close(zip_fd);
     }
     cut_remove_path(template, NULL);
+    free(template);
 }
 
 static void
