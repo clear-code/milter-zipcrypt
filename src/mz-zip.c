@@ -60,12 +60,13 @@ update_keys (MzZipStream *zip, unsigned char c)
 static void
 init_keys (MzZipStream *zip, const char *password)
 {
+    if (!password)
+        return;
+    zip->password = strdup(password);
     zip->keys[0] = 305419896L;
     zip->keys[1] = 591751049L;
     zip->keys[2] = 878082192L;
     zip->crc_table = get_crc_table();
-    if (!password)
-        return;
 
     while (*password != '\0') {
         update_keys(zip, *password);
@@ -530,8 +531,6 @@ mz_zip_stream_create (const char *password)
         free(zip);
         return NULL;
     }
-    if (password)
-        zip->password = strdup(password);
     init_keys(zip, password);
 
     return zip;
