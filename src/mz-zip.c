@@ -660,11 +660,14 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
             int t;
             output_buffer[i] = zencode(zip, output_buffer[i], t);
         }
+    } else {
+        zip->crc = crc32(zip->crc,
+                         (unsigned char*)input_buffer,
+                         *processed_size);
     }
 
     zip->data_size += *processed_size;
     zip->compressed_size += *written_size;
-    zip->crc = crc32(zip->crc, (unsigned char*)input_buffer, *processed_size);
 
     return (ret == Z_OK) ? MZ_ZIP_STREAM_STATUS_SUCCESS :
         (ret == Z_STREAM_END) ? MZ_ZIP_STREAM_STATUS_REMAIN_OUTPUT_DATA : MZ_ZIP_STREAM_STATUS_UNKNOWN_ERROR;
