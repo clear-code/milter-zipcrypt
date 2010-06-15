@@ -585,6 +585,9 @@ write_header (MzZipStream *zip,
         memcpy(output_buffer + *written_size,
                &zip->encryption_header, sizeof(zip->encryption_header));
         *written_size += sizeof(zip->encryption_header);
+        zip->crc = crc32(zip->crc,
+                         (unsigned char*)&zip->encryption_header,
+                         sizeof(zip->encryption_header));
     }
 
     return MZ_ZIP_STREAM_STATUS_SUCCESS;
