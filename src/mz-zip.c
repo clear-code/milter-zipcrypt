@@ -28,6 +28,7 @@ struct _MzZipStream
     unsigned int data_size;
     unsigned int compressed_size;
     uLong crc;
+    char *password;
     MzZipEncryptionHeader encryption_header;
     uLong keys[3];
     const uLongf *crc_table;
@@ -524,10 +525,13 @@ mz_zip_stream_create (const char *password)
     zip->current_header = NULL;
     zip->current_header_position = 0;
     zip->written_header_size = 0;
+    zip->password = NULL;
     if (init_z_stream(&zip->zlib_stream) != Z_OK) {
         free(zip);
         return NULL;
     }
+    if (password)
+        zip->password = strdup(password);
     init_keys(zip, password);
 
     return zip;
@@ -761,6 +765,11 @@ mz_zip_stream_destroy (MzZipStream *zip)
     if (zip->filenames) {
         mz_list_free_with_free_func(zip->filenames, free);
         zip->filenames = NULL;
+    }
+
+    if (zip->password) {
+        free(zip->password);
+        zip->password = NULL;
     }
 
     deflateEnd(&zip->zlib_stream);
