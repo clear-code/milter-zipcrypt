@@ -16,14 +16,15 @@ void
 setup (void)
 {
     cut_set_fixture_data_dir("fixtures", NULL);
-    zip = mz_zip_stream_create(NULL);
+    zip = NULL;
     template = strdup("MzZipStreamTestXXXXXX");
 }
 
 void
 teardown (void)
 {
-    mz_zip_stream_destroy(zip);
+    if (zip)
+        mz_zip_stream_destroy(zip);
     if (zip_fd != -1) {
         close(zip_fd);
     }
@@ -50,6 +51,9 @@ test_compress (void)
     const char *expected_file;
     MzZipStreamStatus status = MZ_ZIP_STREAM_STATUS_SUCCESS;
     
+    zip = mz_zip_stream_create(NULL);
+    cut_assert_not_null(zip);
+
     raw_data = mz_test_utils_load_data("body", &raw_data_length);
     cut_assert_not_null(raw_data);
 
