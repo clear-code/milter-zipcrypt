@@ -57,6 +57,7 @@ init_keys (MzZipStream *zip, uLong keys[3], const char *passwd)
     keys[0] = 305419896L;
     keys[1] = 591751049L;
     keys[2] = 878082192L;
+    zip->crc_table = get_crc_table();
     while (*passwd != '\0') {
         update_keys(zip, keys, *passwd);
         passwd++;
