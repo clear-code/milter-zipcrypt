@@ -542,34 +542,6 @@ mz_zip_stream_begin_archive (MzZipStream *zip)
     return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
 
-MzZipStreamStatus
-mz_zip_stream_begin_file (MzZipStream *zip,
-                          const char  *filename)
-{
-    MzZipHeader *header;
-
-    if (!zip)
-        return MZ_ZIP_STREAM_STATUS_INVALID_HANDLE;
-
-    header = mz_zip_create_stream_header(filename);
-    if (!header)
-        return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
-
-    zip->headers = mz_list_append(zip->headers, header);
-    zip->current_filename = strdup(filename);
-    zip->filenames = mz_list_append(zip->filenames, zip->current_filename);
-    zip->current_header = header;
-    zip->written_header = false;
-    zip->written_header_size = 0;
-    zip->data_size = 0;
-    zip->compressed_size = 0;
-    zip->crc = crc32(0, NULL, 0);
-
-    init_encryption_header(zip, zip->crc);
-
-    return MZ_ZIP_STREAM_STATUS_SUCCESS;
-}
-
 #ifndef MIN
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
@@ -577,13 +549,11 @@ static MzZipStreamStatus
 write_header (MzZipStream *zip,
               char         *output_buffer,
               unsigned int  output_buffer_size,
-              unsigned int *processed_size,
               unsigned int *written_size)
 {
     unsigned int filename_length;
 
     *written_size = 0;
-    *processed_size = 0;
 
     if (zip->written_header_size < sizeof(*zip->current_header)) {
         *written_size = MIN(output_buffer_size, sizeof(*zip->current_header) - zip->written_header_size);
@@ -617,6 +587,37 @@ write_header (MzZipStream *zip,
 }
 
 MzZipStreamStatus
+mz_zip_stream_begin_file (MzZipStream *zip,
+                          const char  *filename,
+                          char         *output_buffer,
+                          unsigned int  output_buffer_size,
+                          unsigned int *written_size)
+{
+    MzZipHeader *header;
+
+    if (!zip)
+        return MZ_ZIP_STREAM_STATUS_INVALID_HANDLE;
+
+    header = mz_zip_create_stream_header(filename);
+    if (!header)
+        return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
+
+    zip->headers = mz_list_append(zip->headers, header);
+    zip->current_filename = strdup(filename);
+    zip->filenames = mz_list_append(zip->filenames, zip->current_filename);
+    zip->current_header = header;
+    zip->written_header = false;
+    zip->written_header_size = 0;
+    zip->data_size = 0;
+    zip->compressed_size = 0;
+    zip->crc = crc32(0, NULL, 0);
+
+    init_encryption_header(zip, zip->crc);
+
+    return write_header(zip, output_buffer, output_buffer_size, written_size);
+}
+
+MzZipStreamStatus
 mz_zip_stream_process_file_data (MzZipStream  *zip,
                                  const char   *input_buffer,
                                  unsigned int  input_buffer_size,
@@ -626,9 +627,6 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
                                  unsigned int *written_size)
 {
     int ret;
-
-    if (!zip->written_header)
-        return write_header(zip, output_buffer, output_buffer_size, processed_size, written_size);
 
     zip->zlib_stream.next_in = (Bytef*)input_buffer;
     zip->zlib_stream.avail_in = input_buffer_size;

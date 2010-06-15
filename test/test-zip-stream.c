@@ -57,7 +57,12 @@ test_compress (void)
 
     assert_success(mz_zip_stream_begin_archive(zip));
 
-    assert_success(mz_zip_stream_begin_file(zip, "body"));
+    assert_success(mz_zip_stream_begin_file(zip,
+                                            "body",
+                                            output,
+                                            BUFFER_SIZE,
+                                            &written_size));
+    write(zip_fd, output, written_size);
 
     while (status == MZ_ZIP_STREAM_STATUS_SUCCESS) {
         status = mz_zip_stream_process_file_data(zip,
