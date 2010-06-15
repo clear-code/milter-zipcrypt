@@ -45,7 +45,7 @@ decrypt_byte (uLong keys[3])
 #define CRC32(c, b, table) (table[((int)(c) ^ (b)) & 0xff] ^ ((c) >> 8))
 
 static int
-update_keys (MzZipStream *zip, unsigned char c)
+update_keys (MzZipStream *zip, unsigned int c)
 {
     zip->keys[0] = CRC32(zip->keys[0], c, zip->crc_table);
     zip->keys[1] = (zip->keys[1] + (zip->keys[0] & 0xff)) * 134775813L + 1;
@@ -632,6 +632,7 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
                                  unsigned int *written_size)
 {
     int ret;
+    int i;
 
     zip->zlib_stream.next_in = (Bytef*)input_buffer;
     zip->zlib_stream.avail_in = input_buffer_size;
@@ -642,6 +643,14 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
 
     *written_size = output_buffer_size - zip->zlib_stream.avail_out;
     *processed_size = input_buffer_size - zip->zlib_stream.avail_in;
+
+    if (zip->password) {
+        for (i = 0; i < *written_size; i++) {
+            int t;
+            output_buffer[i] = zencode(zip, output_buffer[i], t);
+        }
+    }
+
     zip->data_size += *processed_size;
     zip->compressed_size += *written_size;
     zip->crc = crc32(zip->crc, (unsigned char*)input_buffer, *processed_size);
