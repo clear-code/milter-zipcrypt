@@ -18,6 +18,7 @@ struct _MzZipStream
     MzList *filenames;
     char *current_filename;
     MzZipHeader *current_header;
+    unsigned int current_header_position;
     unsigned int written_header_size;
     bool written_header;
     unsigned int data_size;
@@ -177,7 +178,8 @@ MzZipCentralDirectoryRecord *
 mz_zip_create_central_directory_record (const char *filename,
                                         MzZipHeader *header,
                                         int file_attributes,
-                                        int data_type)
+                                        int data_type,
+                                        unsigned int header_position)
 {
     MzZipCentralDirectoryRecord *record;
     void *dest, *src;
@@ -217,10 +219,10 @@ mz_zip_create_central_directory_record (const char *filename,
     record->external_file_attributes[2] = (file_attributes >> 16) & 0xff;
     record->external_file_attributes[3] = (file_attributes >> 24) & 0xff;
 
-    record->header_offset[0] = 0;
-    record->header_offset[1] = 0;
-    record->header_offset[2] = 0;
-    record->header_offset[3] = 0;
+    record->header_offset[0] = header_position & 0xff;
+    record->header_offset[1] = (header_position >> 8) & 0xff;
+    record->header_offset[2] = (header_position >> 16) & 0xff;
+    record->header_offset[3] = (header_position >> 24) & 0xff;
 
     return record;
 }
@@ -394,7 +396,8 @@ mz_zip_compress_attachments (int fd, MzList *attachments)
         central_record = mz_zip_create_central_directory_record(attachment->filename,
                                                                 header,
                                                                 attachment->file_attributes,
-                                                                zlib_stream.data_type);
+                                                                zlib_stream.data_type,
+                                                                0);
         if (!central_record)
             goto end;
 
@@ -460,6 +463,7 @@ mz_zip_stream_create (void)
     zip->filenames = NULL;
     zip->current_filename = NULL;
     zip->current_header = NULL;
+    zip->current_header_position = 0;
     zip->written_header_size = 0;
     zip->written_header = false;
     if (init_z_stream(&zip->zlib_stream) != Z_OK) {
@@ -612,7 +616,12 @@ mz_zip_stream_end_file (MzZipStream  *zip,
         central_record = mz_zip_create_central_directory_record(zip->current_filename,
                                                                 zip->current_header,
                                                                 020151000000,
-                                                                zip->zlib_stream.data_type);
+                                                                zip->zlib_stream.data_type,
+                                                                zip->current_header_position);
+        zip->current_header_position += sizeof(*zip->current_header);
+        zip->current_header_position += GET_32BIT_VALUE(zip->current_header->compressed_size);
+        zip->current_header_position += GET_16BIT_VALUE(zip->current_header->filename_length);
+        zip->current_header_position += sizeof(descriptor);
         zip->central_directory_records = mz_list_append(zip->central_directory_records,
                                                         central_record);
         deflateReset(&zip->zlib_stream);

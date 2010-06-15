@@ -164,7 +164,8 @@ test_compress_in_memory (void)
     actual_directory_record = mz_zip_create_central_directory_record("body",
                                                                      actual_header,
                                                                      mz_test_utils_get_file_attributes("body"),
-                                                                     guessed_data_type);
+                                                                     guessed_data_type,
+                                                                     0);
     memcpy(&expected_directory_record, expected_compressed_data, sizeof(expected_directory_record));
     expected_compressed_data += sizeof(expected_directory_record);
 

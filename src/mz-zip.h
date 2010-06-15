@@ -77,7 +77,8 @@ MzZipCentralDirectoryRecord *
                                   (const char *filename,
                                    MzZipHeader *header,
                                    int file_attributes,
-                                   int data_type);
+                                   int data_type,
+                                   unsigned int header_position);
 MzZipEndOfCentralDirectoryRecord *
             mz_zip_create_end_of_central_directory_record
                                   (unsigned short entry_num,
