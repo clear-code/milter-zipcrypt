@@ -38,21 +38,17 @@ assert_success (MzZipStreamStatus status)
     cut_assert_equal_int(MZ_ZIP_STREAM_STATUS_SUCCESS, status);
 }
 
-void
-test_compress (void)
-{
 #define BUFFER_SIZE 4096
+static void
+compress (void)
+{
     char output[BUFFER_SIZE];
     const char *raw_data;
     unsigned int raw_data_length;
     unsigned int raw_data_position = 0;
-    unsigned int written_size;
     unsigned int processed_size;
-    const char *expected_file;
+    unsigned int written_size;
     MzZipStreamStatus status = MZ_ZIP_STREAM_STATUS_SUCCESS;
-    
-    zip = mz_zip_stream_create(NULL);
-    cut_assert_not_null(zip);
 
     raw_data = mz_test_utils_load_data("body", &raw_data_length);
     cut_assert_not_null(raw_data);
@@ -96,11 +92,29 @@ test_compress (void)
 
     close(zip_fd);
     zip_fd = -1;
+}
+
+void
+test_compress (void)
+{
+    const char *expected_file;
+
+    zip = mz_zip_stream_create(NULL);
+    cut_assert_not_null(zip);
+
+    compress();
 
     expected_file = cut_build_path(cut_get_test_directory(),
                                    "fixtures",
                                    "stream.zip",
                                    NULL);
     cut_assert_equal_file_raw(expected_file, template);
+}
+
+void
+test_encrypt (void)
+{
+    zip = mz_zip_stream_create("password");
+    cut_assert_not_null(zip);
 }
 
