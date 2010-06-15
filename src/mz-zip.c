@@ -614,13 +614,13 @@ write_header (MzZipStream *zip,
 }
 
 MzZipStreamStatus
-mz_zip_stream_compress_step (MzZipStream  *zip,
-                             const char   *input_buffer,
-                             unsigned int  input_buffer_size,
-                             char         *output_buffer,
-                             unsigned int  output_buffer_size,
-                             unsigned int *processed_size,
-                             unsigned int *written_size)
+mz_zip_stream_process_file_data (MzZipStream  *zip,
+                                 const char   *input_buffer,
+                                 unsigned int  input_buffer_size,
+                                 char         *output_buffer,
+                                 unsigned int  output_buffer_size,
+                                 unsigned int *processed_size,
+                                 unsigned int *written_size)
 {
     int ret;
 

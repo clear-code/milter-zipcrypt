@@ -60,13 +60,13 @@ test_compress (void)
     assert_success(mz_zip_stream_begin_file(zip, "body"));
 
     while (status == MZ_ZIP_STREAM_STATUS_SUCCESS) {
-        status = mz_zip_stream_compress_step(zip,
-                                             raw_data + raw_data_position,
-                                             raw_data_length - raw_data_position,
-                                             output,
-                                             BUFFER_SIZE,
-                                             &processed_size,
-                                             &written_size);
+        status = mz_zip_stream_process_file_data(zip,
+                                                 raw_data + raw_data_position,
+                                                 raw_data_length - raw_data_position,
+                                                 output,
+                                                 BUFFER_SIZE,
+                                                 &processed_size,
+                                                 &written_size);
         raw_data_position += processed_size;
         write(zip_fd, output, written_size);
     }

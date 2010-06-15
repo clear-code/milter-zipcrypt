@@ -102,7 +102,8 @@ MzZipStream      *mz_zip_stream_create        (const char *password);
 MzZipStreamStatus mz_zip_stream_begin_archive (MzZipStream *zip);
 MzZipStreamStatus mz_zip_stream_begin_file    (MzZipStream *zip,
                                                const char  *filename);
-MzZipStreamStatus mz_zip_stream_compress_step (MzZipStream  *zip,
+MzZipStreamStatus mz_zip_stream_process_file_data
+                                              (MzZipStream  *zip,
                                                const char   *input_buffer,
                                                unsigned int  input_buffer_size,
                                                char         *output_buffer,
