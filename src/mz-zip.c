@@ -24,7 +24,46 @@ struct _MzZipStream
     unsigned int data_size;
     unsigned int compressed_size;
     uLong crc;
+    const uLongf *crc_table;
 };
+
+
+static int
+decrypt_byte (uLong keys[3])
+{
+    unsigned tmp;
+    tmp = ((unsigned)keys[2] & 0xffff) | 2;
+    return (int)(((tmp * (tmp ^ 1)) >> 8) & 0xff);
+}
+
+#define CRC32(c, b, table) (table[((int)(c) ^ (b)) & 0xff] ^ ((c) >> 8))
+
+static int
+update_keys (MzZipStream *zip, uLong keys[3], unsigned char c)
+{
+    keys[0] = CRC32(keys[0], c, zip->crc_table);
+    keys[1] = (keys[1] + (keys[0] & 0xff)) * 134775813L + 1;
+    {
+        register int keyshift = (int)(keys[1] >> 24);
+        keys[2] = CRC32(keys[2], keyshift, zip->crc_table);
+    }
+    return c;
+}
+
+
+static void
+init_keys (MzZipStream *zip, uLong keys[3], const char *passwd)
+{
+    keys[0] = 305419896L;
+    keys[1] = 591751049L;
+    keys[2] = 878082192L;
+    while (*passwd != '\0') {
+        update_keys(zip, keys, *passwd);
+        passwd++;
+    }
+}
+
+#define zencode(z,k,c,t)  (t=decrypt_byte(k), update_keys(z,k,c), t^(k))
 
 static int
 init_z_stream (z_stream *stream)
