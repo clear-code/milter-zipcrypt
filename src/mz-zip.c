@@ -581,6 +581,12 @@ write_header (MzZipStream *zip,
         }
     }
 
+    if (zip->password) {
+        memcpy(output_buffer + *written_size,
+               &zip->encryption_header, sizeof(zip->encryption_header));
+        *written_size += sizeof(zip->encryption_header);
+    }
+
     return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
 
@@ -600,6 +606,8 @@ mz_zip_stream_begin_file (MzZipStream *zip,
     if (!header)
         return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
 
+    if (zip->password)
+        header->flags[0] |= 1; /* encryption */
     zip->headers = mz_list_append(zip->headers, header);
     zip->current_filename = strdup(filename);
     zip->filenames = mz_list_append(zip->filenames, zip->current_filename);
@@ -663,6 +671,8 @@ mz_zip_stream_end_file (MzZipStream  *zip,
     if (output_buffer_size >= sizeof(descriptor)) {
         MzZipCentralDirectoryRecord *central_record;
 
+        if (zip->password)
+            zip->compressed_size += sizeof(zip->encryption_header);
         descriptor.crc = zip->crc;
         descriptor.compressed_size = zip->compressed_size;
         descriptor.uncompressed_size = zip->data_size;
