@@ -28,7 +28,6 @@ struct _MzZipStream
     const uLongf *crc_table;
 };
 
-
 static int
 decrypt_byte (uLong keys[3])
 {
@@ -491,7 +490,7 @@ end:
 }
 
 MzZipStream *
-mz_zip_stream_create (void)
+mz_zip_stream_create (const char *password)
 {
     MzZipStream *zip;
 
@@ -511,6 +510,7 @@ mz_zip_stream_create (void)
         free(zip);
         return NULL;
     }
+    init_keys(zip, password);
 
     return zip;
 }

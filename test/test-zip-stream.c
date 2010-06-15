@@ -16,7 +16,7 @@ void
 setup (void)
 {
     cut_set_fixture_data_dir("fixtures", NULL);
-    zip = mz_zip_stream_create();
+    zip = mz_zip_stream_create(NULL);
 }
 
 void

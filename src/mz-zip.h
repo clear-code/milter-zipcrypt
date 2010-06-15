@@ -98,7 +98,7 @@ typedef enum
     MZ_ZIP_STREAM_STATUS_UNKNOWN_ERROR      = 4
 } MzZipStreamStatus;
 
-MzZipStream      *mz_zip_stream_create        (void);
+MzZipStream      *mz_zip_stream_create        (const char *password);
 MzZipStreamStatus mz_zip_stream_begin_archive (MzZipStream *zip);
 MzZipStreamStatus mz_zip_stream_begin_file    (MzZipStream *zip,
                                                const char  *filename);
