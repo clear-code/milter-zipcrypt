@@ -48,6 +48,7 @@ compress (void)
     unsigned int raw_data_position = 0;
     unsigned int processed_size;
     unsigned int written_size;
+    ssize_t ret;
     MzZipStreamStatus status = MZ_ZIP_STREAM_STATUS_SUCCESS;
 
     raw_data = mz_test_utils_load_data("body", &raw_data_length);
@@ -64,7 +65,7 @@ compress (void)
                                             output,
                                             BUFFER_SIZE,
                                             &written_size));
-    write(zip_fd, output, written_size);
+    ret = write(zip_fd, output, written_size);
 
     while (status == MZ_ZIP_STREAM_STATUS_SUCCESS) {
         status = mz_zip_stream_process_file_data(zip,
@@ -75,20 +76,20 @@ compress (void)
                                                  &processed_size,
                                                  &written_size);
         raw_data_position += processed_size;
-        write(zip_fd, output, written_size);
+        ret = write(zip_fd, output, written_size);
     }
 
     assert_success(mz_zip_stream_end_file(zip,
                                           output,
                                           BUFFER_SIZE,
                                           &written_size));
-    write(zip_fd, output, written_size);
+    ret = write(zip_fd, output, written_size);
 
     assert_success(mz_zip_stream_end_archive(zip,
                                              output,
                                              BUFFER_SIZE,
                                              &written_size));
-    write(zip_fd, output, written_size);
+    ret = write(zip_fd, output, written_size);
 
     close(zip_fd);
     zip_fd = -1;
