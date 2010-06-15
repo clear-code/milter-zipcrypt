@@ -100,8 +100,10 @@ typedef enum
 
 MzZipStream      *mz_zip_stream_create        (const char *password);
 MzZipStreamStatus mz_zip_stream_begin_archive (MzZipStream *zip);
-MzZipStreamStatus mz_zip_stream_begin_file    (MzZipStream *zip,
-                                               const char  *filename,
+MzZipStreamStatus mz_zip_stream_begin_file    (MzZipStream  *zip,
+                                               const char   *filename,
+                                               const char   *entire_data,
+                                               unsigned int  entire_data_size,
                                                char         *output_buffer,
                                                unsigned int  output_buffer_size,
                                                unsigned int *written_size);

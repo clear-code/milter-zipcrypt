@@ -594,8 +594,10 @@ write_header (MzZipStream *zip,
 }
 
 MzZipStreamStatus
-mz_zip_stream_begin_file (MzZipStream *zip,
-                          const char  *filename,
+mz_zip_stream_begin_file (MzZipStream  *zip,
+                          const char   *filename,
+                          const char   *entire_data,
+                          unsigned int  entire_data_size,
                           char         *output_buffer,
                           unsigned int  output_buffer_size,
                           unsigned int *written_size)
@@ -611,6 +613,9 @@ mz_zip_stream_begin_file (MzZipStream *zip,
 
     if (zip->password)
         header->flags[0] |= 1; /* encryption */
+
+    zip->crc = crc32(0, NULL, 0);
+
     zip->headers = mz_list_append(zip->headers, header);
     zip->current_filename = strdup(filename);
     zip->filenames = mz_list_append(zip->filenames, zip->current_filename);
@@ -618,9 +623,12 @@ mz_zip_stream_begin_file (MzZipStream *zip,
     zip->written_header_size = 0;
     zip->data_size = 0;
     zip->compressed_size = 0;
-    zip->crc = crc32(0, NULL, 0);
-
-    init_encryption_header(zip, zip->crc);
+    if (zip->password) {
+        zip->crc = crc32(zip->crc, (unsigned char*)entire_data, entire_data_size);
+        memcpy((void*)zip->current_header + offsetof(MzZipHeader, crc),
+                &zip->crc, sizeof(zip->crc));
+        init_encryption_header(zip, zip->crc);
+    }
 
     return write_header(zip, output_buffer, output_buffer_size, written_size);
 }
