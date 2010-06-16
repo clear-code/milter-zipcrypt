@@ -34,12 +34,12 @@ struct _MzZipStream
     const uLongf *crc_table;
 };
 
-static int
+static unsigned char
 decrypt_byte (uLong keys[3])
 {
-    unsigned tmp;
-    tmp = ((unsigned)keys[2] & 0xffff) | 2;
-    return (int)(((tmp * (tmp ^ 1)) >> 8) & 0xff);
+    unsigned short tmp;
+    tmp = ((unsigned short)keys[2] & 0xffff) | 2;
+    return (unsigned char)(((tmp * (tmp ^ 1)) >> 8) & 0xff);
 }
 
 #define CRC32(c, b, table) (table[((int)(c) ^ (b)) & 0xff] ^ ((c) >> 8))
