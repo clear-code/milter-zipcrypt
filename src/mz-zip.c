@@ -675,6 +675,7 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
 
 typedef struct _MzZipDataDescriptor
 {
+    unsigned char signature[4];
     unsigned int crc;
     unsigned int compressed_size;
     unsigned int uncompressed_size;
@@ -696,6 +697,10 @@ mz_zip_stream_end_file (MzZipStream  *zip,
 
         if (zip->password)
             zip->compressed_size += sizeof(zip->encryption_header);
+        descriptor.signature[0] = 0x50;
+        descriptor.signature[1] = 0x4b;
+        descriptor.signature[2] = 0x07;
+        descriptor.signature[3] = 0x08;
         descriptor.crc = zip->crc;
         descriptor.compressed_size = zip->compressed_size;
         descriptor.uncompressed_size = zip->data_size;
@@ -703,7 +708,9 @@ mz_zip_stream_end_file (MzZipStream  *zip,
                &descriptor, sizeof(descriptor));
         *written_size = sizeof(descriptor);
 
-        memcpy((void*)zip->current_header + offsetof(MzZipHeader, crc), &descriptor, sizeof(descriptor));
+        memcpy((void*)zip->current_header + offsetof(MzZipHeader, crc),
+               (void*)&descriptor + offsetof(MzZipDataDescriptor, crc),
+               sizeof(descriptor) - sizeof(descriptor.signature));
         central_record = mz_zip_create_central_directory_record(zip->current_filename,
                                                                 zip->current_header,
                                                                 020151000000,
