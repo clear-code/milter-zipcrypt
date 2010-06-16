@@ -60,9 +60,6 @@ update_keys (MzZipStream *zip, unsigned int c)
 static void
 init_keys (MzZipStream *zip, const char *password)
 {
-    if (!password)
-        return;
-    zip->password = strdup(password);
     zip->keys[0] = 305419896L;
     zip->keys[1] = 591751049L;
     zip->keys[2] = 878082192L;
@@ -81,6 +78,7 @@ init_encryption_header (MzZipStream *zip, uLong crc)
 {
     int i, t;
     srand((unsigned)time(NULL));
+    init_keys(zip, zip->password);
     for (i = 0; i < 10; i++)
         zip->encryption_header.data[i] = zencode(zip, rand(), t);
     zip->encryption_header.data[10] = zencode(zip, ((crc >> 16) & 0xff), t);
@@ -526,12 +524,14 @@ mz_zip_stream_create (const char *password)
     zip->current_header = NULL;
     zip->current_header_position = 0;
     zip->written_header_size = 0;
-    zip->password = NULL;
     if (init_z_stream(&zip->zlib_stream) != Z_OK) {
         free(zip);
         return NULL;
     }
-    init_keys(zip, password);
+    if (password)
+        zip->password = strdup(password);
+    else
+        zip->password = NULL;
 
     return zip;
 }
