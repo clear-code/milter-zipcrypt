@@ -717,8 +717,7 @@ mz_zip_stream_end_file (MzZipStream  *zip,
                                                         central_record);
         deflateReset(&zip->zlib_stream);
     } else {
-        /* error? */
-        return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
+        return MZ_ZIP_STREAM_STATUS_NO_OUTPUT_SPACE;
     }
 
     return MZ_ZIP_STREAM_STATUS_SUCCESS;
