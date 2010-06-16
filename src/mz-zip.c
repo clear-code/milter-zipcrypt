@@ -643,7 +643,6 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
                                  unsigned int *written_size)
 {
     int ret;
-    int i;
 
     zip->zlib_stream.next_in = (Bytef*)input_buffer;
     zip->zlib_stream.avail_in = input_buffer_size;
@@ -656,6 +655,7 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
     *processed_size = input_buffer_size - zip->zlib_stream.avail_in;
 
     if (zip->password) {
+        int i;
         for (i = 0; i < *written_size; i++) {
             int t;
             output_buffer[i] = zencode(zip, output_buffer[i], t);
