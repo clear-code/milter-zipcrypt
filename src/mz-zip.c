@@ -84,15 +84,15 @@ zdecode (MzZipStream *zip, unsigned char c)
 }
 
 static void
-init_encryption_header (MzZipStream *zip, uLong crc)
+init_encryption_header (MzZipStream *zip, unsigned short msdos_time)
 {
     unsigned int i;
     srand((unsigned)time(NULL));
     init_keys(zip, zip->password);
     for (i = 0; i < 10; i++)
         zip->encryption_header.data[i] = zencode(zip, (rand() & 0xff));
-    zip->encryption_header.data[10] = zencode(zip, ((crc >> 16) & 0xff));
-    zip->encryption_header.data[11] = zencode(zip, ((crc >> 24) & 0xff));
+    zip->encryption_header.data[10] = zencode(zip, (msdos_time & 0xff));
+    zip->encryption_header.data[11] = zencode(zip, ((msdos_time >> 8) & 0xff));
 }
 
 static int
@@ -234,11 +234,12 @@ mz_zip_create_header (const char *filename,
 }
 
 static MzZipHeader *
-mz_zip_create_stream_header (const char *filename)
+mz_zip_create_stream_header (const char *filename,
+                             time_t last_modified_time)
 {
     return mz_zip_create_header(filename,
                                 NULL, 0,
-                                0,
+                                last_modified_time,
                                 0);
 
 }
@@ -603,18 +604,18 @@ write_header (MzZipStream *zip,
 MzZipStreamStatus
 mz_zip_stream_begin_file (MzZipStream  *zip,
                           const char   *filename,
-                          const char   *entire_data,
-                          unsigned int  entire_data_size,
                           char         *output_buffer,
                           unsigned int  output_buffer_size,
                           unsigned int *written_size)
 {
     MzZipHeader *header;
+    time_t last_modified_time;
 
     if (!zip)
         return MZ_ZIP_STREAM_STATUS_INVALID_HANDLE;
 
-    header = mz_zip_create_stream_header(filename);
+    last_modified_time = time(NULL);
+    header = mz_zip_create_stream_header(filename, last_modified_time);
     if (!header)
         return MZ_ZIP_STREAM_STATUS_NO_MEMORY;
 
@@ -631,12 +632,10 @@ mz_zip_stream_begin_file (MzZipStream  *zip,
     zip->data_size = 0;
     zip->compressed_size = 0;
     if (zip->password) {
-        zip->crc = crc32(zip->crc, (unsigned char*)entire_data, entire_data_size);
-        memcpy((void*)zip->current_header + offsetof(MzZipHeader, crc),
-                &zip->crc, sizeof(zip->crc));
-        zip->current_header->last_modified_time[0] = (zip->crc >> 16) & 0xff;
-        zip->current_header->last_modified_time[1] = (zip->crc >> 24) & 0xff;
-        init_encryption_header(zip, zip->crc);
+        unsigned short msdos_time = 0, msdos_date = 0;
+        convert_time_to_msdos_time_and_date(last_modified_time, &msdos_time, &msdos_date);
+
+        init_encryption_header(zip, msdos_time);
     }
 
     return write_header(zip, output_buffer, output_buffer_size, written_size);
@@ -665,14 +664,12 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
 
     if (zip->password) {
         int i;
-        for (i = 0; i < *written_size; i++) {
+        for (i = 0; i < *written_size; i++)
             output_buffer[i] = zencode(zip, output_buffer[i]);
-        }
-    } else {
-        zip->crc = crc32(zip->crc,
-                         (unsigned char*)input_buffer,
-                         *processed_size);
     }
+    zip->crc = crc32(zip->crc,
+                     (unsigned char*)input_buffer,
+                     *processed_size);
 
     zip->data_size += *processed_size;
     zip->compressed_size += *written_size;

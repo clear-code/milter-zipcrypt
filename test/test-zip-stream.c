@@ -62,8 +62,6 @@ compress (void)
 
     assert_success(mz_zip_stream_begin_file(zip,
                                             "body",
-                                            raw_data,
-                                            raw_data_length,
                                             output,
                                             BUFFER_SIZE,
                                             &written_size));
@@ -119,5 +117,6 @@ test_encrypt (void)
 {
     zip = mz_zip_stream_create("password");
     cut_assert_not_null(zip);
+    compress();
 }
 
