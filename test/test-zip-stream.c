@@ -28,7 +28,7 @@ teardown (void)
     if (zip_fd != -1) {
         close(zip_fd);
     }
-    //cut_remove_path(template, NULL);
+    cut_remove_path(template, NULL);
     free(template);
 }
 
