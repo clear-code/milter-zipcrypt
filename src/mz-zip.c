@@ -634,6 +634,8 @@ mz_zip_stream_begin_file (MzZipStream  *zip,
         zip->crc = crc32(zip->crc, (unsigned char*)entire_data, entire_data_size);
         memcpy((void*)zip->current_header + offsetof(MzZipHeader, crc),
                 &zip->crc, sizeof(zip->crc));
+        zip->current_header->last_modified_time[0] = (zip->crc >> 16) & 0xff;
+        zip->current_header->last_modified_time[1] = (zip->crc >> 24) & 0xff;
         init_encryption_header(zip, zip->crc);
     }
 
