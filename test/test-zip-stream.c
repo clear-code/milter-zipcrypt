@@ -1,6 +1,5 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
-#include <cutter.h>
-#include <cutter/gcutter.h>
+#include <gcutter.h>
 #include <errno.h>
 #include <unistd.h>
 
