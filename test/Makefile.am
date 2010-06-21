@@ -5,6 +5,7 @@ TESTS_ENVIRONMENT = NO_MAKE=yes CUTTER="$(CUTTER)"
 noinst_LTLIBRARIES =		\
 	libmz_test_utils.la	\
 	test_base64.la		\
+	test_convert.la		\
 	test_utils.la		\
 	test_zip_stream.la	\
 	test_zlib.la
@@ -41,6 +42,10 @@ test_utils_la_LIBADD =					\
 
 test_base64_la_SOURCES = test-base64.c
 test_base64_la_LIBADD =					\
+	$(top_builddir)/test/libmz_test_utils.la
+
+test_convert_la_SOURCES = test-convert.c
+test_convert_la_LIBADD =					\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_zlib_la_SOURCES = test-zlib.c
