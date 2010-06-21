@@ -6,7 +6,7 @@
 #include "mz-test-utils.h"
 #include "mz-zip.h"
 
-void test_compress (void);
+void test_encrypt (void);
 
 static MzZipStream *zip;
 static int zip_fd;
@@ -93,23 +93,6 @@ compress (void)
 
     close(zip_fd);
     zip_fd = -1;
-}
-
-void
-test_compress (void)
-{
-    const char *expected_file;
-
-    zip = mz_zip_stream_create(NULL);
-    cut_assert_not_null(zip);
-
-    compress();
-
-    expected_file = cut_build_path(cut_get_test_directory(),
-                                   "fixtures",
-                                   "stream.zip",
-                                   NULL);
-    cut_assert_equal_file_raw(expected_file, template);
 }
 
 void
