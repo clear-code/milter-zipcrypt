@@ -1,5 +1,6 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 #include <cutter.h>
+#include <cutter/gcutter.h>
 #include <errno.h>
 #include <unistd.h>
 
@@ -11,13 +12,16 @@ void test_encrypt (void);
 static MzZipStream *zip;
 static int zip_fd;
 static char *template;
+static GCutEgg *egg;
 
 void
 setup (void)
 {
-    cut_set_fixture_data_dir("fixtures", NULL);
     zip = NULL;
+    egg = NULL;
+    cut_set_fixture_data_dir("fixtures", NULL);
     template = strdup("MzZipStreamTestXXXXXX");
+    cut_make_directory("tmp", NULL);
 }
 
 void
@@ -25,11 +29,13 @@ teardown (void)
 {
     if (zip)
         mz_zip_stream_destroy(zip);
-    if (zip_fd != -1) {
+    if (zip_fd != -1)
         close(zip_fd);
-    }
     cut_remove_path(template, NULL);
     free(template);
+    cut_remove_path("tmp", NULL);
+    if (egg)
+        g_object_unref(egg);
 }
 
 static void
@@ -87,6 +93,10 @@ test_encrypt (void)
     char output[BUFFER_SIZE];
     unsigned int written_size;
     ssize_t ret;
+    GError *error = NULL;
+
+    if (!g_find_program_in_path("unzip"))
+        cut_omit("unzip is not in your system!");
 
     zip = mz_zip_stream_create("password");
     cut_assert_not_null(zip);
@@ -107,5 +117,19 @@ test_encrypt (void)
 
     close(zip_fd);
     zip_fd = -1;
+
+    egg = gcut_egg_new("unzip",
+                       "-o",
+                       "-P", "password",
+                       "-d", "tmp",
+                       template, NULL);
+    gcut_egg_hatch(egg, &error);
+    gcut_assert_error(error);
+
+    cut_assert_equal_int(0, gcut_egg_wait(egg, 1000, &error));
+    gcut_assert_error(error);
+
+    cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "body");
+    cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "t.png");
 }
 

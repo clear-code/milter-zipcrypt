@@ -25,11 +25,11 @@ if test "x$GCC" = "xyes"; then
   esac
 fi
 
-m4_ifdef([AC_CHECK_CUTTER], [
-AC_CHECK_CUTTER(>= 1.1.4)
+m4_ifdef([AC_CHECK_GCUTTER], [
+AC_CHECK_GCUTTER(>= 1.1.5)
 ],
-[ac_cv_use_cutter="no"])
-AM_CONDITIONAL([WITH_CUTTER], [test "$ac_cv_use_cutter" != "no"])
+[ac_cv_use_gcutter="no"])
+AM_CONDITIONAL([WITH_GCUTTER], [test "$ac_cv_use_gcutter" != "no"])
 
 AC_CONFIG_FILES([
 Makefile

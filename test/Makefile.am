@@ -1,4 +1,4 @@
-if WITH_CUTTER
+if WITH_GCUTTER
 TESTS = run-test.sh
 TESTS_ENVIRONMENT = NO_MAKE=yes CUTTER="$(CUTTER)"
 
@@ -19,7 +19,7 @@ INCLUDES =			\
 	-I$(top_srcdir)/src
 
 AM_CFLAGS = 			\
-	$(CUTTER_CFLAGS)
+	$(GCUTTER_CFLAGS)
 
 AM_LDFLAGS =			\
 	-module			\
@@ -29,7 +29,7 @@ AM_LDFLAGS =			\
 
 LIBS =							\
 	-L/usr/lib/libmilter				\
-	$(CUTTER_LIBS)
+	$(GCUTTER_LIBS)
 
 libmz_test_utils_la_SOURCES = mz-test-utils.c
 libmz_test_utils_la_LIBADD =				\
