@@ -270,6 +270,7 @@ const char *
 mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size)
 {
     const char *body;
+    char *encoding;
     unsigned int encoded_body_length = 0;
     int state = 0;
     unsigned int save = 0;
@@ -280,8 +281,14 @@ mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size)
     if (!body)
         return NULL;
 
-    *size = mz_base64_decode_step(body, encoded_body_length,
-                                  (unsigned char *)body, &state, &save);
+    encoding = mz_utils_get_content_transfer_encoding(contents);
+    if (!strncasecmp(encoding, "base64", 6)) {
+        *size = mz_base64_decode_step(body, encoded_body_length,
+                                      (unsigned char *)body, &state, &save);
+    } else {
+        *size = encoded_body_length;
+    }
+
     return body;
 }
 

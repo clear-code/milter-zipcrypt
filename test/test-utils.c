@@ -217,3 +217,29 @@ test_extract_attachments (void)
     assert_equal_attachment(&expected, actual);
 }
 
+void
+test_extract_plain_text_attachments (void)
+{
+    const char *body;
+    MzAttachment expected = { NULL, "text", NULL, 0 };
+    const char *expected_data;
+    unsigned int expected_size = 0;
+    MzAttachment *actual;
+
+    expected_data = mz_test_utils_load_data("text", &expected_size);
+
+    expected.data = expected_data;
+    expected.data_length = expected_size;
+
+    body = cut_get_fixture_data_string("text-attachments", NULL);
+    cut_assert_not_null(body);
+
+    actual_attachments = mz_utils_extract_attachments(body, "=-HY8vxMUek5fQZa/zkovp");
+    cut_assert_not_null(actual_attachments);
+
+    /* The first MzList data is mail body itself so skip it. */
+    actual = mz_list_next(actual_attachments)->data;
+
+    assert_equal_attachment(&expected, actual);
+}
+
