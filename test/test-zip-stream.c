@@ -96,7 +96,7 @@ test_encrypt (void)
     GError *error = NULL;
 
     if (!g_find_program_in_path("unzip"))
-        cut_omit("unzip is not in your system!");
+        cut_omit("unzip is not installed in your system!");
 
     zip = mz_zip_stream_create("password");
     cut_assert_not_null(zip);
