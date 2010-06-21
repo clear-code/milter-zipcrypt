@@ -214,6 +214,6 @@ test_extract_attachments (void)
     /* The first MzList data is mail body itself so skip it. */
     actual = mz_list_next(actual_attachments)->data;
 
-    assert_equal_attachment (&expected, actual);
+    assert_equal_attachment(&expected, actual);
 }
 
