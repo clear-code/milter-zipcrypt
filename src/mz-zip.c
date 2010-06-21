@@ -67,18 +67,32 @@ init_keys (MzZipStream *zip, const char *password)
     }
 }
 
-#define zencode(z,c,t)  (t=decrypt_byte(z->keys), update_keys(z,c), t^(c))
+static inline unsigned char
+zencode (MzZipStream *zip, unsigned char c)
+{
+    unsigned char tmp = decrypt_byte(zip->keys);
+    update_keys(zip, c);
+    return (tmp ^ c);
+}
+
+static inline unsigned char
+zdecode (MzZipStream *zip, unsigned char c)
+{
+    c ^= decrypt_byte(zip->keys);
+    update_keys(zip, c);
+    return c;
+}
 
 static void
 init_encryption_header (MzZipStream *zip, uLong crc)
 {
-    int i, t;
+    unsigned int i;
     srand((unsigned)time(NULL));
     init_keys(zip, zip->password);
     for (i = 0; i < 10; i++)
-        zip->encryption_header.data[i] = zencode(zip, (rand() & 0xff), t);
-    zip->encryption_header.data[10] = zencode(zip, ((crc >> 16) & 0xff), t);
-    zip->encryption_header.data[11] = zencode(zip, ((crc >> 24) & 0xff), t);
+        zip->encryption_header.data[i] = zencode(zip, (rand() & 0xff));
+    zip->encryption_header.data[10] = zencode(zip, ((crc >> 16) & 0xff));
+    zip->encryption_header.data[11] = zencode(zip, ((crc >> 24) & 0xff));
 }
 
 static int
@@ -650,8 +664,7 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
     if (zip->password) {
         int i;
         for (i = 0; i < *written_size; i++) {
-            int t;
-            output_buffer[i] = zencode(zip, output_buffer[i], t);
+            output_buffer[i] = zencode(zip, output_buffer[i]);
         }
     } else {
         zip->crc = crc32(zip->crc,
