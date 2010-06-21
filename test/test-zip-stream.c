@@ -28,7 +28,7 @@ teardown (void)
     if (zip_fd != -1) {
         close(zip_fd);
     }
-    cut_remove_path(template, NULL);
+    //cut_remove_path(template, NULL);
     free(template);
 }
 
@@ -40,7 +40,7 @@ assert_success (MzZipStreamStatus status)
 
 #define BUFFER_SIZE 4096
 static void
-compress (void)
+compress_file (const char *filename)
 {
     char output[BUFFER_SIZE];
     const char *raw_data;
@@ -51,17 +51,11 @@ compress (void)
     ssize_t ret;
     MzZipStreamStatus status = MZ_ZIP_STREAM_STATUS_SUCCESS;
 
-    raw_data = mz_test_utils_load_data("body", &raw_data_length);
+    raw_data = mz_test_utils_load_data(filename, &raw_data_length);
     cut_assert_not_null(raw_data);
 
-    errno = 0;
-    zip_fd = mkstemp(template);
-    cut_assert_errno();
-
-    assert_success(mz_zip_stream_begin_archive(zip));
-
     assert_success(mz_zip_stream_begin_file(zip,
-                                            "body",
+                                            filename,
                                             output,
                                             BUFFER_SIZE,
                                             &written_size));
@@ -85,6 +79,26 @@ compress (void)
                                           &written_size));
     ret = write(zip_fd, output, written_size);
 
+}
+
+void
+test_encrypt (void)
+{
+    char output[BUFFER_SIZE];
+    unsigned int written_size;
+    ssize_t ret;
+
+    zip = mz_zip_stream_create("password");
+    cut_assert_not_null(zip);
+
+    errno = 0;
+    zip_fd = mkstemp(template);
+    cut_assert_errno();
+    assert_success(mz_zip_stream_begin_archive(zip));
+
+    compress_file("body");
+    compress_file("t.png");
+
     assert_success(mz_zip_stream_end_archive(zip,
                                              output,
                                              BUFFER_SIZE,
@@ -93,13 +107,5 @@ compress (void)
 
     close(zip_fd);
     zip_fd = -1;
-}
-
-void
-test_encrypt (void)
-{
-    zip = mz_zip_stream_create("password");
-    cut_assert_not_null(zip);
-    compress();
 }
 
