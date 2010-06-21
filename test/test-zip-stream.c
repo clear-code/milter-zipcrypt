@@ -92,6 +92,7 @@ test_encrypt (void)
 {
     char output[BUFFER_SIZE];
     unsigned int written_size;
+    const char *expected_file;
     ssize_t ret;
     GError *error = NULL;
 
@@ -130,6 +131,19 @@ test_encrypt (void)
     gcut_assert_error(error);
 
     cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "body");
+    expected_file = cut_build_path(cut_get_test_directory(),
+                                   "fixtures",
+                                   "body",
+                                   NULL);
+    cut_assert_equal_file_raw(expected_file,
+                              "tmp" G_DIR_SEPARATOR_S "body");
+
     cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "t.png");
+    expected_file = cut_build_path(cut_get_test_directory(),
+                                   "fixtures",
+                                   "t.png",
+                                   NULL);
+    cut_assert_equal_file_raw(expected_file,
+                              "tmp" G_DIR_SEPARATOR_S "t.png");
 }
 
