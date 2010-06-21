@@ -44,16 +44,12 @@ decrypt_byte (uLong keys[3])
 
 #define CRC32(c, b, table) (table[((int)(c) ^ (b)) & 0xff] ^ ((c) >> 8))
 
-static int
-update_keys (MzZipStream *zip, unsigned int c)
+static void
+update_keys (MzZipStream *zip, unsigned char c)
 {
     zip->keys[0] = CRC32(zip->keys[0], c, zip->crc_table);
     zip->keys[1] = (zip->keys[1] + (zip->keys[0] & 0xff)) * 134775813L + 1;
-    {
-        register int keyshift = (int)(zip->keys[1] >> 24);
-        zip->keys[2] = CRC32(zip->keys[2], keyshift, zip->crc_table);
-    }
-    return c;
+    zip->keys[2] = CRC32(zip->keys[2], ((zip->keys[1] >> 24) & 0xff), zip->crc_table);
 }
 
 
@@ -80,7 +76,7 @@ init_encryption_header (MzZipStream *zip, uLong crc)
     srand((unsigned)time(NULL));
     init_keys(zip, zip->password);
     for (i = 0; i < 10; i++)
-        zip->encryption_header.data[i] = zencode(zip, rand(), t);
+        zip->encryption_header.data[i] = zencode(zip, (rand() & 0xff), t);
     zip->encryption_header.data[10] = zencode(zip, ((crc >> 16) & 0xff), t);
     zip->encryption_header.data[11] = zencode(zip, ((crc >> 24) & 0xff), t);
 }
