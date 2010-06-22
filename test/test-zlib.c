@@ -208,7 +208,7 @@ test_compress_attachments (void)
     attachment.data = raw_data;
     attachment.data_length = raw_data_length;
     attachment.filename = "body";
-    attachment.last_modified_time = mz_test_utils_get_last_modified_time("body");
+    attachment.last_modified_time = 1274762295;
     attachment.file_attributes = mz_test_utils_get_file_attributes("body");
 
     errno = 0;
