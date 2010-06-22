@@ -47,7 +47,7 @@ assert_success (MzZipStreamStatus status)
 static void
 compress_file (const char *filename)
 {
-    char output[BUFFER_SIZE];
+    unsigned char output[BUFFER_SIZE];
     const char *raw_data;
     unsigned int raw_data_length;
     unsigned int raw_data_position = 0;
@@ -89,7 +89,7 @@ compress_file (const char *filename)
 void
 test_encrypt (void)
 {
-    char output[BUFFER_SIZE];
+    unsigned char output[BUFFER_SIZE];
     unsigned int written_size;
     const char *expected_file;
     ssize_t ret;

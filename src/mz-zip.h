@@ -101,28 +101,28 @@ typedef enum
 
 MzZipStream      *mz_zip_stream_create        (const char *password);
 MzZipStreamStatus mz_zip_stream_begin_archive (MzZipStream *zip);
-MzZipStreamStatus mz_zip_stream_begin_file    (MzZipStream  *zip,
-                                               const char   *filename,
-                                               char         *output_buffer,
-                                               unsigned int  output_buffer_size,
-                                               unsigned int *written_size);
+MzZipStreamStatus mz_zip_stream_begin_file    (MzZipStream   *zip,
+                                               const char    *filename,
+                                               unsigned char *output_buffer,
+                                               unsigned int   output_buffer_size,
+                                               unsigned int  *written_size);
 MzZipStreamStatus mz_zip_stream_process_file_data
-                                              (MzZipStream  *zip,
-                                               const char   *input_buffer,
-                                               unsigned int  input_buffer_size,
-                                               char         *output_buffer,
-                                               unsigned int  output_buffer_size,
-                                               unsigned int *processed_size,
-                                               unsigned int *written_size);
-MzZipStreamStatus mz_zip_stream_end_file      (MzZipStream  *zip,
-                                               char         *output_buffer,
-                                               unsigned int  output_buffer_size,
-                                               unsigned int *written_size);
-MzZipStreamStatus mz_zip_stream_end_archive   (MzZipStream  *zip,
-                                               char         *output_buffer,
-                                               unsigned int  output_buffer_size,
-                                               unsigned int *written_size);
-void              mz_zip_stream_destroy       (MzZipStream  *zip);
+                                              (MzZipStream   *zip,
+                                               const char    *input_buffer,
+                                               unsigned int   input_buffer_size,
+                                               unsigned char *output_buffer,
+                                               unsigned int   output_buffer_size,
+                                               unsigned int  *processed_size,
+                                               unsigned int  *written_size);
+MzZipStreamStatus mz_zip_stream_end_file      (MzZipStream   *zip,
+                                               unsigned char *output_buffer,
+                                               unsigned int   output_buffer_size,
+                                               unsigned int  *written_size);
+MzZipStreamStatus mz_zip_stream_end_archive   (MzZipStream   *zip,
+                                               unsigned char *output_buffer,
+                                               unsigned int   output_buffer_size,
+                                               unsigned int  *written_size);
+void              mz_zip_stream_destroy       (MzZipStream   *zip);
 
 #endif /* __MZ_ZIP_H__ */
 

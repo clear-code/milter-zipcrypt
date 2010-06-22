@@ -559,7 +559,7 @@ mz_zip_stream_begin_archive (MzZipStream *zip)
 #endif
 static MzZipStreamStatus
 write_header (MzZipStream *zip,
-              char         *output_buffer,
+              unsigned char *output_buffer,
               unsigned int  output_buffer_size,
               unsigned int *written_size)
 {
@@ -602,11 +602,11 @@ write_header (MzZipStream *zip,
 }
 
 MzZipStreamStatus
-mz_zip_stream_begin_file (MzZipStream  *zip,
-                          const char   *filename,
-                          char         *output_buffer,
-                          unsigned int  output_buffer_size,
-                          unsigned int *written_size)
+mz_zip_stream_begin_file (MzZipStream   *zip,
+                          const char    *filename,
+                          unsigned char *output_buffer,
+                          unsigned int   output_buffer_size,
+                          unsigned int  *written_size)
 {
     MzZipHeader *header;
     time_t last_modified_time;
@@ -645,7 +645,7 @@ MzZipStreamStatus
 mz_zip_stream_process_file_data (MzZipStream  *zip,
                                  const char   *input_buffer,
                                  unsigned int  input_buffer_size,
-                                 char         *output_buffer,
+                                 unsigned char *output_buffer,
                                  unsigned int  output_buffer_size,
                                  unsigned int *processed_size,
                                  unsigned int *written_size)
@@ -687,10 +687,10 @@ typedef struct _MzZipDataDescriptor
 } MzZipDataDescriptor;
 
 MzZipStreamStatus
-mz_zip_stream_end_file (MzZipStream  *zip,
-                        char         *output_buffer,
-                        unsigned int  output_buffer_size,
-                        unsigned int *written_size)
+mz_zip_stream_end_file (MzZipStream   *zip,
+                        unsigned char *output_buffer,
+                        unsigned int   output_buffer_size,
+                        unsigned int  *written_size)
 {
     MzZipDataDescriptor descriptor;
 
@@ -736,10 +736,10 @@ mz_zip_stream_end_file (MzZipStream  *zip,
 }
 
 MzZipStreamStatus
-mz_zip_stream_end_archive (MzZipStream  *zip,
-                           char         *output_buffer,
-                           unsigned int  output_buffer_size,
-                           unsigned int *written_size)
+mz_zip_stream_end_archive (MzZipStream   *zip,
+                           unsigned char *output_buffer,
+                           unsigned int   output_buffer_size,
+                           unsigned int  *written_size)
 {
     MzList *node, *filename;
     MzZipEndOfCentralDirectoryRecord *end_of_record = NULL;
