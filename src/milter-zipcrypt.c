@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <libmilter/mfapi.h>
-#include <zlib.h>
 
 struct MzPriv {
     char *boundary;
