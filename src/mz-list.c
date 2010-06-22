@@ -49,7 +49,7 @@ mz_list_free (MzList *list)
 }
 
 void
-mz_list_free_with_free_func (MzList *list, MzElementFreeFunc free_func)
+mz_list_free_with_free_func (MzList *list, MzListElementFreeFunc free_func)
 {
     while (list) {
         MzList *next;

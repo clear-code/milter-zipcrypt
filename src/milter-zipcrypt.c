@@ -226,6 +226,7 @@ _eom (SMFICTX *context)
 
     _send_body(context, priv, attachments);
     _replace_with_crypted_data(context, priv, attachments);
+    mz_list_free_with_free_func(attachments, (MzListElementFreeFunc)mz_attachment_free);
 
     return SMFIS_CONTINUE;
 }

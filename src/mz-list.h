@@ -10,7 +10,7 @@ struct _MzList
     MzList *next;
 };
 
-typedef void (*MzElementFreeFunc)  (void *data);
+typedef void (*MzListElementFreeFunc)  (void *data);
 
 #define mz_list_next(list) ((list) ? (((MzList*)(list))->next) : NULL)
 
@@ -18,7 +18,7 @@ MzList       *mz_list_append (MzList *list, void *data);
 void          mz_list_free   (MzList *list);
 void          mz_list_free_with_free_func
                              (MzList *list,
-                              MzElementFreeFunc free_func);
+                              MzListElementFreeFunc free_func);
 unsigned int  mz_list_length (MzList *list);
 
 #endif /* __MZ_LIST_H__ */
