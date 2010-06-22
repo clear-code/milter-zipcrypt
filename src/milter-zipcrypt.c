@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <libmilter/mfapi.h>
 
 struct MzPriv {
@@ -194,7 +195,18 @@ struct smfiDesc smfilter = {
 int
 main (int argc, char *argv[])
 {
-    char *connection_spec;
+    int opt;
+    char *connection_spec = NULL;
+
+    while ((opt = getopt(argc, argv, "s:")) != -1) {
+        switch (opt) {
+        case 's':
+            connection_spec = strdup(optarg);
+            break;
+        default:
+            break;
+        }
+    }
 
     if (smfi_setconn(connection_spec) == MI_FAILURE) {
         exit(EXIT_FAILURE);
