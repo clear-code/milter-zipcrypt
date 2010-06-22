@@ -251,13 +251,14 @@ mz_utils_get_attachment_body_place (const char *contents, unsigned int *size)
     char *start, *end;
     *size = 0;
 
-    start = strstr(contents, "\n\n");
+
+    start = strstr(contents, "\r\n\r\n");
     if (!start)
         return NULL;
 
     start += 2;
 
-    end = strstr(start, "\n\n");
+    end = strstr(start, "\r\n\r\n");
     if (!end)
         return NULL;
 
@@ -307,7 +308,7 @@ mz_utils_extract_attachments (const char *body, const char *boundary)
     boundary_line_length = strlen(boundary) + 4;
     boundary_line = malloc(boundary_line_length);
 
-    sprintf(boundary_line, "--%s\n", boundary);
+    sprintf(boundary_line, "--%s\r\n", boundary);
 
     p = body;
     while ((p = strstr(p, boundary_line))) {
