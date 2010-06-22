@@ -136,6 +136,32 @@ _replace_body (SMFICTX *context, const unsigned char *body, size_t size, int *st
 }
 
 static sfsistat
+_send_headers (SMFICTX *context)
+{
+    char *content_type;
+    char *content_disposition;
+
+    content_type = "Content-Type: application/zip; name=\"attachment.zip\"\r\n";
+    content_disposition = "Content-Disposition: attachment; filename=\"attachment.zip\"\r\n";
+
+    smfi_replacebody(context,
+                     (unsigned char*)content_type,
+                     strlen(content_type));
+    smfi_replacebody(context,
+                     (unsigned char*)content_disposition,
+                     strlen(content_disposition));
+    smfi_replacebody(context,
+                     (unsigned char*)"Content-Transfer-Encoding: base64\r\n",
+                     strlen("Content-Transfer-Encoding: base64\r\n"));
+
+    smfi_replacebody(context,
+                     (unsigned char*)"\r\n",
+                     strlen("\r\n"));
+
+    return SMFIS_CONTINUE;
+}
+
+static sfsistat
 _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attachments)
 {
     MzZipStream *zip;
@@ -146,9 +172,7 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
     int save = 0;
     MzZipStreamStatus status;
 
-    smfi_replacebody(context,
-                     (unsigned char*)"Content-Transfer-Encoding: base64\r\n",
-                     strlen("Content-Transfer-Encoding: base64\r\n"));
+    _send_headers(context);
 
     zip = mz_zip_stream_create("password");
     mz_zip_stream_begin_archive(zip);
