@@ -193,6 +193,7 @@ assert_equal_attachment (MzAttachment *expected, MzAttachment *actual)
 
 typedef struct _ExtractTestData
 {
+    const char *test_name;
     const char *fixture_filename;
     const char *expected_attachment_filename;
     const char *boundary_string;
@@ -200,17 +201,17 @@ typedef struct _ExtractTestData
 
 static const ExtractTestData extract_test_data[] =
 {
-    {"body",             "t.png", "=-u231oNe9VILCVd42q7nh"},
-    {"text-attachments", "text",  "=-HY8vxMUek5fQZa/zkovp"}
+    {"png image",  "body",             "t.png", "=-u231oNe9VILCVd42q7nh"},
+    {"plain text", "text-attachments", "text",  "=-HY8vxMUek5fQZa/zkovp"}
 };
 
 void
 data_extract_attachments (void)
 {
-    cut_add_data("png image",
+    cut_add_data(extract_test_data[0].test_name,
                  &extract_test_data[0],
                  NULL,
-                 "plain text",
+                 extract_test_data[1].test_name,
                  &extract_test_data[1],
                  NULL,
                  NULL);
