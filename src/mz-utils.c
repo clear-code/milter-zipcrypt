@@ -9,6 +9,9 @@
 #include "mz-attachment.h"
 #include "mz-base64.h"
 
+#define CRLF "\r\n"
+static size_t CRLF_LENGTH = sizeof(CRLF) - 1;
+
 #define CONTENT_TYPE_STRING "Content-type:"
 
 char *
@@ -17,7 +20,7 @@ mz_utils_get_content_type (const char *contents)
     const char *line_feed;
     const char *line = contents;
 
-    while ((line_feed = strchr(line, '\n'))) {
+    while ((line_feed = strstr(line, CRLF))) {
         if (!strncasecmp(CONTENT_TYPE_STRING, line, strlen(CONTENT_TYPE_STRING))) {
             const char *content_type;
             char *semicolon;
@@ -31,7 +34,7 @@ mz_utils_get_content_type (const char *contents)
                 return strndup(content_type, line_feed - content_type);
             return strndup(content_type, semicolon - content_type);
         }
-        line = line_feed + 1;
+        line = line_feed + CRLF_LENGTH;
     }
     return NULL;
 }
@@ -43,7 +46,7 @@ mz_utils_get_content_transfer_encoding (const char *contents)
     const char *line_feed;
     const char *line = contents;
 
-    while ((line_feed = strchr(line, '\n'))) {
+    while ((line_feed = strstr(line, CRLF))) {
         if (!strncasecmp(CONTENT_TRANSFER_ENCODING_STRING,
                          line,
                          strlen(CONTENT_TRANSFER_ENCODING_STRING))) {
@@ -55,7 +58,7 @@ mz_utils_get_content_transfer_encoding (const char *contents)
 
             return strndup(content_type, line_feed - content_type);
         }
-        line = line_feed + 1;
+        line = line_feed + CRLF_LENGTH;
     }
     return NULL;
 }
@@ -100,7 +103,7 @@ get_rfc2231_values (const char *in, char **charset, char **language, char **valu
 
     value_begin = language_end ? language_end + 1 : language_begin;
     value_end = value_begin;
-    while (*value_end && (*value_end != ';' && *value_end != '\n'))
+    while (*value_end && (*value_end != ';' && *value_end != '\r'))
         value_end++;
 
     if (charset_end && *charset == NULL)
@@ -213,7 +216,7 @@ mz_utils_get_content_disposition (const char *contents,
     *type = NULL;
     *filename = NULL;
 
-    while ((line_feed = strchr(line, '\n'))) {
+    while ((line_feed = strstr(line, CRLF))) {
         if (!strncasecmp(CONTENT_DISPOSITION_STRING,
                          line,
                          strlen(CONTENT_DISPOSITION_STRING))) {
@@ -240,7 +243,7 @@ mz_utils_get_content_disposition (const char *contents,
 
             return true;
         }
-        line = line_feed + 1;
+        line = line_feed + CRLF_LENGTH;
     }
     return false;
 }
@@ -252,13 +255,13 @@ mz_utils_get_attachment_body_place (const char *contents, unsigned int *size)
     *size = 0;
 
 
-    start = strstr(contents, "\r\n\r\n");
+    start = strstr(contents, CRLF CRLF);
     if (!start)
         return NULL;
 
-    start += 2;
+    start += CRLF_LENGTH * 2;
 
-    end = strstr(start, "\r\n\r\n");
+    end = strstr(start, CRLF CRLF);
     if (!end)
         return NULL;
 
@@ -308,7 +311,7 @@ mz_utils_extract_attachments (const char *body, const char *boundary)
     boundary_line_length = strlen(boundary) + 4;
     boundary_line = malloc(boundary_line_length);
 
-    sprintf(boundary_line, "--%s\r\n", boundary);
+    sprintf(boundary_line, "--%s" CRLF, boundary);
 
     p = body;
     while ((p = strstr(p, boundary_line))) {
