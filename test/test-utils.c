@@ -14,7 +14,7 @@ void test_get_attachment_body_place (void);
 void test_get_decoded_attachment_body (void);
 void test_get_content_disposition_mime_encoded_filename (void);
 void test_get_rfc2311_filename (void);
-void test_extract_attachments (void);
+void test_extract_attachments (const void *data);
 
 static MzList *actual_attachments;
 
@@ -191,50 +191,52 @@ assert_equal_attachment (MzAttachment *expected, MzAttachment *actual)
                             actual->data, actual->data_length);
 }
 
-void
-test_extract_attachments (void)
+typedef struct _ExtractTestData
 {
-    const char *body;
-    MzAttachment expected = { NULL, "t.png", NULL, 0 };
-    const char *expected_data;
-    unsigned int expected_size = 0;
-    MzAttachment *actual;
+    const char *fixture_filename;
+    const char *expected_attachment_filename;
+    const char *boundary_string;
+} ExtractTestData;
 
-    expected_data = mz_test_utils_load_data("t.png", &expected_size);
+static const ExtractTestData extract_test_data[] =
+{
+    {"body",             "t.png", "=-u231oNe9VILCVd42q7nh"},
+    {"text-attachments", "text",  "=-HY8vxMUek5fQZa/zkovp"}
+};
 
-    expected.data = expected_data;
-    expected.data_length = expected_size;
-
-    body = cut_get_fixture_data_string("body", NULL);
-    cut_assert_not_null(body);
-
-    actual_attachments = mz_utils_extract_attachments(body, "=-u231oNe9VILCVd42q7nh");
-    cut_assert_not_null(actual_attachments);
-
-    /* The first MzList data is mail body itself so skip it. */
-    actual = mz_list_next(actual_attachments)->data;
-
-    assert_equal_attachment(&expected, actual);
+void
+data_extract_attachments (void)
+{
+    cut_add_data("png image",
+                 &extract_test_data[0],
+                 NULL,
+                 "plain text",
+                 &extract_test_data[1],
+                 NULL,
+                 NULL);
 }
 
 void
-test_extract_plain_text_attachments (void)
+test_extract_attachments (const void *data)
 {
+    ExtractTestData *test_data = (ExtractTestData*)data;
+
     const char *body;
-    MzAttachment expected = { NULL, "text", NULL, 0 };
+    MzAttachment expected = { NULL, NULL, NULL, 0 };
     const char *expected_data;
     unsigned int expected_size = 0;
     MzAttachment *actual;
 
-    expected_data = mz_test_utils_load_data("text", &expected_size);
-
+    expected_data = mz_test_utils_load_data(test_data->expected_attachment_filename,
+                                            &expected_size);
     expected.data = expected_data;
     expected.data_length = expected_size;
+    expected.filename = (char*)test_data->expected_attachment_filename;
 
-    body = cut_get_fixture_data_string("text-attachments", NULL);
+    body = cut_get_fixture_data_string(test_data->fixture_filename, NULL);
     cut_assert_not_null(body);
 
-    actual_attachments = mz_utils_extract_attachments(body, "=-HY8vxMUek5fQZa/zkovp");
+    actual_attachments = mz_utils_extract_attachments(body, test_data->boundary_string);
     cut_assert_not_null(actual_attachments);
 
     /* The first MzList data is mail body itself so skip it. */
