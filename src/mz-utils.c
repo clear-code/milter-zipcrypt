@@ -334,7 +334,11 @@ mz_utils_extract_attachments (const char *body, const char *boundary)
 
             if (attachment) {
                 attachments = mz_list_append(attachments,
-                                             mz_attachment_new(charset, filename, attachment, length));
+                                             mz_attachment_new(charset,
+                                                               filename,
+                                                               start_boundary,
+                                                               attachment,
+                                                               length));
             }
         }
         free(type);

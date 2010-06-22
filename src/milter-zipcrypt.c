@@ -6,6 +6,10 @@
 #include <unistd.h>
 #include <libmilter/mfapi.h>
 
+#include "mz-base64.h"
+#include "mz-utils.h"
+#include "mz-zip.h"
+
 struct MzPriv {
     char *boundary;
     unsigned char *body;
@@ -113,10 +117,96 @@ _body (SMFICTX *context, unsigned char *chunk, size_t size)
     return append_body(priv, chunk, size);
 }
 
+#define ZIP_BUFFER_SIZE 4096
+#define BASE64_BUFFER_SIZE 5466 /* (BUFFER_SIZE / 3 + 1) * 4 + 1 */
+static sfsistat
+_replace_body (SMFICTX *context, const unsigned char *body, size_t size, int *state, int *save)
+{
+    unsigned int base64_length;
+
+    unsigned char base64_output[BASE64_BUFFER_SIZE];
+
+    base64_length = mz_base64_encode_step(body,
+                                          size,
+                                          1,
+                                          (char*)base64_output,
+                                          state,
+                                          save);
+    return smfi_replacebody(context, base64_output, base64_length);
+}
+
+static sfsistat
+_replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attachments)
+{
+    MzZipStream *zip;
+    MzList *node;
+    unsigned char zip_output[ZIP_BUFFER_SIZE];
+    unsigned int written_size;
+    int state = 0;
+    int save = 0;
+    MzZipStreamStatus status;
+
+    smfi_replacebody(context,
+                     (unsigned char*)"Content-Transfer-Encoding: base64\n",
+                     strlen("Content-Transfer-Encoding: base64\n"));
+
+    zip = mz_zip_stream_create("password");
+    mz_zip_stream_begin_archive(zip);
+    for (node = mz_list_next(attachments); node; node = mz_list_next(node)) {
+        MzAttachment *attachment = node->data;
+        unsigned int zip_data_position = 0;
+        unsigned int processed_size;
+
+        mz_zip_stream_begin_file(zip,
+                                 attachment->filename,
+                                 zip_output,
+                                 ZIP_BUFFER_SIZE,
+                                 &written_size);
+        _replace_body(context, zip_output, written_size, &state, &save);
+
+        do {
+            status = mz_zip_stream_process_file_data(zip,
+                                                     attachment->data + zip_data_position,
+                                                     attachment->data_length - zip_data_position,
+                                                     zip_output,
+                                                     ZIP_BUFFER_SIZE,
+                                                     &processed_size,
+                                                     &written_size);
+            zip_data_position += processed_size;
+            _replace_body(context, zip_output, written_size, &state, &save);
+        } while (status != MZ_ZIP_STREAM_STATUS_UNKNOWN_ERROR && zip_data_position < attachment->data_length);
+
+        mz_zip_stream_end_file(zip,
+                               zip_output,
+                               ZIP_BUFFER_SIZE,
+                               &written_size);
+        _replace_body(context, zip_output, written_size, &state, &save);
+    }
+
+    mz_zip_stream_end_archive(zip,
+                              zip_output,
+                              ZIP_BUFFER_SIZE,
+                              &written_size);
+    _replace_body(context, zip_output, written_size, &state, &save);
+    mz_zip_stream_destroy(zip);
+
+    return SMFIS_CONTINUE;
+}
+
+static sfsistat
+_send_body (SMFICTX *context, struct MzPriv *priv, MzList *attachments)
+{
+    MzAttachment *body = mz_list_next(attachments)->data;
+    return smfi_replacebody(context,
+                            priv->body,
+                            ((unsigned char*)body->boundary_start_position - priv->body));
+}
+
 static sfsistat
 _eom (SMFICTX *context)
 {
     struct MzPriv *priv;
+    MzList *attachments;
 
     priv = (struct MzPriv*)smfi_getpriv(context);
     if (!priv)
@@ -129,7 +219,13 @@ _eom (SMFICTX *context)
         return SMFIS_ACCEPT;
 
     smfi_addheader(context, "X-ZIP-Crypted", "Yes");
-    smfi_replacebody(context, priv->body, priv->body_length);
+
+    attachments = mz_utils_extract_attachments((char*)priv->body, priv->boundary);
+    if (!attachments)
+        return SMFIS_CONTINUE;
+
+    _send_body(context, priv, attachments);
+    _replace_with_crypted_data(context, priv, attachments);
 
     return SMFIS_CONTINUE;
 }

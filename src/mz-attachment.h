@@ -10,6 +10,7 @@ struct _MzAttachment
 {
     char *charset;
     char *filename;
+    const char *boundary_start_position;
     const char *data;
     unsigned int data_length;
     time_t last_modified_time; /* Use only for test */
@@ -20,6 +21,7 @@ typedef struct _MzAttachments MzAttachments;
 
 MzAttachment *mz_attachment_new  (const char *charset,
                                   const char *filename,
+                                  const char *boundary_start_position,
                                   const char *data,
                                   unsigned int data_length);
 void          mz_attachment_free (MzAttachment *attachment);

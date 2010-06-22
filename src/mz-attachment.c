@@ -7,6 +7,7 @@
 MzAttachment *
 mz_attachment_new (const char *charset,
                    const char *filename,
+                   const char *boundary_start_position,
                    const char *data,
                    unsigned int data_length)
 {
@@ -30,6 +31,7 @@ mz_attachment_new (const char *charset,
 
     attachment->charset = filename_charset;
     attachment->filename = attachment_filename;
+    attachment->boundary_start_position = boundary_start_position;
     attachment->data = data;
     attachment->data_length = data_length;
     attachment->last_modified_time = 0;
