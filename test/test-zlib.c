@@ -141,7 +141,7 @@ test_compress_in_memory (void)
     expected_compressed_data = mz_test_utils_load_data("body.zip", &expected_compressed_data_length);
     cut_assert_not_null(expected_compressed_data);
 
-    last_modified_time = mz_test_utils_get_last_modified_time("body");
+    last_modified_time = 1274762295;
     actual_header = mz_zip_create_header("body",
                                          raw_data,
                                          raw_data_length,
