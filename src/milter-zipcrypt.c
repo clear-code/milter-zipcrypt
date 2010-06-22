@@ -147,8 +147,8 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
     MzZipStreamStatus status;
 
     smfi_replacebody(context,
-                     (unsigned char*)"Content-Transfer-Encoding: base64\n",
-                     strlen("Content-Transfer-Encoding: base64\n"));
+                     (unsigned char*)"Content-Transfer-Encoding: base64\r\n",
+                     strlen("Content-Transfer-Encoding: base64\r\n"));
 
     zip = mz_zip_stream_create("password");
     mz_zip_stream_begin_archive(zip);
