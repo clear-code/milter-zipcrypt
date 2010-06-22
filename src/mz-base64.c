@@ -93,6 +93,7 @@ skip2:
             *outptr++ = base64_alphabet [ c3 & 0x3f ];
             /* this is a bit ugly ... */
             if (break_lines && (++already) >= 19) {
+                *outptr++ = '\r';
                 *outptr++ = '\n';
                 already = 0;
             }
