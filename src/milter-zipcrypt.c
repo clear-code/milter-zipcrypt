@@ -56,7 +56,7 @@ _header (SMFICTX *context, char *name, char *value)
     struct MzPriv *priv;
     char *boundary;
 
-    if (strcmp(name, "Content-type"))
+    if (strcasecmp(name, "Content-type"))
         return SMFIS_CONTINUE;
 
     if (!strstr(value, "multipart/mixed;"))
