@@ -218,6 +218,8 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
     smfi_replacebody(context, (unsigned char*)"--", strlen("--"));
     smfi_replacebody(context, (unsigned char*)priv->boundary, strlen(priv->boundary));
     smfi_replacebody(context, (unsigned char*)"--", strlen("--"));
+    smfi_replacebody(context, (unsigned char*)"\r\n", strlen("\r\n"));
+    smfi_replacebody(context, (unsigned char*)"\r\n", strlen("\r\n"));
 
     return SMFIS_CONTINUE;
 }
