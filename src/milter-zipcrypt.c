@@ -211,9 +211,14 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
                                                      ZIP_BUFFER_SIZE,
                                                      &processed_size,
                                                      &written_size);
+            if (status != MZ_ZIP_STREAM_STATUS_SUCCESS &&
+                status != MZ_ZIP_STREAM_STATUS_REMAIN_OUTPUT_DATA) {
+                mz_zip_stream_destroy(zip);
+                return SMFIS_TEMPFAIL;
+            }
             zip_data_position += processed_size;
             _replace_body_with_base64(context, zip_output, written_size, &state, &save);
-        } while (status != MZ_ZIP_STREAM_STATUS_UNKNOWN_ERROR && zip_data_position < attachment->data_length);
+        } while (zip_data_position < attachment->data_length);
 
         mz_zip_stream_end_file(zip,
                                zip_output,
