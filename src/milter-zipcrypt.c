@@ -120,7 +120,7 @@ _body (SMFICTX *context, unsigned char *chunk, size_t size)
 #define ZIP_BUFFER_SIZE 4096
 #define BASE64_BUFFER_SIZE 5466 /* (BUFFER_SIZE / 3 + 1) * 4 + 1 */
 static sfsistat
-_replace_body (SMFICTX *context, const unsigned char *body, size_t size, int *state, int *save)
+_replace_body_with_base64 (SMFICTX *context, const unsigned char *body, size_t size, int *state, int *save)
 {
     unsigned int base64_length;
 
@@ -129,6 +129,20 @@ _replace_body (SMFICTX *context, const unsigned char *body, size_t size, int *st
     base64_length = mz_base64_encode_step(body,
                                           size,
                                           1,
+                                          (char*)base64_output,
+                                          state,
+                                          save);
+    return smfi_replacebody(context, base64_output, base64_length);
+}
+
+static sfsistat
+_replace_body_with_base64_close (SMFICTX *context, int *state, int *save)
+{
+    unsigned int base64_length;
+
+    unsigned char base64_output[BASE64_BUFFER_SIZE];
+
+    base64_length = mz_base64_encode_close(1,
                                           (char*)base64_output,
                                           state,
                                           save);
@@ -186,7 +200,7 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
                                  zip_output,
                                  ZIP_BUFFER_SIZE,
                                  &written_size);
-        _replace_body(context, zip_output, written_size, &state, &save);
+        _replace_body_with_base64(context, zip_output, written_size, &state, &save);
 
         do {
             status = mz_zip_stream_process_file_data(zip,
@@ -197,21 +211,23 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
                                                      &processed_size,
                                                      &written_size);
             zip_data_position += processed_size;
-            _replace_body(context, zip_output, written_size, &state, &save);
+            _replace_body_with_base64(context, zip_output, written_size, &state, &save);
         } while (status != MZ_ZIP_STREAM_STATUS_UNKNOWN_ERROR && zip_data_position < attachment->data_length);
 
         mz_zip_stream_end_file(zip,
                                zip_output,
                                ZIP_BUFFER_SIZE,
                                &written_size);
-        _replace_body(context, zip_output, written_size, &state, &save);
+        _replace_body_with_base64(context, zip_output, written_size, &state, &save);
     }
 
     mz_zip_stream_end_archive(zip,
                               zip_output,
                               ZIP_BUFFER_SIZE,
                               &written_size);
-    _replace_body(context, zip_output, written_size, &state, &save);
+    _replace_body_with_base64(context, zip_output, written_size, &state, &save);
+    _replace_body_with_base64_close(context, &state, &save);
+
     mz_zip_stream_destroy(zip);
 
     smfi_replacebody(context, (unsigned char*)"\r\n", strlen("\r\n"));
