@@ -311,10 +311,10 @@ mz_utils_extract_attachments (const char *body, const char *boundary)
     if (!boundary || !body)
         return NULL;
 
-    boundary_line_length = strlen(boundary) + 4;
-    boundary_line = malloc(boundary_line_length);
+    boundary_line_length = strlen(boundary) + 2;
+    boundary_line = malloc(boundary_line_length + 1);
 
-    sprintf(boundary_line, "--%s" CRLF, boundary);
+    sprintf(boundary_line, "--%s", boundary);
 
     p = body;
     while ((p = strstr(p, boundary_line))) {
@@ -323,6 +323,7 @@ mz_utils_extract_attachments (const char *body, const char *boundary)
         char *filename = NULL;
 
         p += boundary_line_length;
+        p += CRLF_LENGTH;
         start_boundary = p;
 
         end_boundary = strstr(p, boundary_line);
