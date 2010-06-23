@@ -27,6 +27,25 @@ static sfsistat _close   (SMFICTX *context);
 static sfsistat _cleanup (SMFICTX *context);
 
 static sfsistat
+_negotiate (SMFICTX *context,
+            unsigned long f0,
+            unsigned long f1,
+            unsigned long f2,
+            unsigned long f3,
+            unsigned long *pf0,
+            unsigned long *pf1,
+            unsigned long *pf2,
+            unsigned long *pf3)
+{
+    *pf0 = (SMFIF_ADDHDRS | SMFIF_CHGBODY);
+    *pf1 = f1 & (SMFIP_NOHELO | SMFIP_NOUNKNOWN | SMFIP_NODATA | SMFIP_NOCONNECT | SMFIP_NOEOH);
+    *pf2 = 0;
+    *pf3 = 0;
+
+    return SMFIS_CONTINUE;
+}
+
+static sfsistat
 _envfrom (SMFICTX *context, char **froms)
 {
     return SMFIS_CONTINUE;
@@ -339,7 +358,7 @@ struct smfiDesc smfilter = {
     _close,
     NULL, /* unknown */
     NULL, /* data */
-    NULL  /* negotiate */
+    _negotiate  /* negotiate */
 };
 
 int
