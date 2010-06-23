@@ -240,9 +240,8 @@ test_extract_attachments (const void *data)
     actual_attachments = mz_utils_extract_attachments(body, test_data->boundary_string);
     cut_assert_not_null(actual_attachments);
 
-    /* The first MzList data is mail body itself so skip it. */
-    actual = mz_list_next(actual_attachments)->data;
+    actual = actual_attachments->data;
 
-    assert_equal_attachment(&expected, actual);
+    cut_trace(assert_equal_attachment(&expected, actual));
 }
 

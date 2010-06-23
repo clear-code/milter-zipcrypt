@@ -217,6 +217,9 @@ mz_utils_get_content_disposition (const char *contents,
     *filename = NULL;
 
     while ((line_feed = strstr(line, CRLF))) {
+        if (line_feed - contents > contents_length)
+            return false;
+
         if (!strncasecmp(CONTENT_DISPOSITION_STRING,
                          line,
                          strlen(CONTENT_DISPOSITION_STRING))) {
