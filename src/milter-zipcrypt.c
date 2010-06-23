@@ -348,11 +348,15 @@ main (int argc, char *argv[])
     int opt;
     int ret;
     char *connection_spec = NULL;
+    bool verbose_mode = false;
 
-    while ((opt = getopt(argc, argv, "s:")) != -1) {
+    while ((opt = getopt(argc, argv, "s:v")) != -1) {
         switch (opt) {
         case 's':
             connection_spec = strdup(optarg);
+            break;
+        case 'v':
+            verbose_mode = true;
             break;
         default:
             break;
@@ -364,6 +368,10 @@ main (int argc, char *argv[])
     }
 
     if (smfi_register(smfilter) == MI_FAILURE) {
+        exit(EXIT_FAILURE);
+    }
+
+    if (verbose_mode && smfi_setdbg(6) == MI_FAILURE) {
         exit(EXIT_FAILURE);
     }
 
