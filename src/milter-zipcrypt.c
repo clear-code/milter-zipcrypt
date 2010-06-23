@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <syslog.h>
 #include <libmilter/mfapi.h>
 
 #include "mz-base64.h"
@@ -340,6 +341,7 @@ int
 main (int argc, char *argv[])
 {
     int opt;
+    int ret;
     char *connection_spec = NULL;
 
     while ((opt = getopt(argc, argv, "s:")) != -1) {
@@ -360,6 +362,12 @@ main (int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    return smfi_main();
+    openlog("milter-zipcrypt", LOG_PID, LOG_MAIL);
+    syslog(LOG_NOTICE, "starting milter-zipcrypt.");
+    ret = smfi_main();
+    syslog(LOG_NOTICE, "exit milter-zipcrypt.");
+    closelog();
+
+    return ret;
 }
 
