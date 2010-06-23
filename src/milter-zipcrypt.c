@@ -176,7 +176,7 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
 
     zip = mz_zip_stream_create("password");
     mz_zip_stream_begin_archive(zip);
-    for (node = mz_list_next(attachments); node; node = mz_list_next(node)) {
+    for (node = attachments; node; node = mz_list_next(node)) {
         MzAttachment *attachment = node->data;
         unsigned int zip_data_position = 0;
         unsigned int processed_size;
@@ -227,7 +227,7 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
 static sfsistat
 _send_body (SMFICTX *context, struct MzPriv *priv, MzList *attachments)
 {
-    MzAttachment *body = mz_list_next(attachments)->data;
+    MzAttachment *body = attachments->data;
     return smfi_replacebody(context,
                             priv->body,
                             ((unsigned char*)body->boundary_start_position - priv->body));
