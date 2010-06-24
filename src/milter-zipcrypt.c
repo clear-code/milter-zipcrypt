@@ -382,17 +382,14 @@ main (int argc, char *argv[])
         }
     }
 
-    if (smfi_setconn(connection_spec) == MI_FAILURE) {
+    if (smfi_setconn(connection_spec) == MI_FAILURE)
         exit(EXIT_FAILURE);
-    }
 
-    if (smfi_register(smfilter) == MI_FAILURE) {
+    if (smfi_register(smfilter) == MI_FAILURE)
         exit(EXIT_FAILURE);
-    }
 
-    if (verbose_mode && smfi_setdbg(6) == MI_FAILURE) {
+    if (verbose_mode && smfi_setdbg(6) == MI_FAILURE)
         exit(EXIT_FAILURE);
-    }
 
     openlog("milter-zipcrypt", LOG_PID, LOG_MAIL);
     syslog(LOG_NOTICE, "starting milter-zipcrypt.");
