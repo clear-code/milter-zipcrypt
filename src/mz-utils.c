@@ -257,7 +257,6 @@ mz_utils_get_attachment_body_place (const char *contents, unsigned int *size)
     char *start, *end;
     *size = 0;
 
-
     start = strstr(contents, CRLF CRLF);
     if (!start)
         return NULL;
