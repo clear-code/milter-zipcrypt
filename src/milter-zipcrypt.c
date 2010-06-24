@@ -138,7 +138,7 @@ _body (SMFICTX *context, unsigned char *chunk, size_t size)
 }
 
 #define ZIP_BUFFER_SIZE 4096
-#define BASE64_BUFFER_SIZE 5466 /* (BUFFER_SIZE / 3 + 1) * 4 + 1 */
+#define BASE64_BUFFER_SIZE 6042 /* (ZIP_BUFFER_SIZE / 3 + 1) * 4 + 1  + 576(CRLF) */
 static sfsistat
 _replace_body_with_base64 (SMFICTX *context, const unsigned char *body, size_t size, int *state, int *save)
 {
