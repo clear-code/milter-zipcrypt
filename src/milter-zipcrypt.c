@@ -17,6 +17,7 @@ struct MzPriv {
     char *boundary;
     unsigned char *body;
     size_t body_length;
+    char *password;
 };
 
 static sfsistat _envfrom (SMFICTX *context, char **froms);
@@ -210,7 +211,7 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
 
     _send_headers(context);
 
-    zip = mz_zip_stream_create("password");
+    zip = mz_zip_stream_create(priv->password);
     mz_zip_stream_begin_archive(zip);
     for (node = attachments; node; node = mz_list_next(node)) {
         MzAttachment *attachment = node->data;
@@ -276,6 +277,12 @@ _send_body (SMFICTX *context, struct MzPriv *priv, MzList *attachments)
                             ((unsigned char*)body->boundary_start_position - priv->body));
 }
 
+static void
+_set_password (struct MzPriv *priv)
+{
+    priv->password = strdup("password");
+}
+
 static sfsistat
 _eom (SMFICTX *context)
 {
@@ -298,7 +305,8 @@ _eom (SMFICTX *context)
     if (!attachments)
         return SMFIS_CONTINUE;
 
-    _send_body(context, priv, attachments);
+    _set_password(priv);
+    smfi_replacebody(context, priv->password, strlen(priv->password));
     _replace_with_crypted_data(context, priv, attachments);
     mz_list_free_with_free_func(attachments, (MzListElementFreeFunc)mz_attachment_free);
 
@@ -334,6 +342,11 @@ _cleanup (SMFICTX *context)
     if (priv->body) {
         free(priv->body);
         priv->body = NULL;
+    }
+
+    if (priv->password) {
+        free(priv->password);
+        priv->password = NULL;
     }
 
     free(priv);
