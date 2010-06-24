@@ -306,7 +306,6 @@ _eom (SMFICTX *context)
         return SMFIS_CONTINUE;
 
     _set_password(priv);
-    smfi_replacebody(context, priv->password, strlen(priv->password));
     _replace_with_crypted_data(context, priv, attachments);
     mz_list_free_with_free_func(attachments, (MzListElementFreeFunc)mz_attachment_free);
 
