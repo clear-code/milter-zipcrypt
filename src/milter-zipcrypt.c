@@ -5,6 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <syslog.h>
+#include <pwd.h>
+#include <errno.h>
 #include <libmilter/mfapi.h>
 
 #include "mz-base64.h"
@@ -361,18 +363,45 @@ struct smfiDesc smfilter = {
     _negotiate  /* negotiate */
 };
 
+static bool
+switch_user (const char *user_name)
+{
+    struct passwd *password;
+
+    errno = 0;
+    password = getpwnam(user_name);
+    if (!password) {
+        if (errno == 0)
+            syslog(LOG_NOTICE, "There is no %s user.", user_name);
+        else
+            syslog(LOG_NOTICE, "Failed to get password for %s.", user_name);
+        return false;
+    }
+
+    if (setuid(password->pw_uid) == -1) {
+        syslog(LOG_NOTICE, "Failed to switch to %s.", user_name);
+        return false;
+    }
+
+    return true;
+}
+
 int
 main (int argc, char *argv[])
 {
     int opt;
     int ret;
     char *connection_spec = NULL;
+    char *user_name = NULL;
     bool verbose_mode = false;
 
-    while ((opt = getopt(argc, argv, "s:v")) != -1) {
+    while ((opt = getopt(argc, argv, "s:u:v")) != -1) {
         switch (opt) {
         case 's':
             connection_spec = strdup(optarg);
+            break;
+        case 'u':
+            user_name = strdup(optarg);
             break;
         case 'v':
             verbose_mode = true;
@@ -381,6 +410,12 @@ main (int argc, char *argv[])
             break;
         }
     }
+
+    openlog("milter-zipcrypt", LOG_PID, LOG_MAIL);
+    syslog(LOG_NOTICE, "starting milter-zipcrypt.");
+
+    if (user_name && !switch_user(user_name))
+        exit(EXIT_FAILURE);
 
     if (smfi_setconn(connection_spec) == MI_FAILURE)
         exit(EXIT_FAILURE);
@@ -391,8 +426,6 @@ main (int argc, char *argv[])
     if (verbose_mode && smfi_setdbg(6) == MI_FAILURE)
         exit(EXIT_FAILURE);
 
-    openlog("milter-zipcrypt", LOG_PID, LOG_MAIL);
-    syslog(LOG_NOTICE, "starting milter-zipcrypt.");
     ret = smfi_main();
     syslog(LOG_NOTICE, "exit milter-zipcrypt.");
     closelog();
