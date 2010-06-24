@@ -398,10 +398,10 @@ main (int argc, char *argv[])
     while ((opt = getopt(argc, argv, "s:u:v")) != -1) {
         switch (opt) {
         case 's':
-            connection_spec = strdup(optarg);
+            connection_spec = optarg;
             break;
         case 'u':
-            user_name = strdup(optarg);
+            user_name = optarg;
             break;
         case 'v':
             verbose_mode = true;
