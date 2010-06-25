@@ -34,7 +34,6 @@ AM_CONDITIONAL([WITH_GCUTTER], [test "$ac_cv_use_gcutter" != "no"])
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
-zip30/Makefile
 test/Makefile
 ])
 
