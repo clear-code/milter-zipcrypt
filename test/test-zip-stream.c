@@ -106,8 +106,8 @@ test_encrypt (void)
     cut_assert_errno();
     assert_success(mz_zip_stream_begin_archive(zip));
 
-    compress_file("body");
-    compress_file("t.png");
+    cut_trace(compress_file("body"));
+    cut_trace(compress_file("t.png"));
 
     assert_success(mz_zip_stream_end_archive(zip,
                                              output,
