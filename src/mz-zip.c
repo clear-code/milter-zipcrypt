@@ -578,6 +578,8 @@ mz_zip_stream_end_archive (MzZipStream   *zip,
            end_of_record, sizeof(*end_of_record));
     *written_size += sizeof(*end_of_record);
 
+    deflateEnd(&zip->zlib_stream);
+
     return MZ_ZIP_STREAM_STATUS_SUCCESS;
 }
 
@@ -601,8 +603,6 @@ mz_zip_stream_destroy (MzZipStream *zip)
         free(zip->password);
         zip->password = NULL;
     }
-
-    deflateEnd(&zip->zlib_stream);
 
     free(zip);
 }
