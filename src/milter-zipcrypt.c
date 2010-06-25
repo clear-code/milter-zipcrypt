@@ -242,7 +242,7 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
             }
             zip_data_position += processed_size;
             _replace_body_with_base64(context, zip_output, written_size, &state, &save);
-        } while (zip_data_position < attachment->data_length);
+        } while (zip_data_position < attachment->data_length || written_size == ZIP_BUFFER_SIZE);
 
         if (mz_zip_stream_end_file(zip,
                                    zip_output,
