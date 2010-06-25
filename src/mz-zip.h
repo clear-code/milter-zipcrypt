@@ -61,11 +61,6 @@ struct _MzZipEndOfCentralDirectoryRecord
     unsigned char comment_length[2];
 };
 
-unsigned int mz_zip_compress_in_memory
-                                  (const char  *data,
-                                   unsigned int data_length,
-                                   char       **compressed_data,
-                                   int         *guessed_data_type);
 MzZipHeader *mz_zip_create_header (const char *filename,
                                    const char *data,
                                    unsigned int data_length,
@@ -84,10 +79,6 @@ MzZipEndOfCentralDirectoryRecord *
                                   (unsigned short entry_num,
                                    unsigned int central_directory_records_length,
                                    unsigned int central_directory_record_start_pos);
-
-unsigned int mz_zip_compress_attachments
-                                  (int fd,
-                                   MzList *attachments);
 
 typedef enum
 {
