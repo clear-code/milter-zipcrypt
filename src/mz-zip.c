@@ -501,7 +501,7 @@ mz_zip_stream_end_file (MzZipStream   *zip,
 
     zip->compressed_size += *written_size;
 
-    if (output_buffer_size >= sizeof(descriptor)) {
+    if (output_buffer_size - *written_size >= sizeof(descriptor)) {
         MzZipCentralDirectoryRecord *central_record;
 
         if (zip->password)
