@@ -461,8 +461,7 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
     zip->data_size += *processed_size;
     zip->compressed_size += *written_size;
 
-    return (ret == Z_OK) ? MZ_ZIP_STREAM_STATUS_SUCCESS :
-        (ret == Z_STREAM_END) ? MZ_ZIP_STREAM_STATUS_REMAIN_OUTPUT_DATA : MZ_ZIP_STREAM_STATUS_UNKNOWN_ERROR;
+    return (ret == Z_OK) ? MZ_ZIP_STREAM_STATUS_SUCCESS : MZ_ZIP_STREAM_STATUS_UNKNOWN_ERROR;
 }
 
 typedef struct _MzZipDataDescriptor
