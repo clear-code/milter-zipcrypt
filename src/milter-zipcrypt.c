@@ -207,7 +207,6 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
     unsigned int written_size;
     int state = 0;
     int save = 0;
-    MzZipStreamStatus status;
 
     _send_headers(context);
 
@@ -216,7 +215,6 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
     for (node = attachments; node; node = mz_list_next(node)) {
         MzAttachment *attachment = node->data;
         unsigned int zip_data_position = 0;
-        unsigned int processed_size;
 
         mz_zip_stream_begin_file(zip,
                                  attachment->filename,
@@ -226,6 +224,9 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
         _replace_body_with_base64(context, zip_output, written_size, &state, &save);
 
         do {
+            MzZipStreamStatus status;
+            unsigned int processed_size;
+
             status = mz_zip_stream_process_file_data(zip,
                                                      attachment->data + zip_data_position,
                                                      attachment->data_length - zip_data_position,
