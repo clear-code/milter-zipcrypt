@@ -14,10 +14,14 @@ bool  mz_utils_get_content_disposition (const char *contents,
                                         char **charset,
                                         char **filename);
 
-const char *mz_utils_get_attachment_body_place (const char *contents, unsigned int *size);
-const char *mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size);
-
-MzList *mz_utils_extract_attachments (const char *body, const char *boundary);
+const char *mz_utils_get_attachment_body_place   (const char *contents,
+                                                  const char *boundary,
+                                                  unsigned int *size);
+const char *mz_utils_get_decoded_attachment_body (const char *contents,
+                                                  const char *boundary,
+                                                  unsigned int *size);
+MzList     *mz_utils_extract_attachments         (const char *body,
+                                                  const char *boundary);
 
 #endif /* __MZ_UTILS_H__ */
 

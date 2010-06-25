@@ -151,7 +151,9 @@ test_get_attachment_body_place (void)
     expected_body = cut_get_fixture_data_string("attachment_body", NULL);
     cut_assert_not_null(expected_body);
 
-    body = mz_utils_get_attachment_body_place(content, &size);
+    body = mz_utils_get_attachment_body_place(content,
+                                              "--=-u231oNe9VILCVd42q7nh",
+                                              &size);
     cut_assert_not_null(body);
     cut_assert_not_equal_int(0, size);
 
@@ -174,7 +176,9 @@ test_get_decoded_attachment_body (void)
     expected = mz_test_utils_load_data("t.png", &expected_size);
     cut_assert_not_null(expected);
 
-    body = mz_utils_get_decoded_attachment_body(content, &size);
+    body = mz_utils_get_decoded_attachment_body(content,
+                                                "--=-u231oNe9VILCVd42q7nh",
+                                                &size);
     cut_assert_not_null(body);
     cut_assert_not_equal_int(0, size);
 

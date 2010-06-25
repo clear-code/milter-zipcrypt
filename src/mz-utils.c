@@ -252,7 +252,9 @@ mz_utils_get_content_disposition (const char *contents,
 }
 
 const char *
-mz_utils_get_attachment_body_place (const char *contents, unsigned int *size)
+mz_utils_get_attachment_body_place (const char *contents,
+                                    const char *boundary,
+                                    unsigned int *size)
 {
     char *start, *end;
     *size = 0;
@@ -263,7 +265,7 @@ mz_utils_get_attachment_body_place (const char *contents, unsigned int *size)
 
     start += CRLF_LENGTH * 2;
 
-    end = strstr(start, CRLF CRLF);
+    end = strstr(start, boundary);
     if (!end)
         return NULL;
 
@@ -273,7 +275,9 @@ mz_utils_get_attachment_body_place (const char *contents, unsigned int *size)
 }
 
 const char *
-mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size)
+mz_utils_get_decoded_attachment_body (const char *contents,
+                                      const char *boundary,
+                                      unsigned int *size)
 {
     const char *body;
     char *encoding;
@@ -283,7 +287,7 @@ mz_utils_get_decoded_attachment_body (const char *contents, unsigned int *size)
 
     *size = 0;
 
-    body = mz_utils_get_attachment_body_place(contents, &encoded_body_length);
+    body = mz_utils_get_attachment_body_place(contents, boundary, &encoded_body_length);
     if (!body)
         return NULL;
 
@@ -336,7 +340,9 @@ mz_utils_extract_attachments (const char *body, const char *boundary)
             !strcasecmp(type, "attachment") && filename) {
             const char *attachment;
             unsigned int length;
-            attachment = mz_utils_get_decoded_attachment_body(start_boundary, &length);
+            attachment = mz_utils_get_decoded_attachment_body(start_boundary,
+                                                              boundary_line,
+                                                              &length);
 
             if (attachment) {
                 attachments = mz_list_append(attachments,
