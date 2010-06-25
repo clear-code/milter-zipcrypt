@@ -289,6 +289,7 @@ _eom (SMFICTX *context)
 {
     struct MzPriv *priv;
     MzList *attachments;
+    sfsistat ret;
 
     priv = (struct MzPriv*)smfi_getpriv(context);
     if (!priv)
@@ -308,10 +309,10 @@ _eom (SMFICTX *context)
 
     _set_password(priv);
     _send_body(context, priv, attachments);
-    _replace_with_crypted_data(context, priv, attachments);
+    ret = _replace_with_crypted_data(context, priv, attachments);
     mz_list_free_with_free_func(attachments, (MzListElementFreeFunc)mz_attachment_free);
 
-    return SMFIS_CONTINUE;
+    return ret;
 }
 
 static sfsistat
