@@ -43,7 +43,7 @@ assert_success (MzZipStreamStatus status)
     cut_assert_equal_int(MZ_ZIP_STREAM_STATUS_SUCCESS, status);
 }
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 1096
 static void
 compress_file (const char *filename)
 {
@@ -76,7 +76,7 @@ compress_file (const char *filename)
                                                  &written_size);
         raw_data_position += processed_size;
         ret = write(zip_fd, output, written_size);
-    } while (raw_data_position < raw_data_length);
+    } while (raw_data_position < raw_data_length || written_size == BUFFER_SIZE);
 
     assert_success(mz_zip_stream_end_file(zip,
                                           output,
