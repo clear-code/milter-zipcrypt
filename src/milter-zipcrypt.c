@@ -216,11 +216,13 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
         MzAttachment *attachment = node->data;
         unsigned int zip_data_position = 0;
 
-        mz_zip_stream_begin_file(zip,
-                                 attachment->filename,
-                                 zip_output,
-                                 ZIP_BUFFER_SIZE,
-                                 &written_size);
+        if (mz_zip_stream_begin_file(zip,
+                                     attachment->filename,
+                                     zip_output,
+                                     ZIP_BUFFER_SIZE,
+                                     &written_size) != MZ_ZIP_STREAM_STATUS_SUCCESS) {
+            goto fail;
+        }
         _replace_body_with_base64(context, zip_output, written_size, &state, &save);
 
         do {
@@ -236,24 +238,27 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
                                                      &written_size);
             if (status != MZ_ZIP_STREAM_STATUS_SUCCESS &&
                 status != MZ_ZIP_STREAM_STATUS_REMAIN_OUTPUT_DATA) {
-                mz_zip_stream_destroy(zip);
-                return SMFIS_TEMPFAIL;
+                goto fail;
             }
             zip_data_position += processed_size;
             _replace_body_with_base64(context, zip_output, written_size, &state, &save);
         } while (zip_data_position < attachment->data_length);
 
-        mz_zip_stream_end_file(zip,
-                               zip_output,
-                               ZIP_BUFFER_SIZE,
-                               &written_size);
+        if (mz_zip_stream_end_file(zip,
+                                   zip_output,
+                                   ZIP_BUFFER_SIZE,
+                                   &written_size) != MZ_ZIP_STREAM_STATUS_SUCCESS) {
+            goto fail;
+        }
         _replace_body_with_base64(context, zip_output, written_size, &state, &save);
     }
 
-    mz_zip_stream_end_archive(zip,
-                              zip_output,
-                              ZIP_BUFFER_SIZE,
-                              &written_size);
+    if (mz_zip_stream_end_archive(zip,
+                                  zip_output,
+                                  ZIP_BUFFER_SIZE,
+                                  &written_size) != MZ_ZIP_STREAM_STATUS_SUCCESS) {
+        goto fail;
+    }
     _replace_body_with_base64(context, zip_output, written_size, &state, &save);
     _replace_body_with_base64_close(context, &state, &save);
 
@@ -267,6 +272,12 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
     smfi_replacebody(context, (unsigned char*)"\r\n", strlen("\r\n"));
 
     return SMFIS_CONTINUE;
+
+fail:
+
+    mz_zip_stream_destroy(zip);
+
+    return SMFIS_TEMPFAIL;
 }
 
 static sfsistat
