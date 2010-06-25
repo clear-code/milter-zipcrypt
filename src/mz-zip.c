@@ -444,7 +444,7 @@ mz_zip_stream_process_file_data (MzZipStream  *zip,
     zip->zlib_stream.next_out = (Bytef*)output_buffer;
     zip->zlib_stream.avail_out = output_buffer_size;
 
-    ret = deflate(&zip->zlib_stream, Z_FINISH);
+    ret = deflate(&zip->zlib_stream, Z_SYNC_FLUSH);
 
     *written_size = output_buffer_size - zip->zlib_stream.avail_out;
     *processed_size = input_buffer_size - zip->zlib_stream.avail_in;
@@ -480,9 +480,27 @@ mz_zip_stream_end_file (MzZipStream   *zip,
                         unsigned int  *written_size)
 {
     MzZipDataDescriptor descriptor;
+    int ret;
 
     if (!zip)
         return MZ_ZIP_STREAM_STATUS_INVALID_HANDLE;
+
+    zip->zlib_stream.next_in = NULL;
+    zip->zlib_stream.avail_in = 0;
+    zip->zlib_stream.next_out = (Bytef*)output_buffer;
+    zip->zlib_stream.avail_out = output_buffer_size;
+
+    ret = deflate(&zip->zlib_stream, Z_FINISH);
+    *written_size = output_buffer_size - zip->zlib_stream.avail_out;
+    if (zip->password) {
+        int i;
+        for (i = 0; i < *written_size; i++)
+            output_buffer[i] = zencode(zip, output_buffer[i]);
+    }
+    if (ret != Z_STREAM_END)
+        return MZ_ZIP_STREAM_STATUS_UNKNOWN_ERROR;
+
+    zip->compressed_size += *written_size;
 
     if (output_buffer_size >= sizeof(descriptor)) {
         MzZipCentralDirectoryRecord *central_record;
@@ -496,9 +514,9 @@ mz_zip_stream_end_file (MzZipStream   *zip,
         descriptor.crc = zip->crc;
         descriptor.compressed_size = zip->compressed_size;
         descriptor.uncompressed_size = zip->data_size;
-        memcpy(output_buffer,
+        memcpy(output_buffer + *written_size,
                &descriptor, sizeof(descriptor));
-        *written_size = sizeof(descriptor);
+        *written_size += sizeof(descriptor);
 
         memcpy((void*)zip->current_header + offsetof(MzZipHeader, crc),
                (void*)&descriptor + offsetof(MzZipDataDescriptor, crc),

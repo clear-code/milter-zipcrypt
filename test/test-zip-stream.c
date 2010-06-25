@@ -66,7 +66,7 @@ compress_file (const char *filename)
                                             &written_size));
     ret = write(zip_fd, output, written_size);
 
-    while (status == MZ_ZIP_STREAM_STATUS_SUCCESS) {
+    do {
         status = mz_zip_stream_process_file_data(zip,
                                                  raw_data + raw_data_position,
                                                  raw_data_length - raw_data_position,
@@ -76,14 +76,13 @@ compress_file (const char *filename)
                                                  &written_size);
         raw_data_position += processed_size;
         ret = write(zip_fd, output, written_size);
-    }
+    } while (raw_data_position < raw_data_length);
 
     assert_success(mz_zip_stream_end_file(zip,
                                           output,
                                           BUFFER_SIZE,
                                           &written_size));
     ret = write(zip_fd, output, written_size);
-
 }
 
 void
