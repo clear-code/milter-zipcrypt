@@ -295,8 +295,10 @@ mz_utils_get_decoded_attachment_body (const char *contents,
     if (!strncasecmp(encoding, "base64", 6)) {
         *size = mz_base64_decode_step(body, encoded_body_length,
                                       (unsigned char *)body, &state, &save);
-    } else {
+    } else if (!strncasecmp(encoding, "7bit", 4) || !strncasecmp(encoding, "8bit", 4)) {
         *size = encoded_body_length;
+    } else {
+        /* TODO: raise an error */
     }
 
     return body;
