@@ -472,21 +472,6 @@ main (int argc, char *argv[])
     openlog("milter-zipcrypt", LOG_PID, LOG_MAIL);
     syslog(LOG_NOTICE, "starting milter-zipcrypt.");
 
-    if (user_name && !switch_user(user_name))
-        exit(EXIT_FAILURE);
-
-    if (smfi_setconn(connection_spec) == MI_FAILURE)
-        exit(EXIT_FAILURE);
-
-    if (smfi_register(smfilter) == MI_FAILURE)
-        exit(EXIT_FAILURE);
-
-    if (verbose_mode && smfi_setdbg(6) == MI_FAILURE)
-        exit(EXIT_FAILURE);
-
-    if (daemon_mode && daemon(0, 1) == -1)
-        exit(EXIT_FAILURE);
-
     if (pid_file) {
         FILE *fd;
         fd = fopen(pid_file, "w");
@@ -498,13 +483,32 @@ main (int argc, char *argv[])
         fclose(fd);
     }
 
+    if (user_name && !switch_user(user_name))
+        goto fail;
+
+    if (smfi_setconn(connection_spec) == MI_FAILURE)
+        goto fail;
+
+    if (smfi_register(smfilter) == MI_FAILURE)
+        goto fail;
+
+    if (verbose_mode && smfi_setdbg(6) == MI_FAILURE)
+        goto fail;
+
+    if (daemon_mode && daemon(0, 1) == -1)
+        goto fail;
+
     ret = smfi_main();
 
-    if (pid_file)
-        unlink(pid_file);
     syslog(LOG_NOTICE, "exit milter-zipcrypt.");
     closelog();
 
     return ret;
+
+fail:
+    if (pid_file)
+        unlink(pid_file);
+
+    exit(EXIT_FAILURE);
 }
 
