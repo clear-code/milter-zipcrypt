@@ -313,14 +313,15 @@ _eom (SMFICTX *context)
     if (!priv->body)
         return SMFIS_ACCEPT;
 
-    smfi_addheader(context, "X-ZIP-Crypted", "Yes");
-    smfi_addheader(context, "X-ZIP-Crypted-Password", priv->password);
-
     attachments = mz_utils_extract_attachments((char*)priv->body, priv->boundary);
     if (!attachments)
         return SMFIS_CONTINUE;
 
     _set_password(priv);
+
+    smfi_addheader(context, "X-ZIP-Crypted", "Yes");
+    smfi_addheader(context, "X-ZIP-Crypted-Password", priv->password);
+
     _send_body(context, priv, attachments);
     ret = _replace_with_crypted_data(context, priv, attachments);
     mz_list_free_with_free_func(attachments, (MzListElementFreeFunc)mz_attachment_free);
