@@ -13,6 +13,7 @@ milter_zipcrypt_SOURCES =	\
 milter_zipcrypt_LDADD =		\
 	libmilter_zipcrypt.la	\
 	-L/usr/lib/libmilter	\
+	-lcrypt			\
 	-lmilter		\
 	-lz
 
@@ -25,6 +26,8 @@ libmilter_zipcrypt_la_SOURCES =	\
 	mz-convert.h		\
 	mz-list.c		\
 	mz-list.h		\
+	mz-password.h		\
+	mz-password.c		\
 	mz-quoted-printable.h	\
 	mz-quoted-printable.c	\
 	mz-mime-private.h	\
