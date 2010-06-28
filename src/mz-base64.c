@@ -26,6 +26,7 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include <limits.h>
 
 #include "mz-base64.h"
