@@ -425,6 +425,7 @@ show_usage (void)
 static struct option long_options[] = {
     {"daemon",    0, 0, 'd'},
     {"help",      0, 0, 'h'},
+    {"pid-file",  1, 0, 'p'},
     {"spec",      1, 0, 's'},
     {"user-name", 1, 0, 'u'},
     {"verbose",   0, 0, 'v'},
@@ -438,6 +439,7 @@ main (int argc, char *argv[])
     int ret;
     char *connection_spec = NULL;
     char *user_name = NULL;
+    char *pid_file = NULL;
     bool verbose_mode = false;
     bool daemon_mode = false;
     int option_index;
@@ -449,6 +451,9 @@ main (int argc, char *argv[])
             break;
         case 'h':
             show_usage();
+            break;
+        case 'p':
+            pid_file = optarg;
             break;
         case 's':
             connection_spec = optarg;
@@ -482,7 +487,21 @@ main (int argc, char *argv[])
     if (daemon_mode && daemon(0, 1) == -1)
         exit(EXIT_FAILURE);
 
+    if (pid_file) {
+        FILE *fd;
+        fd = fopen(pid_file, "w");
+        if (fd == NULL) {
+            syslog(LOG_NOTICE, "Could not open %s.", pid_file);
+            exit(EXIT_FAILURE);
+        }
+        fprintf(fd, "%d\n", getpid());
+        fclose(fd);
+    }
+
     ret = smfi_main();
+
+    if (pid_file)
+        unlink(pid_file);
     syslog(LOG_NOTICE, "exit milter-zipcrypt.");
     closelog();
 
