@@ -476,7 +476,9 @@ main (int argc, char *argv[])
         FILE *fd;
         fd = fopen(pid_file, "w");
         if (fd == NULL) {
-            syslog(LOG_NOTICE, "Could not open %s.", pid_file);
+            syslog(LOG_ERR, "Could not open %s due to %s.",
+                   pid_file,
+                   strerror(errno));
             exit(EXIT_FAILURE);
         }
         fprintf(fd, "%d\n", getpid());
