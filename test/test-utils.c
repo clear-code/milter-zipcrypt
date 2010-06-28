@@ -21,7 +21,7 @@ static MzList *actual_attachments;
 void
 setup (void)
 {
-    cut_set_fixture_data_dir("fixtures", NULL);
+    cut_set_fixture_data_dir(cut_get_test_directory(), "fixtures", NULL);
     actual_attachments = NULL;
 }
 

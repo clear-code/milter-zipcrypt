@@ -18,7 +18,7 @@ setup (void)
 {
     zip = NULL;
     egg = NULL;
-    cut_set_fixture_data_dir("fixtures", NULL);
+    cut_set_fixture_data_dir(cut_get_test_directory(), "fixtures", NULL);
     template = strdup("MzZipStreamTestXXXXXX");
     cut_make_directory("tmp", NULL);
 }
