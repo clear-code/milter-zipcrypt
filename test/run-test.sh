@@ -53,7 +53,4 @@ if test x"$USE_GTK" = x"yes"; then
     CUTTER_ARGS="-u gtk $CUTTER_ARGS"
 fi
 
-ruby_dir=$top_dir/ext/ruby
-export RUBYLIB=$RUBYLIB:$ruby_dir/lib
-
 $CUTTER_WRAPPER $CUTTER $CUTTER_ARGS "$@" $BASE_DIR
