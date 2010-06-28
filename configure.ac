@@ -16,6 +16,7 @@ AC_CHECK_LIB(z, inflateInit2_)
 AC_CHECK_LIB(milter, mlfi_connect)
 AC_CHECK_LIB(crypt, crypt)
 AC_CHECK_HEADERS([libmilter/mfapi.h],,[AC_MSG_ERROR([libmilter/mfapi.h does not found.])])
+AC_CHECK_HEADERS([getopt.h],,[AC_MSG_ERROR([getopt.h does not found.])])
 
 AM_ICONV_LINK(iconv)
 
