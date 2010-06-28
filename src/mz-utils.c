@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <iconv.h>
 #include "mz-utils.h"
 #include "mz-attachment.h"
 #include "mz-base64.h"
