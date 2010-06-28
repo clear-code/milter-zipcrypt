@@ -479,7 +479,7 @@ main (int argc, char *argv[])
             syslog(LOG_ERR, "Could not open %s due to %s.",
                    pid_file,
                    strerror(errno));
-            exit(EXIT_FAILURE);
+            goto fail;
         }
         fprintf(fd, "%d\n", getpid());
         fclose(fd);
@@ -503,7 +503,6 @@ main (int argc, char *argv[])
     ret = smfi_main();
 
     syslog(LOG_NOTICE, "exit milter-zipcrypt.");
-    closelog();
 
     return ret;
 
@@ -511,6 +510,7 @@ fail:
     if (pid_file)
         unlink(pid_file);
 
+    closelog();
     exit(EXIT_FAILURE);
 }
 
