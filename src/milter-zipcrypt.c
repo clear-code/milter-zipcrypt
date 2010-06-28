@@ -423,9 +423,13 @@ main (int argc, char *argv[])
     char *connection_spec = NULL;
     char *user_name = NULL;
     bool verbose_mode = false;
+    bool daemon_mode = false;
 
-    while ((opt = getopt(argc, argv, "s:u:v")) != -1) {
+    while ((opt = getopt(argc, argv, "s:u:dv")) != -1) {
         switch (opt) {
+        case 'd':
+            daemon_mode = true;
+            break;
         case 's':
             connection_spec = optarg;
             break;
@@ -453,6 +457,9 @@ main (int argc, char *argv[])
         exit(EXIT_FAILURE);
 
     if (verbose_mode && smfi_setdbg(6) == MI_FAILURE)
+        exit(EXIT_FAILURE);
+
+    if (daemon_mode && daemon(0, 1) == -1)
         exit(EXIT_FAILURE);
 
     ret = smfi_main();
