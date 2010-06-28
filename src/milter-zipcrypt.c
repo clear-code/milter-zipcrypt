@@ -488,6 +488,9 @@ main (int argc, char *argv[])
     if (user_name && !switch_user(user_name))
         goto fail;
 
+    if (daemon_mode && daemon(0, 1) == -1)
+        goto fail;
+
     if (smfi_setconn(connection_spec) == MI_FAILURE)
         goto fail;
 
@@ -495,9 +498,6 @@ main (int argc, char *argv[])
         goto fail;
 
     if (verbose_mode && smfi_setdbg(6) == MI_FAILURE)
-        goto fail;
-
-    if (daemon_mode && daemon(0, 1) == -1)
         goto fail;
 
     ret = smfi_main();
