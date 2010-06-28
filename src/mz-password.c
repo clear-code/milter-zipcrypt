@@ -57,6 +57,6 @@ mz_password_create (void)
     data.initialized = 0;
     create_salt(salt, sizeof(salt) - 1);
 
-    return crypt_r("password", (char*)salt, &data);
+    return strdup(crypt_r("password", (char*)salt, &data));
 }
 
