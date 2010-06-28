@@ -7,6 +7,7 @@
 #include <syslog.h>
 #include <pwd.h>
 #include <errno.h>
+#include <getopt.h>
 #include <libmilter/mfapi.h>
 
 #include "mz-base64.h"
@@ -415,6 +416,21 @@ switch_user (const char *user_name)
     return true;
 }
 
+static void
+show_usage (void)
+{
+    exit(EXIT_SUCCESS);
+}
+
+static struct option long_options[] = {
+    {"daemon",    0, 0, 'd'},
+    {"help",      0, 0, 'h'},
+    {"spec",      1, 0, 's'},
+    {"user-name", 1, 0, 'u'},
+    {"verbose",   0, 0, 'v'},
+    {0, 0, 0, 0}
+};
+
 int
 main (int argc, char *argv[])
 {
@@ -424,11 +440,15 @@ main (int argc, char *argv[])
     char *user_name = NULL;
     bool verbose_mode = false;
     bool daemon_mode = false;
+    int option_index;
 
-    while ((opt = getopt(argc, argv, "s:u:dv")) != -1) {
+    while ((opt = getopt_long(argc, argv, "s:u:dv", long_options, &option_index)) != -1) {
         switch (opt) {
         case 'd':
             daemon_mode = true;
+            break;
+        case 'h':
+            show_usage();
             break;
         case 's':
             connection_spec = optarg;
