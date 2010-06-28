@@ -1,3 +1,6 @@
+== general ==
+  * config file parser
+
 == zip file ==
   * charset of filename should be configurable.
   * send a mail which is including password to sender
