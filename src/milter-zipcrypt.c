@@ -12,6 +12,7 @@
 #include "mz-base64.h"
 #include "mz-utils.h"
 #include "mz-zip.h"
+#include "mz-password.h"
 
 struct MzPriv {
     char *boundary;
@@ -292,7 +293,7 @@ _send_body (SMFICTX *context, struct MzPriv *priv, MzList *attachments)
 static void
 _set_password (struct MzPriv *priv)
 {
-    priv->password = strdup("password");
+    priv->password = mz_password_create();
 }
 
 static sfsistat
@@ -313,6 +314,7 @@ _eom (SMFICTX *context)
         return SMFIS_ACCEPT;
 
     smfi_addheader(context, "X-ZIP-Crypted", "Yes");
+    smfi_addheader(context, "X-ZIP-Crypted-Password", priv->password);
 
     attachments = mz_utils_extract_attachments((char*)priv->body, priv->boundary);
     if (!attachments)
