@@ -11,13 +11,13 @@ void test_encrypt (void);
 static MzZipStream *zip;
 static int zip_fd;
 static char *template;
-static GCutEgg *egg;
+static GCutProcess *process;
 
 void
 setup (void)
 {
     zip = NULL;
-    egg = NULL;
+    process = NULL;
     cut_set_fixture_data_dir(cut_get_test_directory(), "fixtures", NULL);
     template = strdup("MzZipStreamTestXXXXXX");
     cut_make_directory("tmp", NULL);
@@ -33,8 +33,8 @@ teardown (void)
     cut_remove_path(template, NULL);
     free(template);
     cut_remove_path("tmp", NULL);
-    if (egg)
-        g_object_unref(egg);
+    if (process)
+        g_object_unref(process);
 }
 
 static void
@@ -117,15 +117,15 @@ test_encrypt (void)
     close(zip_fd);
     zip_fd = -1;
 
-    egg = gcut_egg_new("unzip",
+    process = gcut_process_new("unzip",
                        "-o",
                        "-P", "password",
                        "-d", "tmp",
                        template, NULL);
-    gcut_egg_hatch(egg, &error);
+    cut_assert_true(gcut_process_run(process, &error));
     gcut_assert_error(error);
 
-    cut_assert_equal_int(0, gcut_egg_wait(egg, 1000, &error));
+    cut_assert_equal_int(0, gcut_process_wait(process, 1000, &error));
     gcut_assert_error(error);
 
     cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "body");
