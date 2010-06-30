@@ -10,6 +10,8 @@
 #else
 #  define WEXITSTATUS(status) (status)
 #endif
+#include "mz-list.h"
+#include "mz-utils.h"
 
 void test_no_attachment (void);
 
@@ -19,6 +21,7 @@ static GString *modified_message;
 
 #define CONNECTION_SPEC "unix:test-milter-zipcrypt.sock"
 static char *temporary_socket;
+static MzList *modified_attachments;
 
 static void
 run_milter_zipcrypt (void)
@@ -54,6 +57,7 @@ void
 setup (void)
 {
     test_server = NULL;
+    modified_attachments = NULL;
 
     create_temporary_socket();
     cut_trace(run_milter_zipcrypt());
@@ -82,6 +86,7 @@ teardown (void)
     if (test_server)
         g_object_unref(test_server);
     g_free(temporary_socket);
+    mz_list_free(modified_attachments);
 }
 
 static void
@@ -121,5 +126,18 @@ test_no_attachment (void)
 {
     cut_trace(run_test_server("no_attachment"));
     cut_trace(assert_status("accept"));
+}
+
+void
+test_attachment (void)
+{
+    cut_trace(run_test_server("mail"));
+    cut_trace(assert_status("pass"));
+    cut_assert_match("\\+ X-ZIP-Crypted: Yes", modified_message->str);
+
+    modified_attachments = mz_utils_extract_attachments(modified_message->str,
+                                                        "=-HY8vxMUek5fQZa/zkovp");
+    cut_assert_not_null(modified_attachments);
+    cut_assert_equal_int(1, mz_list_length(modified_attachments));
 }
 
