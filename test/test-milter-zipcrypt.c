@@ -11,10 +11,11 @@
 #  define WEXITSTATUS(status) (status)
 #endif
 
-void test_run (void);
+void test_no_attachment (void);
 
 static GCutProcess *test_server;
 static GCutProcess *milter_zipcrypt;
+static GString *modified_message;
 
 #define CONNECTION_SPEC "unix:test-milter-zipcrypt.sock"
 static char *temporary_socket;
@@ -84,28 +85,41 @@ teardown (void)
 }
 
 static void
-run_test_server (void)
+run_test_server (const char *data_file_name)
 {
     GError *error = NULL;
+    const char *data_path;
 
+    data_path = cut_build_path(cut_get_test_directory(),
+                               "fixtures",
+                               data_file_name,
+                               NULL);
     test_server = gcut_process_new(MILTER_TEST_SERVER,
                                    "-s",
                                    temporary_socket,
+                                   "-m",
+                                   data_path,
+                                   "--output-message",
                                    NULL);
     gcut_process_run(test_server, &error);
     gcut_assert_error(error);
     wait_reaped(test_server);
+    modified_message = gcut_process_get_output_string(test_server);
+
+    cut_assert_not_null(modified_message);
+}
+
+static void
+assert_status (const char *status)
+{
+    cut_assert_match(cut_take_printf("^status: %s\n", status),
+                     modified_message->str);
 }
 
 void
-test_run (void)
+test_no_attachment (void)
 {
-    GString *actual;
-
-    cut_trace(run_test_server());
-
-    actual = gcut_process_get_output_string(test_server);
-
-    cut_assert_match("^status: accept\n", actual->str);
+    cut_trace(run_test_server("no_attachment"));
+    cut_trace(assert_status("accept"));
 }
 
