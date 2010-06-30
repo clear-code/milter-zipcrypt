@@ -118,10 +118,10 @@ test_encrypt (void)
     zip_fd = -1;
 
     process = gcut_process_new("unzip",
-                       "-o",
-                       "-P", "password",
-                       "-d", "tmp",
-                       template, NULL);
+                               "-o",
+                               "-P", "password",
+                               "-d", "tmp",
+                               template, NULL);
     cut_assert_true(gcut_process_run(process, &error));
     gcut_assert_error(error);
 
