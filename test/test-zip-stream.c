@@ -101,7 +101,7 @@ test_encrypt (void)
     cut_assert_not_null(zip);
 
     errno = 0;
-    zip_fd = mkstemp(template);
+    zip_fd = g_mkstemp(template);
     cut_assert_errno();
     assert_success(mz_zip_stream_begin_archive(zip));
 
