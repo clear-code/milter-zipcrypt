@@ -6,6 +6,7 @@ noinst_LTLIBRARIES =		\
 	libmz_test_utils.la	\
 	test_base64.la		\
 	test_convert.la		\
+	test_milter_zipcrypt.la	\
 	test_password.la	\
 	test_utils.la		\
 	test_zip_stream.la
@@ -45,11 +46,15 @@ test_base64_la_LIBADD =					\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_convert_la_SOURCES = test-convert.c
-test_convert_la_LIBADD =					\
+test_convert_la_LIBADD =				\
+	$(top_builddir)/test/libmz_test_utils.la
+
+test_milter_zipcrypt_la_SOURCES = test-milter-zipcrypt.c
+test_milter_zipcrypt_la_LIBADD =			\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_password_la_SOURCES = test-password.c
-test_password_la_LIBADD =					\
+test_password_la_LIBADD =				\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_zip_stream_la_SOURCES = test-zip-stream.c
