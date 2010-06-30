@@ -117,13 +117,13 @@ append_body (struct MzPriv *priv, unsigned char *chunk, size_t size)
     if (!priv->body) {
         priv->body = malloc(size);
         if (!priv->body)
-            return SMFIS_SKIP;
+            return SMFIS_TEMPFAIL;
         memcpy(priv->body, chunk, size);
         priv->body_length = size;
     } else {
         priv->body = realloc(priv->body, priv->body_length + size);
         if (!priv->body)
-            return SMFIS_SKIP;
+            return SMFIS_TEMPFAIL;
         memcpy(&priv->body[priv->body_length], chunk, size);
         priv->body_length += size;
     }
