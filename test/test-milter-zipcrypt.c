@@ -100,6 +100,12 @@ run_test_server (void)
 void
 test_run (void)
 {
+    GString *actual;
+
     cut_trace(run_test_server());
+
+    actual = gcut_process_get_output_string(test_server);
+
+    cut_assert_match("^status: accept\n", actual->str);
 }
 
