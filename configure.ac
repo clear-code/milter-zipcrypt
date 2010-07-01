@@ -36,7 +36,7 @@ AC_CHECK_GCUTTER(>= 1.1.5)
 [ac_cv_use_gcutter="no"])
 AM_CONDITIONAL([WITH_GCUTTER], [test "$ac_cv_use_gcutter" != "no"])
 if test "x$ac_cv_use_gcutter" != "xno"; then
-  MILTER_TEST_SERVER=`$PKG_CONFIG --variable=milter_test_server milter-server`
+  MILTER_TEST_SERVER=`$PKG_CONFIG --variable=milter_test_server milter-server >= 1.5.3`
   AC_DEFINE_UNQUOTED(MILTER_TEST_SERVER, ["$MILTER_TEST_SERVER"], [milter-test-server name])
 fi
 
