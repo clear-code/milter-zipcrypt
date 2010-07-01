@@ -6,7 +6,7 @@ TESTS_ENVIRONMENT = 		\
 	--source-directory=$(top_srcdir) .
 TESTS = test
 
-noinst_LTLIBRARIES =		\
+check_LTLIBRARIES =		\
 	libmz_test_utils.la	\
 	test_base64.la		\
 	test_convert.la		\
