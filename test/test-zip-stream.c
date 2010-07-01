@@ -18,7 +18,10 @@ setup (void)
 {
     zip = NULL;
     process = NULL;
-    cut_set_fixture_data_dir(cut_get_test_directory(), "fixtures", NULL);
+    cut_set_fixture_data_dir(cut_get_source_directory(),
+                             "test",
+                             "fixtures",
+                             NULL);
     template = strdup("MzZipStreamTestXXXXXX");
     cut_make_directory("tmp", NULL);
 }
@@ -129,7 +132,8 @@ test_encrypt (void)
     gcut_assert_error(error);
 
     cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "body");
-    expected_file = cut_build_path(cut_get_test_directory(),
+    expected_file = cut_build_path(cut_get_source_directory(),
+                                   "test",
                                    "fixtures",
                                    "body",
                                    NULL);
@@ -137,7 +141,8 @@ test_encrypt (void)
                               "tmp" G_DIR_SEPARATOR_S "body");
 
     cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "t.png");
-    expected_file = cut_build_path(cut_get_test_directory(),
+    expected_file = cut_build_path(cut_get_source_directory(),
+                                   "test",
                                    "fixtures",
                                    "t.png",
                                    NULL);

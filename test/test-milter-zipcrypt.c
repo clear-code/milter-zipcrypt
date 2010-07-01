@@ -109,7 +109,8 @@ run_test_server (const char *data_file_name)
     GError *error = NULL;
     const char *data_path;
 
-    data_path = cut_build_path(cut_get_test_directory(),
+    data_path = cut_build_path(cut_get_source_directory(),
+                               "test",
                                "fixtures",
                                data_file_name,
                                NULL);
@@ -210,7 +211,8 @@ test_attachment (void)
     gcut_assert_error(error);
 
     cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "t.png");
-    expected_file = cut_build_path(cut_get_test_directory(),
+    expected_file = cut_build_path(cut_get_source_directory(),
+                                   "test",
                                    "fixtures",
                                    "t.png",
                                    NULL);
@@ -218,7 +220,8 @@ test_attachment (void)
                               "tmp" G_DIR_SEPARATOR_S "t.png");
 
     cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "t.png");
-    expected_file = cut_build_path(cut_get_test_directory(),
+    expected_file = cut_build_path(cut_get_source_directory(),
+                                   "test",
                                    "fixtures",
                                    "t.png",
                                    NULL);

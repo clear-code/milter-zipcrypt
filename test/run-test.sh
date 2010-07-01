@@ -45,7 +45,7 @@ fi
 
 export CUTTER
 
-CUTTER_ARGS="$CUTTER_ARGS -s $BASE_DIR --exclude-directory fixtures"
+CUTTER_ARGS="$CUTTER_ARGS -s $top_dir --exclude-directory fixtures"
 if echo "$@" | grep -- --mode=analyze > /dev/null; then
     :
 fi

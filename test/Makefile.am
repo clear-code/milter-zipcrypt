@@ -1,6 +1,10 @@
 if WITH_GCUTTER
-TESTS = run-test.sh
-TESTS_ENVIRONMENT = NO_MAKE=yes CUTTER="$(CUTTER)"
+TESTS_ENVIRONMENT = 		\
+	NO_MAKE=yes 		\
+	CUTTER="$(CUTTER)"	\
+	$(CUTTER) 		\
+	--source-directory=$(top_srcdir) .
+TESTS = test
 
 noinst_LTLIBRARIES =		\
 	libmz_test_utils.la	\
@@ -60,6 +64,9 @@ test_password_la_LIBADD =				\
 test_zip_stream_la_SOURCES = test-zip-stream.c
 test_zip_stream_la_LIBADD =				\
 	$(top_builddir)/test/libmz_test_utils.la
+
+test:
+	@
 
 echo-cutter:
 	@echo $(CUTTER)
