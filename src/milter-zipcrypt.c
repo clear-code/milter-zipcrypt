@@ -1,5 +1,8 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -431,6 +434,15 @@ switch_user (const char *user_name)
 static void
 show_usage (void)
 {
+    printf("usage:\n"
+           " %s [options]\n"
+           " -d, --daemon     \t\trun as daemon process\n"
+           " -p, --pid-file   \t\tchange to specified user\n"
+           " -s, --spec       \t\tspecify the socket address to connect MTA\n"
+           " -u, --user-name  \t\tchange to specified user\n"
+           " -v, --verbose    \t\trun verbose mode\n"
+           " -h, --help       \t\tshow this help message\n",
+           PACKAGE_NAME);
     exit(EXIT_SUCCESS);
 }
 
@@ -441,6 +453,7 @@ static struct option long_options[] = {
     {"spec",      1, 0, 's'},
     {"user-name", 1, 0, 'u'},
     {"verbose",   0, 0, 'v'},
+    {"help",      0, 0, 'h'},
     {0, 0, 0, 0}
 };
 
@@ -456,7 +469,7 @@ main (int argc, char *argv[])
     bool daemon_mode = false;
     int option_index;
 
-    while ((opt = getopt_long(argc, argv, "s:u:dv", long_options, &option_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "s:u:dhv", long_options, &option_index)) != -1) {
         switch (opt) {
         case 'd':
             daemon_mode = true;
@@ -480,6 +493,9 @@ main (int argc, char *argv[])
             break;
         }
     }
+
+    if (!connection_spec)
+        show_usage();
 
     openlog("milter-zipcrypt", LOG_PID, LOG_MAIL);
     syslog(LOG_NOTICE, "starting milter-zipcrypt.");
