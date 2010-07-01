@@ -22,7 +22,8 @@ EXTRA_DIST =			\
 INCLUDES =			\
 	-I$(srcdir)		\
 	-I$(top_srcdir)		\
-	-I$(top_srcdir)/src
+	-I$(top_srcdir)/src	\
+	-I$(top_srcdir)/test
 
 AM_CFLAGS = 			\
 	$(GCUTTER_CFLAGS)
@@ -37,7 +38,10 @@ LIBS =							\
 	-L/usr/lib/libmilter				\
 	$(GCUTTER_LIBS)
 
-libmz_test_utils_la_SOURCES = mz-test-utils.c
+libmz_test_utils_la_SOURCES = 				\
+	mz-test-utils.c					\
+	mz-test-utils.h
+
 libmz_test_utils_la_LIBADD =				\
 	$(top_builddir)/src/libmilter_zipcrypt.la
 
