@@ -17,6 +17,7 @@
 
 struct MzPriv {
     char *boundary;
+    char *from;
     unsigned char *body;
     size_t body_length;
     char *password;
@@ -53,6 +54,19 @@ _negotiate (SMFICTX *context,
 static sfsistat
 _envfrom (SMFICTX *context, char **froms)
 {
+    struct MzPriv *priv;
+    priv = malloc(sizeof(*priv));
+
+    if (!priv)
+        return SMFIS_TEMPFAIL;
+
+    memset(priv, 0, sizeof(*priv));
+    smfi_setpriv(context, priv);
+
+    priv->from = strdup(froms[0]);
+    if (!priv->from)
+        return SMFIS_TEMPFAIL;
+
     return SMFIS_CONTINUE;
 }
 
@@ -95,18 +109,11 @@ _header (SMFICTX *context, char *name, char *value)
     if (!boundary)
         return SMFIS_ACCEPT;
 
-    priv = malloc(sizeof(*priv));
-    if (!priv) {
-        free(boundary);
+    priv = (struct MzPriv*)smfi_getpriv(context);
+    if (!priv)
         return SMFIS_ACCEPT;
-    }
 
-    memset(priv, 0, sizeof(*priv));
     priv->boundary = boundary;
-    priv->body = NULL;
-    priv->body_length = 0;
-
-    smfi_setpriv(context, priv);
 
     return SMFIS_CONTINUE;
 }
@@ -350,6 +357,11 @@ _cleanup (SMFICTX *context)
     priv = (struct MzPriv*)smfi_getpriv(context);
     if (!priv)
         return SMFIS_CONTINUE;
+
+    if (priv->from) {
+        free(priv->from);
+        priv->from = NULL;
+    }
 
     if (priv->boundary) {
         free(priv->boundary);
