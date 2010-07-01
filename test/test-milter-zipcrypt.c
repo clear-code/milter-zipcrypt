@@ -8,7 +8,9 @@
 #ifdef HAVE_SYS_WAIT_H
 #  include <sys/wait.h>
 #else
-#  define WEXITSTATUS(status) (status)
+#  ifndef WEXITSTATUS
+#    define WEXITSTATUS(status) (status)
+#  endif
 #endif
 #include "mz-list.h"
 #include "mz-utils.h"
