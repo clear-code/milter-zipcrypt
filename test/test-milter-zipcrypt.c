@@ -179,13 +179,14 @@ test_attachment (void)
 {
     GError *error = NULL;
     const char *password;
+    const char *expected_file;
 
-    cut_trace(run_test_server("mail"));
+    cut_trace(run_test_server("test-mail"));
     cut_trace(assert_status("pass"));
     cut_assert_match("\\+ X-ZIP-Crypted: Yes", modified_message->str);
 
     modified_attachments = mz_utils_extract_attachments(modified_message->str,
-                                                        "=-HY8vxMUek5fQZa/zkovp");
+                                                        "=-36rDyTciyqG6Meu5WLLY");
     cut_assert_not_null(modified_attachments);
     cut_assert_equal_int(1, mz_list_length(modified_attachments));
 
@@ -207,14 +208,6 @@ test_attachment (void)
 
     cut_assert_equal_int(0, gcut_process_wait(unzip, 10000, &error));
     gcut_assert_error(error);
-/*
-    cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "body");
-    expected_file = cut_build_path(cut_get_test_directory(),
-                                   "fixtures",
-                                   "body",
-                                   NULL);
-    cut_assert_equal_file_raw(expected_file,
-                              "tmp" G_DIR_SEPARATOR_S "body");
 
     cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "t.png");
     expected_file = cut_build_path(cut_get_test_directory(),
@@ -223,6 +216,13 @@ test_attachment (void)
                                    NULL);
     cut_assert_equal_file_raw(expected_file,
                               "tmp" G_DIR_SEPARATOR_S "t.png");
-*/
+
+    cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "t.png");
+    expected_file = cut_build_path(cut_get_test_directory(),
+                                   "fixtures",
+                                   "t.png",
+                                   NULL);
+    cut_assert_equal_file_raw(expected_file,
+                              "tmp" G_DIR_SEPARATOR_S "t.png");
 }
 
