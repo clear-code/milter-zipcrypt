@@ -16,8 +16,9 @@ AC_PROG_MAKE_SET
 AC_CHECK_LIB(z, inflateInit2_)
 AC_CHECK_LIB(milter, mlfi_connect)
 AC_CHECK_LIB(crypt, crypt)
-AC_CHECK_HEADERS([libmilter/mfapi.h],,[AC_MSG_ERROR([libmilter/mfapi.h does not found.])])
-AC_CHECK_HEADERS([getopt.h],,[AC_MSG_ERROR([getopt.h does not found.])])
+AC_CHECK_HEADERS([libmilter/mfapi.h],,[AC_MSG_ERROR([libmilter/mfapi.h not found.])])
+AC_CHECK_HEADERS([getopt.h],,[AC_MSG_ERROR([getopt.h not found.])])
+AC_CHECK_FUNC([daemon],,[AC_MSG_ERROR([daemon() function not found])])
 
 AC_PATH_PROG([PKG_CONFIG], [pkg-config], [no])
 
