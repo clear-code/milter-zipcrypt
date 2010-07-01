@@ -198,7 +198,7 @@ test_attachment (void)
     password = get_zip_password(modified_message->str);
     cut_assert_not_null(password);
 
-    unzip = gcut_process_new("/home/zoe/bin/unzip",
+    unzip = gcut_process_new("unzip",
                              "-o",
                              "-P", password,
                              "-d", "tmp",
