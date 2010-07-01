@@ -44,6 +44,7 @@ AC_CONFIG_FILES([
 Makefile
 src/Makefile
 test/Makefile
+test/fixtures/Makefile
 ])
 
 AC_OUTPUT

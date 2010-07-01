@@ -1,3 +1,5 @@
+SUBDIRS = fixtures
+
 if WITH_GCUTTER
 TESTS_ENVIRONMENT = 		\
 	NO_MAKE=yes 		\
