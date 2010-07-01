@@ -268,6 +268,11 @@ mz_utils_get_attachment_body_place (const char *contents,
     if (!end)
         return NULL;
 
+    if (end - start >= 2) {
+        if (!strncmp((end - 2), CRLF, 2))
+            end -= CRLF_LENGTH;
+    }
+
     *size = end - start;
 
     return start;
