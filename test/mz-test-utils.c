@@ -60,6 +60,16 @@ error:
     return NULL;
 }
 
+const char *
+mz_test_utils_build_fixture_data_path (const char *filename)
+{
+    return cut_build_path(cut_get_source_directory(),
+                          "test",
+                          "fixtures",
+                          filename,
+                          NULL);
+}
+
 time_t
 mz_test_utils_get_last_modified_time (const char *path)
 {
