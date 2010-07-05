@@ -35,6 +35,48 @@ sane_dup2 (int fd1, int fd2)
     return ret;
 }
 
+#define SUBJECT_HEADER                   "Subject: "
+#define FROM_HEADER                      "From: "
+#define TO_HEADER                        "To: "
+#define MIME_HEADER                      "MIME-Version: 1.0"
+#define CONTENT_TYPE_HEADER              "Conent-Type: text/plain; charset=\"UTF-8\""
+#define CONTENT_TRANSFER_ENCODING_HEADER "Conent-Transfer-Encoding: 8bit"
+
+#define CRLF "\r\n"
+static size_t CRLF_LENGTH = sizeof(CRLF) - 1;
+
+static bool
+output_headers (int fd,
+                const char *from,
+                const char *recipient)
+{
+    size_t ret;
+    CRLF_LENGTH = 2;
+
+    ret = write(fd, SUBJECT_HEADER, strlen(SUBJECT_HEADER));
+    ret = write(fd, "test", strlen("test"));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+
+    ret = write(fd, FROM_HEADER, strlen(FROM_HEADER));
+    ret = write(fd, from, strlen(from));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+
+    ret = write(fd, TO_HEADER, strlen(TO_HEADER));
+    ret = write(fd, recipient, strlen(recipient));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+
+    ret = write(fd, MIME_HEADER, strlen(MIME_HEADER));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+
+    ret = write(fd, CONTENT_TYPE_HEADER, strlen(CONTENT_TYPE_HEADER));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+
+    ret = write(fd, CONTENT_TRANSFER_ENCODING_HEADER, strlen(CONTENT_TRANSFER_ENCODING_HEADER));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+
+    return true;
+}
+
 int
 mz_sendmail_send_password_mail (const char   *command_path,
                                 const char   *from,
@@ -69,6 +111,8 @@ mz_sendmail_send_password_mail (const char   *command_path,
             sane_dup2(stderr_pipe[WRITE], STDERR_FILENO) < 0) {
         }
 
+        if (stdin_pipe[WRITE] >= 3)
+            close_pipe(stdin_pipe, READ);
         if (stdout_pipe[WRITE] >= 3)
             close_pipe(stdout_pipe, WRITE);
         if (stderr_pipe[WRITE] >= 3)
@@ -83,8 +127,10 @@ mz_sendmail_send_password_mail (const char   *command_path,
         close_pipe(stderr_pipe, WRITE);
         close_pipe(stdin_pipe, READ);
 
+        output_headers(stdin_pipe[WRITE], from, recipient);
         write(stdin_pipe[WRITE], body, strlen(body));
-        write(stdin_pipe[WRITE], ".\n", 2);
+        write(stdin_pipe[WRITE], CRLF, CRLF_LENGTH);
+        write(stdin_pipe[WRITE], "." CRLF, CRLF_LENGTH + 1);
 
         ret = waitpid(pid, &status, 0);
         if (ret < 0) {

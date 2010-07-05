@@ -53,11 +53,12 @@ process_mail (void)
         goto fail;
 
     io = g_io_channel_unix_new(STDIN_FILENO);
+    g_io_channel_set_line_term(io, "\r\n", 2);
     body = g_string_new(NULL);
 
     do {
         status = g_io_channel_read_line(io, &line, &length, NULL, NULL);
-        if (g_str_equal(line, ".\n"))
+        if (g_str_equal(line, ".\r\n"))
             break;
         g_string_append(body, line);
     } while (status == G_IO_STATUS_NORMAL || status == G_IO_STATUS_AGAIN);
