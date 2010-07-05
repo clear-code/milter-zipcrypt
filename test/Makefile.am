@@ -14,12 +14,17 @@ check_LTLIBRARIES =		\
 	test_convert.la		\
 	test_milter_zipcrypt.la	\
 	test_password.la	\
+	test_sendmail.la		\
 	test_utils.la		\
 	test_zip_stream.la
 endif
 
 EXTRA_DIST =			\
 	run-test.sh
+
+BUILT_SOURCES = 			\
+	mz-test-sendmail-reporter.h	\
+	mz-test-sendmail-receiver.h
 
 INCLUDES =			\
 	-I$(srcdir)		\
@@ -39,6 +44,11 @@ AM_LDFLAGS =			\
 LIBS =							\
 	-L/usr/lib/libmilter				\
 	$(GCUTTER_LIBS)
+
+mz-test-sendmail-reporter.h: mz-test-sendmail.xml
+	dbus-binding-tool --prefix=mz_test_sendmail --mode=glib-client $< > $@
+mz-test-sendmail-receiver.h: mz-test-sendmail.xml
+	dbus-binding-tool --prefix=mz_test_sendmail --mode=glib-server $< > $@
 
 libmz_test_utils_la_SOURCES = 				\
 	mz-test-utils.c					\
@@ -65,6 +75,16 @@ test_milter_zipcrypt_la_LIBADD =			\
 
 test_password_la_SOURCES = test-password.c
 test_password_la_LIBADD =				\
+	$(top_builddir)/test/libmz_test_utils.la
+
+test_sendmail_la_CFLAGS = 				\
+	$(AM_CFLAGS)					\
+	$(DBUS_GLIB_CFLAGS)
+test_sendmail_la_SOURCES = 				\
+	test-sendmail.c					\
+	mz-test-sendmail-bindings.h
+test_sendmail_la_LIBADD =				\
+	$(DBUS_GLIB_LIBS)				\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_zip_stream_la_SOURCES = test-zip-stream.c

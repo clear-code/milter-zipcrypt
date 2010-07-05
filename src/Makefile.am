@@ -30,6 +30,8 @@ libmilter_zipcrypt_la_SOURCES =	\
 	mz-password.c		\
 	mz-quoted-printable.h	\
 	mz-quoted-printable.c	\
+	mz-sendmail.h		\
+	mz-sendmail.c		\
 	mz-mime-private.h	\
 	mz-utils.h		\
 	mz-utils.c		\
