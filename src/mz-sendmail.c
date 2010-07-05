@@ -64,7 +64,8 @@ mz_sendmail_send_password_mail (const char   *command_path,
         close_pipe(stderr_pipe, READ);
         close_pipe(stdin_pipe, WRITE);
 
-        if (sane_dup2(stdout_pipe[WRITE], STDOUT_FILENO) < 0 ||
+        if (sane_dup2(stdin_pipe[READ], STDIN_FILENO) < 0 ||
+            sane_dup2(stdout_pipe[WRITE], STDOUT_FILENO) < 0 ||
             sane_dup2(stderr_pipe[WRITE], STDERR_FILENO) < 0) {
         }
 
@@ -81,6 +82,9 @@ mz_sendmail_send_password_mail (const char   *command_path,
         close_pipe(stdout_pipe, WRITE);
         close_pipe(stderr_pipe, WRITE);
         close_pipe(stdin_pipe, READ);
+
+        write(stdin_pipe[WRITE], body, strlen(body));
+        write(stdin_pipe[WRITE], ".\n", 2);
 
         ret = waitpid(pid, &status, 0);
         if (ret < 0) {
