@@ -1,5 +1,7 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 #include <cutter.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "mz-sendmail.h"
 
@@ -28,13 +30,16 @@ teardown (void)
 void
 test_send (void)
 {
-    cut_assert_equal_int(0,
-                         mz_sendmail_send_password_mail(sendmail_path,
-                                                        "from@example.com",
-                                                        "to@example.com",
-                                                        MAIL_BODY,
-                                                        strlen(MAIL_BODY),
-                                                        PASSWORD,
-                                                        1000));
+    int status;
+
+    status = mz_sendmail_send_password_mail(sendmail_path,
+                                            "from@example.com",
+                                            "to@example.com",
+                                            MAIL_BODY,
+                                            strlen(MAIL_BODY),
+                                            PASSWORD,
+                                            3000);
+    cut_assert_true(WIFEXITED(status));
+    cut_assert_equal_int(EXIT_SUCCESS, WEXITSTATUS(status));
 }
 
