@@ -51,7 +51,6 @@ output_headers (int fd,
                 const char *recipient)
 {
     size_t ret;
-    CRLF_LENGTH = 2;
 
     ret = write(fd, SUBJECT_HEADER, strlen(SUBJECT_HEADER));
     ret = write(fd, "test", strlen("test"));
