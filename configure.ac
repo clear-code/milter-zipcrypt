@@ -39,6 +39,7 @@ AM_CONDITIONAL([WITH_GCUTTER], [test "$ac_cv_use_gcutter" != "no"])
 if test "x$ac_cv_use_gcutter" != "xno"; then
   MILTER_TEST_SERVER=`$PKG_CONFIG --variable=milter_test_server 'milter-server >= 1.5.3'`
   AC_DEFINE_UNQUOTED(MILTER_TEST_SERVER, ["$MILTER_TEST_SERVER"], [milter-test-server name])
+  PKG_CHECK_MODULES(DBUS_GLIB, dbus-glib-1)
 fi
 
 AC_CONFIG_FILES([
