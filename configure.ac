@@ -46,6 +46,7 @@ Makefile
 src/Makefile
 test/Makefile
 test/fixtures/Makefile
+test/fixtures/sendmail-test/Makefile
 ])
 
 AC_OUTPUT

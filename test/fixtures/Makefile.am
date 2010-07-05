@@ -1,3 +1,5 @@
+SUBDIRS = sendmail-test
+
 EXTRA_DIST =						\
 	attachment					\
 	attachment_body					\
