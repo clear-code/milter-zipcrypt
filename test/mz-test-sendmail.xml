@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<node name="/org/MilterZipcrypt/Sendmail">
+  <interface name="org.MilterZipcrypt.Sendmail">
+    <method name="From">
+      <arg type="s" name="from" direction="in" />
+    </method>
+    <method name="Recipient">
+      <arg type="s" name="recipient" direction="in" />
+    </method>
+    <method name="Body">
+      <arg type="s" name="body" direction="in" />
+    </method>
+    <method name="Password">
+      <arg type="s" name="password" direction="in" />
+    </method>
+  </interface>
+</node>
