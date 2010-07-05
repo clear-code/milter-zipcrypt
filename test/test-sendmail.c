@@ -16,7 +16,7 @@ void
 setup (void)
 {
     sendmail_path = cut_build_path(cut_get_test_directory(),
-                                   "fixtures"
+                                   "fixtures",
                                    "sendmail-test",
                                    "sendmail-test",
                                    NULL);
