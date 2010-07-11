@@ -32,3 +32,5 @@ coverage.info
 *.gcda
 src/milter-zipcrypt
 *.tar.gz
+test/mz-test-sendmail-receiver.h
+test/mz-test-sendmail-reporter.h
