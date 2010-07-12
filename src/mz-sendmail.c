@@ -127,9 +127,9 @@ mz_sendmail_send_password_mail (const char   *command_path,
         close_pipe(stdin_pipe, READ);
 
         output_headers(stdin_pipe[WRITE], from, recipient);
-        write(stdin_pipe[WRITE], body, strlen(body));
-        write(stdin_pipe[WRITE], CRLF, CRLF_LENGTH);
-        write(stdin_pipe[WRITE], "." CRLF, CRLF_LENGTH + 1);
+        ret = write(stdin_pipe[WRITE], body, strlen(body));
+        ret = write(stdin_pipe[WRITE], CRLF, CRLF_LENGTH);
+        ret = write(stdin_pipe[WRITE], "." CRLF, CRLF_LENGTH + 1);
 
         ret = waitpid(pid, &status, 0);
         if (ret < 0) {
