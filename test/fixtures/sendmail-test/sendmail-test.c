@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <glib.h>
-#include <dbus/dbus-glib.h>
+
 
 #include "mz-test-sendmail-reporter.h"
 
@@ -27,7 +27,7 @@ get_dbus_proxy (void)
     connection = dbus_g_connection_open("unix:path=/tmp/mz-test-sendmail", NULL);
     if (connection) {
         proxy = dbus_g_proxy_new_for_peer(connection,
-                                          "org/MilterZipcrypt/Sendmail",
+                                          "/org/MilterZipcrypt/Sendmail",
                                           "org.MilterZipcrypt.Sendmail");
     }
     return proxy;
