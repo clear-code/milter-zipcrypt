@@ -121,11 +121,25 @@ setup (void)
                                    "sendmail-test",
                                    "sendmail-test",
                                    NULL);
+    actual_from = NULL;
+    n_actual_froms = 0;
+    actual_recipients = NULL;
+    actual_body = g_string_new(NULL);
+    actual_password = NULL;
+    n_actual_passwords = 0;
 }
 
 void
 teardown (void)
 {
+    g_free(actual_from);
+    if (actual_recipients) {
+        g_list_foreach(actual_recipients, (GFunc)g_free, NULL);
+        g_list_free(actual_recipients);
+    }
+    if (actual_body)
+        g_string_free(actual_body, TRUE);
+    g_free(actual_password);
 }
 
 void
