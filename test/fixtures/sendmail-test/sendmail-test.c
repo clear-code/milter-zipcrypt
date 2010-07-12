@@ -58,9 +58,11 @@ process_mail (void)
 
     do {
         status = g_io_channel_read_line(io, &line, &length, NULL, NULL);
-        if (g_str_equal(line, ".\r\n"))
-            break;
-        g_string_append(body, line);
+        if (line) {
+            if (g_str_equal(line, ".\r\n"))
+                break;
+            g_string_append(body, line);
+        }
     } while (status == G_IO_STATUS_NORMAL || status == G_IO_STATUS_AGAIN);
 
     g_io_channel_unref(io);
