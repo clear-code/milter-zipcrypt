@@ -1,6 +1,7 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 
 #include <cutter.h>
+#include <glib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -61,13 +62,33 @@ error:
 }
 
 const char *
-mz_test_utils_build_fixture_data_path (const char *filename)
+mz_test_utils_build_fixture_data_path (const char *path, ...)
 {
-    return cut_build_path(cut_get_source_directory(),
-                          "test",
-                          "fixtures",
-                          filename,
-                          NULL);
+    va_list args;
+    char *built_path;
+    GArray *elements;
+    gchar *element;
+    const gchar *source_directory;
+    /* g_array_append_val does not accept literal value. */
+    const gchar *test_directory = "test";
+    const gchar *fixture_directory = "fixtures";
+
+    elements = g_array_new(TRUE, FALSE, sizeof(char *));
+
+    source_directory = cut_get_source_directory();
+    g_array_append_val(elements, source_directory);
+    g_array_append_val(elements, test_directory);
+    g_array_append_val(elements, fixture_directory);
+
+    va_start(args, path);
+    g_array_append_val(elements, path);
+    while ((element = va_arg(args, gchar *)))
+        g_array_append_val(elements, element);
+    va_end(args);
+    built_path = g_build_filenamev((gchar **)(elements->data));
+    g_array_free(elements, TRUE);
+
+    return cut_take_string(built_path);
 }
 
 time_t

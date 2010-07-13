@@ -7,7 +7,7 @@
 
 const char  *mz_test_utils_load_data              (const char     *path,
                                                    unsigned int   *size);
-const char  *mz_test_utils_build_fixture_data_path(const char     *filename);
+const char  *mz_test_utils_build_fixture_data_path(const char     *path, ...);
 time_t       mz_test_utils_get_last_modified_time (const char     *path);
 unsigned int mz_test_utils_get_file_attributes    (const char     *path);
 

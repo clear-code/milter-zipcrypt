@@ -132,12 +132,12 @@ test_encrypt (void)
     gcut_assert_error(error);
 
     cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "body");
-    expected_file = mz_test_utils_build_fixture_data_path("body");
+    expected_file = mz_test_utils_build_fixture_data_path("body", NULL);
     cut_assert_equal_file_raw(expected_file,
                               "tmp" G_DIR_SEPARATOR_S "body");
 
     cut_assert_exist_path("tmp" G_DIR_SEPARATOR_S "t.png");
-    expected_file = mz_test_utils_build_fixture_data_path("t.png");
+    expected_file = mz_test_utils_build_fixture_data_path("t.png", NULL);
     cut_assert_equal_file_raw(expected_file,
                               "tmp" G_DIR_SEPARATOR_S "t.png");
 }
