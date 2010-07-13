@@ -33,4 +33,4 @@ coverage.info
 src/milter-zipcrypt
 *.tar.gz
 test/mz-test-sendmail-receiver.h
-test/mz-test-sendmail-reporter.h
+test/fixtures/sendmail-test/mz-test-sendmail-reporter.h

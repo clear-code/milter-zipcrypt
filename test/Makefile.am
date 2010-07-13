@@ -20,10 +20,10 @@ check_LTLIBRARIES =		\
 endif
 
 EXTRA_DIST =			\
+	mz-test-sendmail.xml	\
 	run-test.sh
 
 BUILT_SOURCES = 			\
-	mz-test-sendmail-reporter.h	\
 	mz-test-sendmail-receiver.h
 
 INCLUDES =			\
@@ -45,8 +45,6 @@ LIBS =							\
 	-L/usr/lib/libmilter				\
 	$(GCUTTER_LIBS)
 
-mz-test-sendmail-reporter.h: mz-test-sendmail.xml
-	dbus-binding-tool --prefix=mz_test_sendmail --mode=glib-client $< > $@
 mz-test-sendmail-receiver.h: mz-test-sendmail.xml
 	dbus-binding-tool --prefix=mz_test_sendmail --mode=glib-server $< > $@
 
@@ -82,7 +80,7 @@ test_sendmail_la_CFLAGS = 				\
 	$(DBUS_GLIB_CFLAGS)
 test_sendmail_la_SOURCES = 				\
 	test-sendmail.c					\
-	mz-test-sendmail-bindings.h
+	mz-test-sendmail-receiver.h
 test_sendmail_la_LIBADD =				\
 	$(DBUS_GLIB_LIBS)				\
 	$(top_builddir)/test/libmz_test_utils.la
