@@ -17,6 +17,7 @@
 #include "mz-utils.h"
 #include "mz-zip.h"
 #include "mz-password.h"
+#include "mz-config.h"
 
 struct MzPriv {
     char *boundary;
@@ -25,6 +26,8 @@ struct MzPriv {
     size_t body_length;
     char *password;
 };
+
+static MzConfig *config;
 
 static sfsistat _envfrom (SMFICTX *context, char **froms);
 static sfsistat _envrcpt (SMFICTX *context, char **recipients);
@@ -437,6 +440,7 @@ show_usage (void)
     printf("usage:\n"
            " %s [options]\n"
            " -d, --daemon     \t\trun as daemon process\n"
+           " -c, --config-file\t\tspecify configuration file\n"
            " -p, --pid-file   \t\tchange to specified user\n"
            " -s, --spec       \t\tspecify the socket address to connect MTA\n"
            " -u, --user-name  \t\tchange to specified user\n"
@@ -447,13 +451,14 @@ show_usage (void)
 }
 
 static struct option long_options[] = {
-    {"daemon",    0, 0, 'd'},
-    {"help",      0, 0, 'h'},
-    {"pid-file",  1, 0, 'p'},
-    {"spec",      1, 0, 's'},
-    {"user-name", 1, 0, 'u'},
-    {"verbose",   0, 0, 'v'},
-    {"help",      0, 0, 'h'},
+    {"daemon",      0, 0, 'd'},
+    {"help",        0, 0, 'h'},
+    {"config-file", 1, 0, 'c'},
+    {"pid-file",    1, 0, 'p'},
+    {"spec",        1, 0, 's'},
+    {"user-name",   1, 0, 'u'},
+    {"verbose",     0, 0, 'v'},
+    {"help",        0, 0, 'h'},
     {0, 0, 0, 0}
 };
 
@@ -465,12 +470,16 @@ main (int argc, char *argv[])
     char *connection_spec = NULL;
     char *user_name = NULL;
     char *pid_file = NULL;
+    char *config_file = NULL;
     bool verbose_mode = false;
     bool daemon_mode = false;
     int option_index;
 
-    while ((opt = getopt_long(argc, argv, "s:u:dhv", long_options, &option_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "c:s:u:dhv", long_options, &option_index)) != -1) {
         switch (opt) {
+        case 'c':
+            config_file = optarg;
+            break;
         case 'd':
             daemon_mode = true;
             break;
@@ -499,6 +508,12 @@ main (int argc, char *argv[])
 
     openlog("milter-zipcrypt", LOG_PID, LOG_MAIL);
     syslog(LOG_NOTICE, "starting milter-zipcrypt.");
+
+    if (config_file) {
+        config = mz_config_load(config_file);
+        if (!config)
+            syslog(LOG_NOTICE, "config file (%s) is not loaded.", config_file);
+    }
 
     if (pid_file) {
         FILE *fd;
@@ -535,6 +550,9 @@ main (int argc, char *argv[])
     return ret;
 
 fail:
+    if (config)
+        mz_config_free(config);
+
     if (pid_file)
         unlink(pid_file);
 
