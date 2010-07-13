@@ -11,6 +11,7 @@ TESTS = test
 check_LTLIBRARIES =		\
 	libmz_test_utils.la	\
 	test_base64.la		\
+	test_config.la		\
 	test_convert.la		\
 	test_milter_zipcrypt.la	\
 	test_password.la	\
@@ -61,6 +62,10 @@ test_utils_la_LIBADD =					\
 
 test_base64_la_SOURCES = test-base64.c
 test_base64_la_LIBADD =					\
+	$(top_builddir)/test/libmz_test_utils.la
+
+test_config_la_SOURCES = test-config.c
+test_config_la_LIBADD =				\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_convert_la_SOURCES = test-convert.c

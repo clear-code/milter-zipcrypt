@@ -22,6 +22,8 @@ libmilter_zipcrypt_la_SOURCES =	\
 	mz-attachment.c		\
 	mz-base64.c		\
 	mz-base64.h		\
+	mz-config.c		\
+	mz-config.h		\
 	mz-convert.c		\
 	mz-convert.h		\
 	mz-list.c		\
