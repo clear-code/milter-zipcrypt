@@ -110,13 +110,14 @@ mz_sendmail_send_password_mail (const char   *command_path,
             sane_dup2(stderr_pipe[WRITE], STDERR_FILENO) < 0) {
         }
 
-        if (stdin_pipe[WRITE] >= 3)
+        if (stdin_pipe[READ] >= 3)
             close_pipe(stdin_pipe, READ);
         if (stdout_pipe[WRITE] >= 3)
             close_pipe(stdout_pipe, WRITE);
         if (stderr_pipe[WRITE] >= 3)
             close_pipe(stderr_pipe, WRITE);
-        execl(command_path, "-F", from, NULL);
+
+        execl(command_path, "-F", from, (char*)NULL);
         _exit(-1);
     } else {
         int status;
