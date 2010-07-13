@@ -1,15 +1,20 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
-#include <cutter.h>
+#include <gcutter.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
 
 #include "mz-sendmail.h"
 
 void test_run (void);
 
 static const char *sendmail_path;
+static GObject *receiver;
+static DBusGConnection *connection;
+static DBusServer *server;
+
 static gchar *actual_from;
 static guint n_actual_froms;
 static GList *actual_recipients;
@@ -103,14 +108,49 @@ register_dbus_object (void)
                                                    &info, 0);
     dbus_g_object_type_install_info(test_dbus_object_type, &dbus_glib_mz_test_sendmail_object_info);
 }
+static void
+new_connection_func (DBusServer *dbus_server, DBusConnection *connection, gpointer user_data)
+{
+    DBusGConnection *g_connection;
 
-#define MAIL_BODY "This is a test mail."
-#define PASSWORD "secret"
+    cut_assert_not_null(receiver);
+
+    dbus_connection_setup_with_g_main(connection, NULL);
+
+    g_connection = dbus_connection_get_g_connection(connection);
+    dbus_g_connection_ref(g_connection);
+    dbus_g_connection_register_g_object(g_connection,
+                                        "/org/MilterZipcrypt/Sendmail",
+                                        receiver);
+}
+
+static void
+setup_receiver (void)
+{
+    DBusError dbus_error;
+
+    dbus_error_init(&dbus_error);
+    server = dbus_server_listen("unix:path=/tmp/mz-test-sendmail", &dbus_error);
+    dbus_server_setup_with_g_main(server, NULL);
+
+    dbus_server_set_new_connection_function(server, new_connection_func, NULL, NULL);
+}
 
 void
 cut_startup (void)
 {
+    dbus_g_thread_init();
     register_dbus_object();
+    setup_receiver();
+}
+
+void
+cut_shutdown (void)
+{
+    if (connection)
+        dbus_g_connection_unref(connection);
+    if (server)
+        dbus_server_disconnect(server);
 }
 
 void
@@ -127,6 +167,7 @@ setup (void)
     actual_body = g_string_new(NULL);
     actual_password = NULL;
     n_actual_passwords = 0;
+    receiver = g_object_new(test_dbus_object_type, NULL);
 }
 
 void
@@ -140,21 +181,78 @@ teardown (void)
     if (actual_body)
         g_string_free(actual_body, TRUE);
     g_free(actual_password);
+
+    if (receiver)
+        g_object_unref(receiver);
 }
+
+#define MAIL_BODY "This is a test mail."
+#define PASSWORD "secret"
+
+typedef struct _SendmailProcessStatus {
+    gboolean is_timeouted;
+    gboolean is_terminated;
+    int exit_status;
+} SendmailProcessStatus;
+
+static gpointer
+send_password_mail_thread (gpointer data)
+{
+    SendmailProcessStatus *status = data;
+
+    status->exit_status = mz_sendmail_send_password_mail(sendmail_path,
+                                                         "from@example.com",
+                                                         "to@example.com",
+                                                         MAIL_BODY,
+                                                         strlen(MAIL_BODY),
+                                                         PASSWORD,
+                                                         3);
+
+    status->is_terminated = TRUE;
+
+    return NULL;
+}
+
+static gboolean
+timeout_sending_password (gpointer data)
+{
+    SendmailProcessStatus *status = data;
+
+    status->is_timeouted = TRUE;
+
+    return FALSE;
+}
+
+#define EXPECTED_BODY                               \
+"Subject: test\r\n"                                 \
+"From: from@example.com\r\n"                        \
+"To: to@example.com\r\n"                            \
+"MIME-Version: 1.0\r\n"                             \
+"Conent-Type: text/plain; charset=\"UTF-8\"\r\n"    \
+"Conent-Transfer-Encoding: 8bit\r\n"                \
+"This is a test mail.\r\n"                          \
 
 void
 test_send (void)
 {
-    int status;
+    GError *error = NULL;
+    GThread *thread;
+    guint timeout_id;
+    GString expected_body = { EXPECTED_BODY, strlen(EXPECTED_BODY)};
+    SendmailProcessStatus status = { FALSE, FALSE, -1 };
 
-    status = mz_sendmail_send_password_mail(sendmail_path,
-                                            "from@example.com",
-                                            "to@example.com",
-                                            MAIL_BODY,
-                                            strlen(MAIL_BODY),
-                                            PASSWORD,
-                                            3000);
-    cut_assert_true(WIFEXITED(status));
-    cut_assert_equal_int(EXIT_SUCCESS, WEXITSTATUS(status));
+    thread = g_thread_create(send_password_mail_thread, &status, TRUE, &error);
+    gcut_assert_error(error);
+
+    timeout_id = g_timeout_add_seconds(3, timeout_sending_password, &status);
+    while (!status.is_timeouted && !status.is_terminated)
+        g_main_context_iteration(NULL, FALSE);
+    g_source_remove(timeout_id);
+    g_thread_join(thread);
+
+    cut_assert_true(WIFEXITED(status.exit_status));
+    cut_assert_equal_int(EXIT_SUCCESS, WEXITSTATUS(status.exit_status));
+    cut_assert_equal_string("from@example.com", actual_from);
+    gcut_assert_equal_string(&expected_body, actual_body);
 }
 
