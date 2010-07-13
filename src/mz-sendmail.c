@@ -41,6 +41,7 @@ sane_dup2 (int fd1, int fd2)
 #define MIME_HEADER                      "MIME-Version: 1.0"
 #define CONTENT_TYPE_HEADER              "Conent-Type: text/plain; charset=\"UTF-8\""
 #define CONTENT_TRANSFER_ENCODING_HEADER "Conent-Transfer-Encoding: 8bit"
+#define SUBJECT                          "MilterZipCrypt: Password Notification"
 
 #define CRLF "\r\n"
 static size_t CRLF_LENGTH = sizeof(CRLF) - 1;
@@ -53,7 +54,7 @@ output_headers (int fd,
     size_t ret;
 
     ret = write(fd, SUBJECT_HEADER, strlen(SUBJECT_HEADER));
-    ret = write(fd, "test", strlen("test"));
+    ret = write(fd, SUBJECT, strlen(SUBJECT));
     ret = write(fd, CRLF, CRLF_LENGTH);
 
     ret = write(fd, TO_HEADER, strlen(TO_HEADER));

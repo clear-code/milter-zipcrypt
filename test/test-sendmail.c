@@ -222,7 +222,7 @@ timeout_sending_password (gpointer data)
 }
 
 #define EXPECTED_BODY                               \
-"Subject: test\r\n"                                 \
+"Subject: MilterZipCrypt: Password Notification\r\n"\
 "To: to@example.com\r\n"                            \
 "MIME-Version: 1.0\r\n"                             \
 "Conent-Type: text/plain; charset=\"UTF-8\"\r\n"    \
