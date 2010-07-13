@@ -25,8 +25,10 @@ get_randoms (unsigned char *randoms, size_t randoms_length)
     if (fd < 0)
         return false;
 
-    if (read(fd, randoms, randoms_length) != randoms_length)
+    if (read(fd, randoms, randoms_length) != randoms_length) {
+        close(fd);
         return false;
+    }
     close(fd);
 
     return true;
