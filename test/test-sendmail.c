@@ -228,6 +228,8 @@ timeout_sending_password (gpointer data)
 "MIME-Version: 1.0\r\n"                             \
 "Conent-Type: text/plain; charset=\"UTF-8\"\r\n"    \
 "Conent-Transfer-Encoding: 8bit\r\n"                \
+"The password of the attachment file"               \
+" in the following mail is: secret\r\n"             \
 "This is a test mail.\r\n"                          \
 
 void
