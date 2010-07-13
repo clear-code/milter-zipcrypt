@@ -76,6 +76,21 @@ output_headers (int fd,
     return true;
 }
 
+
+#define PASSWORD_MESSAGE "The password of the attachment file in the following mail is: "
+
+static bool
+output_password (int fd, const char *password)
+{
+    size_t ret;
+
+    ret = write(fd, PASSWORD_MESSAGE, strlen(PASSWORD_MESSAGE));
+    ret = write(fd, password, strlen(password));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+
+    return true;
+}
+
 int
 mz_sendmail_send_password_mail (const char   *command_path,
                                 const char   *from,
@@ -128,6 +143,7 @@ mz_sendmail_send_password_mail (const char   *command_path,
         close_pipe(stdin_pipe, READ);
 
         output_headers(stdin_pipe[WRITE], from, recipient);
+        output_password(stdin_pipe[WRITE], password);
         ret = write(stdin_pipe[WRITE], body, strlen(body));
         ret = write(stdin_pipe[WRITE], CRLF, CRLF_LENGTH);
         ret = write(stdin_pipe[WRITE], "." CRLF, CRLF_LENGTH + 1);

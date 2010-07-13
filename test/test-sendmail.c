@@ -251,6 +251,7 @@ test_send (void)
     cut_assert_true(WIFEXITED(status.exit_status));
     cut_assert_equal_int(EXIT_SUCCESS, WEXITSTATUS(status.exit_status));
     cut_assert_equal_string("from@example.com", actual_from);
+    cut_assert_match("secret", actual_password);
     gcut_assert_equal_string(&expected_body, actual_body);
 }
 

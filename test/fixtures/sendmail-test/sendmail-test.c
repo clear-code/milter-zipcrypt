@@ -61,6 +61,12 @@ process_mail (void)
         if (line) {
             if (g_str_equal(line, ".\r\n"))
                 break;
+            if (g_str_has_prefix(line, "The password of ")) {
+                gchar *password;
+                password = g_strrstr(line, ": ");
+                if (password && proxy && !org_MilterZipcrypt_Sendmail_password(proxy, password, NULL))
+                    goto fail;
+            }
             g_string_append(body, line);
         }
     } while (status == G_IO_STATUS_NORMAL || status == G_IO_STATUS_AGAIN);
