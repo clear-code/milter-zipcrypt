@@ -223,7 +223,6 @@ timeout_sending_password (gpointer data)
 
 #define EXPECTED_BODY                               \
 "Subject: test\r\n"                                 \
-"From: from@example.com\r\n"                        \
 "To: to@example.com\r\n"                            \
 "MIME-Version: 1.0\r\n"                             \
 "Conent-Type: text/plain; charset=\"UTF-8\"\r\n"    \
@@ -253,7 +252,6 @@ test_send (void)
 
     cut_assert_true(WIFEXITED(status.exit_status));
     cut_assert_equal_int(EXIT_SUCCESS, WEXITSTATUS(status.exit_status));
-    cut_assert_equal_string("from@example.com", actual_from);
     gcut_assert_equal_list_string(&expected_recipients, actual_recipients);
     cut_assert_match("secret", actual_password);
     gcut_assert_equal_string(&expected_body, actual_body);
