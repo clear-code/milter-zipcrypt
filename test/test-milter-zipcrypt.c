@@ -4,6 +4,7 @@
 #endif
 
 #include <gcutter.h>
+#include <stdio.h>
 #include <unistd.h>
 #ifdef HAVE_SYS_WAIT_H
 #  include <sys/wait.h>
@@ -27,6 +28,35 @@ static char *temporary_socket;
 static MzList *modified_attachments;
 static int attachment_fd;
 static char *attachment_file;
+static const char *sendmail_path;
+static const char *config_path;
+
+void
+cut_startup (void)
+{
+    FILE *fp;
+
+    config_path = cut_build_path(cut_get_test_directory(),
+                                 "fixtures",
+                                 "config",
+                                 "test-milter-zipcrypt.conf",
+                                 NULL);
+
+    fp = fopen(config_path, "w+");
+    sendmail_path = cut_build_path(cut_get_test_directory(),
+                                   "fixtures",
+                                   "sendmail-test",
+                                   "sendmail-test",
+                                   NULL);
+    fprintf(fp, "sendmail_path = %s\n", sendmail_path);
+    fclose(fp);
+}
+
+void
+cut_shutdown (void)
+{
+    cut_remove_path(config_path, NULL);
+}
 
 static void
 run_milter_zipcrypt (void)
@@ -40,8 +70,8 @@ run_milter_zipcrypt (void)
                                           "milter-zipcrypt",
                                           NULL);
     milter_zipcrypt = gcut_process_new(milter_zipcrypt_path,
-                                        "-s",
-                                        temporary_socket,
+                                        "-s", temporary_socket,
+                                        "-c", config_path,
                                         NULL);
     gcut_process_run(milter_zipcrypt, &error);
     gcut_assert_error(error);
@@ -118,10 +148,8 @@ run_test_server (const char *data_file_name)
                                data_file_name,
                                NULL);
     test_server = gcut_process_new(MILTER_TEST_SERVER,
-                                   "-s",
-                                   temporary_socket,
-                                   "-m",
-                                   data_path,
+                                   "-s", temporary_socket,
+                                   "-m", data_path,
                                    "--output-message",
                                    "--color=no",
                                    NULL);
