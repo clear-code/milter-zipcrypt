@@ -120,7 +120,7 @@ mz_sendmail_send_password_mail (const char   *command_path,
         _exit(-1);
     } else {
         int status;
-        int ret;
+        ssize_t ret;
 
         close_pipe(stdout_pipe, WRITE);
         close_pipe(stderr_pipe, WRITE);
@@ -131,9 +131,7 @@ mz_sendmail_send_password_mail (const char   *command_path,
         ret = write(stdin_pipe[WRITE], CRLF, CRLF_LENGTH);
         ret = write(stdin_pipe[WRITE], "." CRLF, CRLF_LENGTH + 1);
 
-        ret = waitpid(pid, &status, 0);
-        if (ret < 0) {
-        }
+        while (waitpid(pid, &status, WNOHANG) <= 0);
   
         return status;
     }
