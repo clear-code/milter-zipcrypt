@@ -239,6 +239,7 @@ test_send (void)
     GThread *thread;
     guint timeout_id;
     GString expected_body = { EXPECTED_BODY, strlen(EXPECTED_BODY) };
+    GList expected_recipients = { "to@example.com", NULL };
     SendmailProcessStatus status = { FALSE, FALSE, -1 };
 
     thread = g_thread_create(send_password_mail_thread, &status, TRUE, &error);
@@ -253,6 +254,7 @@ test_send (void)
     cut_assert_true(WIFEXITED(status.exit_status));
     cut_assert_equal_int(EXIT_SUCCESS, WEXITSTATUS(status.exit_status));
     cut_assert_equal_string("from@example.com", actual_from);
+    gcut_assert_equal_list_string(&expected_recipients, actual_recipients);
     cut_assert_match("secret", actual_password);
     gcut_assert_equal_string(&expected_body, actual_body);
 }

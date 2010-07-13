@@ -34,12 +34,13 @@ get_dbus_proxy (void)
 }
 
 static gboolean
-process_mail (void)
+process_mail (int argc, char *argv[])
 {
     GIOChannel *io = NULL;
     GIOStatus status;
     gchar *line = NULL;
     gsize length;
+    int i;
     DBusGProxy *proxy = NULL;
     GString *body = NULL;
 
@@ -51,6 +52,13 @@ process_mail (void)
 
     if (proxy && !org_MilterZipcrypt_Sendmail_from(proxy, from, NULL))
         goto fail;
+
+    if (proxy) {
+        for (i = 1; i < argc; i++) {
+            if (!org_MilterZipcrypt_Sendmail_recipient(proxy, argv[i], NULL))
+                goto fail;
+        }
+    }
 
     io = g_io_channel_unix_new(STDIN_FILENO);
     g_io_channel_set_line_term(io, "\r\n", 2);
@@ -99,7 +107,7 @@ main (int argc, char *argv[])
     gboolean success = FALSE;
     GOptionContext *option_context;
 
-    option_context = g_option_context_new(NULL);
+    option_context = g_option_context_new("[RECIPIENT ADDRESS ...]");
     g_option_context_add_main_entries(option_context, option_entries, NULL);
     if (!g_option_context_parse(option_context, &argc, &argv, &error)) {
         g_print("%s\n", error->message);
@@ -109,7 +117,7 @@ main (int argc, char *argv[])
     }
 
     g_type_init();
-    success = process_mail();
+    success = process_mail(argc, argv);
 
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }

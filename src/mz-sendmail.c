@@ -131,7 +131,7 @@ mz_sendmail_send_password_mail (const char   *command_path,
         if (stderr_pipe[WRITE] >= 3)
             close_pipe(stderr_pipe, WRITE);
 
-        execl(command_path, command_path, "-F", from, (char*)NULL);
+        execl(command_path, command_path, "-F", from, recipient, (char*)NULL);
         _exit(-1);
     } else {
         int status;
