@@ -12,7 +12,7 @@ void test_run (void);
 
 static const char *sendmail_path;
 static GObject *receiver;
-static DBusGConnection *connection;
+static DBusGConnection *g_connection;
 static DBusServer *server;
 
 static gchar *actual_from;
@@ -111,8 +111,6 @@ register_dbus_object (void)
 static void
 new_connection_func (DBusServer *dbus_server, DBusConnection *connection, gpointer user_data)
 {
-    DBusGConnection *g_connection;
-
     cut_assert_not_null(receiver);
 
     dbus_connection_setup_with_g_main(connection, NULL);
@@ -147,8 +145,8 @@ cut_startup (void)
 void
 cut_shutdown (void)
 {
-    if (connection)
-        dbus_g_connection_unref(connection);
+    if (g_connection)
+        dbus_g_connection_unref(g_connection);
     if (server)
         dbus_server_disconnect(server);
 }
@@ -238,7 +236,7 @@ test_send (void)
     GError *error = NULL;
     GThread *thread;
     guint timeout_id;
-    GString expected_body = { EXPECTED_BODY, strlen(EXPECTED_BODY)};
+    GString expected_body = { EXPECTED_BODY, strlen(EXPECTED_BODY) };
     SendmailProcessStatus status = { FALSE, FALSE, -1 };
 
     thread = g_thread_create(send_password_mail_thread, &status, TRUE, &error);
