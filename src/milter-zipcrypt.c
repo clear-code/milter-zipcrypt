@@ -556,6 +556,8 @@ fail:
     if (pid_file)
         unlink(pid_file);
 
+    syslog(LOG_NOTICE, "exit milter-zipcrypt.");
+
     closelog();
     exit(EXIT_FAILURE);
 }
