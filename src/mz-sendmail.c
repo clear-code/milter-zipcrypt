@@ -143,7 +143,7 @@ mz_sendmail_send_password_mail (const char   *command_path,
 
         output_headers(stdin_pipe[WRITE], from, recipient);
         output_password(stdin_pipe[WRITE], password);
-        ret = write(stdin_pipe[WRITE], body, strlen(body));
+        ret = write(stdin_pipe[WRITE], body, body_length);
         ret = write(stdin_pipe[WRITE], CRLF, CRLF_LENGTH);
         ret = write(stdin_pipe[WRITE], "." CRLF, CRLF_LENGTH + 1);
 
