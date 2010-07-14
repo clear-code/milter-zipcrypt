@@ -1,6 +1,3 @@
-== general ==
-  * config file parser
-
 == zip file ==
   * charset of filename should be configurable.
 
