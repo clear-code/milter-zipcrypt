@@ -87,6 +87,18 @@ output_password (int fd, const char *password)
     return true;
 }
 
+static bool
+output_body (int fd, const char *body, unsigned int body_length)
+{
+    size_t ret;
+
+    ret = write(fd, body, body_length);
+    ret = write(fd, CRLF, CRLF_LENGTH);
+    ret = write(fd, "." CRLF, CRLF_LENGTH + 1);
+
+    return true;
+}
+
 int
 mz_sendmail_send_password_mail (const char   *command_path,
                                 const char   *from,
@@ -132,7 +144,6 @@ mz_sendmail_send_password_mail (const char   *command_path,
         _exit(-1);
     } else {
         int status;
-        ssize_t ret;
 
         close_pipe(stdout_pipe, WRITE);
         close_pipe(stderr_pipe, WRITE);
@@ -140,9 +151,7 @@ mz_sendmail_send_password_mail (const char   *command_path,
 
         output_headers(stdin_pipe[WRITE], from, recipient);
         output_password(stdin_pipe[WRITE], password);
-        ret = write(stdin_pipe[WRITE], body, body_length);
-        ret = write(stdin_pipe[WRITE], CRLF, CRLF_LENGTH);
-        ret = write(stdin_pipe[WRITE], "." CRLF, CRLF_LENGTH + 1);
+        output_body(stdin_pipe[WRITE], body, body_length);
 
         while (waitpid(pid, &status, WNOHANG) <= 0);
   
