@@ -72,3 +72,18 @@ mz_list_length (MzList *list)
 
     return length;
 }
+
+MzList *
+mz_list_find_with_equal_func (MzList *list,
+                              void *data,
+                              MzListElementEqualFunc equal_func)
+{
+    while (list) {
+        if (equal_func(list->data, data))
+            return list;
+        list = list->next;
+    }
+
+    return NULL;
+}
+

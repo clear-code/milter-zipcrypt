@@ -2,6 +2,8 @@
 #ifndef __MZ_LIST_H__
 #define __MZ_LIST_H__
 
+#include <stdbool.h>
+
 typedef struct _MzList MzList;
 
 struct _MzList
@@ -10,7 +12,8 @@ struct _MzList
     MzList *next;
 };
 
-typedef void (*MzListElementFreeFunc)  (void *data);
+typedef void (*MzListElementFreeFunc)     (void *data);
+typedef bool (*MzListElementEqualFunc)    (void *a, void *b);
 
 #define mz_list_next(list) ((list) ? (((MzList*)(list))->next) : NULL)
 
@@ -20,6 +23,9 @@ void          mz_list_free_with_free_func
                              (MzList *list,
                               MzListElementFreeFunc free_func);
 unsigned int  mz_list_length (MzList *list);
+MzList       *mz_list_find_with_equal_func
+                             (MzList *list, void *data,
+                              MzListElementEqualFunc equal_func);
 
 #endif /* __MZ_LIST_H__ */
 
