@@ -69,7 +69,8 @@ mz_config_load (const char *filename)
 bool
 mz_config_reload (MzConfig *config)
 {
-    return true;
+    /* not implemented yet */
+    return false;
 }
 
 void
