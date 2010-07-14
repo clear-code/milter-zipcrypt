@@ -18,6 +18,7 @@
 #include "mz-zip.h"
 #include "mz-password.h"
 #include "mz-config.h"
+#include "mz-sendmail.h"
 
 struct MzPriv {
     char *boundary;
@@ -310,6 +311,28 @@ _set_password (struct MzPriv *priv)
     priv->password = mz_password_create();
 }
 
+static bool
+_send_password (struct MzPriv *priv, MzList *attachments)
+{
+    MzAttachment *body = attachments->data;
+    const char *sendmail_path;
+
+    sendmail_path = mz_config_get_string(config, "sendmail_path");
+    if (!sendmail_path) {
+        syslog(LOG_ERR, "'send_mail_path' is not set in config file.");
+        return false;
+    }
+
+    mz_sendmail_send_password_mail(sendmail_path,
+                                   NULL,
+                                   priv->from,
+                                   (const char*)priv->body,
+                                   body->boundary_start_position - (const char*)priv->body,
+                                   priv->password,
+                                   1000);
+    return true;
+}
+
 static sfsistat
 _eom (SMFICTX *context)
 {
@@ -338,6 +361,10 @@ _eom (SMFICTX *context)
 
     _send_body(context, priv, attachments);
     ret = _replace_with_crypted_data(context, priv, attachments);
+
+    if (!_send_password(priv, attachments))
+        return SMFIS_TEMPFAIL;
+
     mz_list_free_with_free_func(attachments, (MzListElementFreeFunc)mz_attachment_free);
 
     return ret;
