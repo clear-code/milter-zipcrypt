@@ -12,6 +12,10 @@ void          mz_config_free   (MzConfig *config);
 const char   *mz_config_get_string
                                (MzConfig *config,
                                 const char *key);
+void          mz_config_set_string
+                               (MzConfig *config,
+                                const char *key,
+                                const char *value);
 
 #endif /* __MZ_CONFIG_H__ */
 

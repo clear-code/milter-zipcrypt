@@ -6,6 +6,7 @@
 
 void test_load (void);
 void test_get_string (void);
+void test_set_string (void);
 
 static MzConfig *config;
 
@@ -29,11 +30,22 @@ test_load (void)
 }
 
 void
-test_string (void)
+test_get_string (void)
 {
     cut_trace(test_load());
 
     cut_assert_equal_string("/XXX/SENDMAIL",
                             mz_config_get_string(config, "sendmail_path"));
+}
+
+void
+test_set_string (void)
+{
+    cut_trace(test_load());
+
+    cut_assert_null(mz_config_get_string(config, "new_value"));
+    mz_config_set_string(config, "new_value", "12345678X");
+    cut_assert_equal_string("12345678X",
+                            mz_config_get_string(config, "new_value"));
 }
 

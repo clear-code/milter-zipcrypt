@@ -161,3 +161,28 @@ mz_config_get_string (MzConfig *config, const char *key)
     return ((KeyValuePair*)(found->data))->value;
 }
 
+void
+mz_config_set_string (MzConfig *config, const char *key, const char *value)
+{
+    KeyValuePair pair;
+    MzList *found;
+
+    if (!config || !config->key_value_pairs)
+        return;
+
+    pair.key = (char*)key;
+    pair.value = NULL;
+
+    found = mz_list_find_with_equal_func(config->key_value_pairs,
+                                         &pair,
+                                         (MzListElementEqualFunc)key_value_pair_key_equal);
+    if (!found) {
+        add_key(config, strdup(key), strdup(value));
+    } else {
+        KeyValuePair *old_pair = (KeyValuePair*)found->data;
+        if (old_pair->value)
+            free(old_pair->value);
+        old_pair->value = strdup(value);
+    }
+}
+
