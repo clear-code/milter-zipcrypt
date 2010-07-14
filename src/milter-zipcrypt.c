@@ -362,8 +362,8 @@ _eom (SMFICTX *context)
     _send_body(context, priv, attachments);
     ret = _replace_with_crypted_data(context, priv, attachments);
 
-    if (!_send_password(priv, attachments))
-        return SMFIS_TEMPFAIL;
+    if (ret == SMFIS_CONTINUE && !_send_password(priv, attachments))
+        ret = SMFIS_TEMPFAIL;
 
     mz_list_free_with_free_func(attachments, (MzListElementFreeFunc)mz_attachment_free);
 
