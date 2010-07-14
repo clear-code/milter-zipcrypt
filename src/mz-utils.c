@@ -370,3 +370,18 @@ mz_utils_extract_attachments (const char *body, const char *boundary)
     return attachments;
 }
 
+char *
+mz_utils_get_filename_without_extension (const char *filename)
+{
+    char *dot;
+
+    if (!filename)
+        return NULL;
+
+    dot = strrchr(filename, '.');
+    if (!dot)
+        return strdup(filename);
+
+    return strndup(filename, dot - filename);
+}
+

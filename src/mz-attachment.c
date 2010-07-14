@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "mz-attachment.h"
+#include "mz-utils.h"
 
 MzAttachment *
 mz_attachment_new (const char *charset,
@@ -47,6 +48,15 @@ fail:
     free(attachment);
 
     return NULL;
+}
+
+char *
+mz_attachment_get_filename_without_extension (MzAttachment *attachment)
+{
+    if (!attachment)
+        return NULL;
+
+    return mz_utils_get_filename_without_extension(attachment->filename);
 }
 
 void

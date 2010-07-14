@@ -26,5 +26,8 @@ MzAttachment *mz_attachment_new  (const char *charset,
                                   unsigned int data_length);
 void          mz_attachment_free (MzAttachment *attachment);
 
+char         *mz_attachment_get_filename_without_extension
+                                 (MzAttachment *attachment);
+
 #endif /* __MZ_ATTACHMENT_H__ */
 

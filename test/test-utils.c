@@ -15,6 +15,7 @@ void test_get_decoded_attachment_body (void);
 void test_get_content_disposition_mime_encoded_filename (void);
 void test_get_rfc2311_filename (void);
 void test_extract_attachments (const void *data);
+void test_get_filename_without_extention (const char *filename);
 
 static MzList *actual_attachments;
 
@@ -250,5 +251,12 @@ test_extract_attachments (const void *data)
     actual = actual_attachments->data;
 
     cut_trace(assert_equal_attachment(&expected, actual));
+}
+
+void
+test_get_filename_without_extension (const char *filename)
+{
+    cut_assert_equal_string("%1B$B%25%28%25%2F%25%3B%25k%1B%28B",
+                            mz_utils_get_filename_without_extension("%1B$B%25%28%25%2F%25%3B%25k%1B%28B.xls"));
 }
 
