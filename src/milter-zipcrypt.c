@@ -16,6 +16,7 @@
 #include "mz-base64.h"
 #include "mz-utils.h"
 #include "mz-zip.h"
+#include "mz-convert.h"
 #include "mz-password.h"
 #include "mz-config.h"
 #include "mz-sendmail.h"
@@ -221,24 +222,42 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
     MzList *node;
     unsigned char zip_output[ZIP_BUFFER_SIZE];
     unsigned int written_size;
+    const char *preferred_charset;
     int state = 0;
     int save = 0;
 
     _send_headers(context);
+
+    preferred_charset = mz_config_get_string(config, "charset_in_zip_file");
 
     zip = mz_zip_stream_create(priv->password);
     mz_zip_stream_begin_archive(zip);
     for (node = attachments; node; node = mz_list_next(node)) {
         MzAttachment *attachment = node->data;
         unsigned int zip_data_position = 0;
+        char *convert_filename = NULL;
+
+        if (preferred_charset && strcmp(preferred_charset, attachment->charset)) {
+            size_t bytes_read, bytes_written;
+            convert_filename = mz_convert(attachment->filename,
+                                          strlen(attachment->filename),
+                                          preferred_charset,
+                                          attachment->charset,
+                                          &bytes_read,
+                                          &bytes_written);
+        }
 
         if (mz_zip_stream_begin_file(zip,
-                                     attachment->filename,
+                                     convert_filename ? convert_filename : attachment->filename,
                                      zip_output,
                                      ZIP_BUFFER_SIZE,
                                      &written_size) != MZ_ZIP_STREAM_STATUS_SUCCESS) {
+            free(convert_filename);
             goto fail;
         }
+        if (convert_filename)
+            free(convert_filename);
+
         _replace_body_with_base64(context, zip_output, written_size, &state, &save);
 
         do {
