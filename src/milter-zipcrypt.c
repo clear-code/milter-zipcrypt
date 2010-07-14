@@ -3,6 +3,7 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -190,20 +191,31 @@ _replace_body_with_base64_close (SMFICTX *context, int *state, int *save)
 }
 
 static sfsistat
-_send_headers (SMFICTX *context)
+_send_headers (SMFICTX *context, MzList *attachments)
 {
-    char *content_type;
-    char *content_disposition;
+    char *content_type = NULL;
+    char *content_disposition = NULL;
+    char *new_filename;
+    int bytes_written;
+    MzAttachment *attachment = attachments->data;
 
-    content_type = "Content-Type: application/zip; name=\"attachment.zip\"\r\n";
-    content_disposition = "Content-Disposition: attachment; filename=\"attachment.zip\"\r\n";
+    new_filename = mz_utils_get_filename_without_extension(attachment->filename);
 
+    bytes_written = asprintf(&content_type,
+                             "Content-Type: application/zip; name=\"%s.zip\"\r\n",
+                             new_filename);
+    bytes_written = asprintf(&content_disposition,
+                             "Content-Disposition: attachment; filename=\"%s.zip\"\r\n",
+                             new_filename);
+    free(new_filename);
     smfi_replacebody(context,
                      (unsigned char*)content_type,
                      strlen(content_type));
     smfi_replacebody(context,
                      (unsigned char*)content_disposition,
                      strlen(content_disposition));
+    free(content_type);
+    free(content_disposition);
     smfi_replacebody(context,
                      (unsigned char*)"Content-Transfer-Encoding: base64\r\n",
                      strlen("Content-Transfer-Encoding: base64\r\n"));
@@ -226,7 +238,7 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
     int state = 0;
     int save = 0;
 
-    _send_headers(context);
+    _send_headers(context, attachments);
 
     preferred_charset = mz_config_get_string(config, "charset_in_zip_file");
 
