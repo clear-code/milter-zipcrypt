@@ -252,7 +252,8 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
                                      zip_output,
                                      ZIP_BUFFER_SIZE,
                                      &written_size) != MZ_ZIP_STREAM_STATUS_SUCCESS) {
-            free(convert_filename);
+            if (convert_filename)
+                free(convert_filename);
             goto fail;
         }
         if (convert_filename)
