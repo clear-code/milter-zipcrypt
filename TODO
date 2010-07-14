@@ -1,5 +1,2 @@
-== zip file ==
-  * filename in UTF=8 is broken.
-
 == test ==
   * tests using DBus-GLib should be rewritten with GDBus.

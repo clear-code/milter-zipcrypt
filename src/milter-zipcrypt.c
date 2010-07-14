@@ -237,7 +237,8 @@ _replace_with_crypted_data (SMFICTX *context, struct MzPriv *priv, MzList *attac
         unsigned int zip_data_position = 0;
         char *convert_filename = NULL;
 
-        if (preferred_charset && strcmp(preferred_charset, attachment->charset)) {
+        if (preferred_charset && attachment->charset &&
+            strcasecmp(preferred_charset, attachment->charset)) {
             size_t bytes_read, bytes_written;
             convert_filename = mz_convert(attachment->filename,
                                           strlen(attachment->filename),
