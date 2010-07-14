@@ -94,9 +94,6 @@ mz_config_load (const char *filename)
     return config;
 }
 
-const char   *mz_config_get_string
-                               (MzConfig *config,
-                                const char *key);
 bool
 mz_config_reload (MzConfig *config)
 {
