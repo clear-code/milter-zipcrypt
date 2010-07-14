@@ -6,6 +6,20 @@
 #include <ctype.h>
 #include "mz-config.h"
 
+#include "mz-list.h"
+
+struct _MzConfig
+{
+    MzList *key_value_pairs;
+};
+
+typedef struct _KeyValuePair KeyValuePair;
+struct _KeyValuePair
+{
+    char *key;
+    char *value;
+};
+
 static void
 chomp_string (char *string)
 {
@@ -14,6 +28,18 @@ chomp_string (char *string)
         if (*p == '#' || *p == '\n')
             *p = '\0';
     }
+}
+
+static void
+add_key (MzConfig *config, char *key, char *value)
+{
+    KeyValuePair *pair;
+
+    pair = malloc(sizeof(*pair));
+    pair->key = key;
+    pair->value = value;
+
+    config->key_value_pairs = mz_list_append(config->key_value_pairs, pair);
 }
 
 #define BUFFER_SIZE 4096
@@ -30,6 +56,7 @@ mz_config_load (const char *filename)
 
     memset(buffer, 0, BUFFER_SIZE);
     config = malloc(sizeof(*config));
+    config->key_value_pairs = NULL;
 
     while (fgets(buffer, sizeof(buffer) - 1, fp)) {
         char *beginning = buffer;
@@ -57,8 +84,9 @@ mz_config_load (const char *filename)
             value_start++;
         chomp_string(value_start);
 
-        if (!strncmp(beginning, "sendmail_path", key_end - beginning))
-            config->sendmail_path = strdup(value_start);
+        add_key(config,
+                strndup(beginning, key_end - beginning + 1),
+                strdup(value_start));
     }
 
     fclose(fp);
@@ -66,6 +94,9 @@ mz_config_load (const char *filename)
     return config;
 }
 
+const char   *mz_config_get_string
+                               (MzConfig *config,
+                                const char *key);
 bool
 mz_config_reload (MzConfig *config)
 {
@@ -73,10 +104,60 @@ mz_config_reload (MzConfig *config)
     return false;
 }
 
+static void
+key_value_pair_free (KeyValuePair *pair)
+{
+    if (!pair)
+        return;
+
+    if (pair->key)
+        free(pair->key);
+    if (pair->value)
+        free(pair->value);
+    free(pair);
+}
+
 void
 mz_config_free (MzConfig *config)
 {
-    if (config)
-        free(config);
+    if (!config)
+        return;
+
+    if (config->key_value_pairs) {
+        mz_list_free_with_free_func(config->key_value_pairs,
+                                    (MzListElementFreeFunc)key_value_pair_free);
+    }
+
+    free(config);
+}
+
+static bool
+key_value_pair_key_equal (KeyValuePair *a, KeyValuePair *b)
+{
+    if (!a || !b)
+        return false;
+
+    return (strcmp(a->key, b->key) == 0);
+}
+
+const char *
+mz_config_get_string (MzConfig *config, const char *key)
+{
+    KeyValuePair pair;
+    MzList *found;
+
+    if (!config || !config->key_value_pairs)
+        return NULL;
+
+    pair.key = (char*)key;
+    pair.value = NULL;
+
+    found = mz_list_find_with_equal_func(config->key_value_pairs,
+                                         &pair,
+                                         (MzListElementEqualFunc)key_value_pair_key_equal);
+    if (!found)
+        return NULL;
+
+    return ((KeyValuePair*)(found->data))->value;
 }
 

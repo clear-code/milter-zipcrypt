@@ -5,6 +5,7 @@
 #include "mz-config.h"
 
 void test_load (void);
+void test_get_string (void);
 
 static MzConfig *config;
 
@@ -25,7 +26,14 @@ test_load (void)
 {
     config = mz_config_load(mz_test_utils_build_fixture_data_path("config", "normal.conf", NULL));
     cut_assert_not_null(config);
+}
 
-    cut_assert_equal_string("/XXX/SENDMAIL", config->sendmail_path);
+void
+test_string (void)
+{
+    cut_trace(test_load());
+
+    cut_assert_equal_string("/XXX/SENDMAIL",
+                            mz_config_get_string(config, "sendmail_path"));
 }
 

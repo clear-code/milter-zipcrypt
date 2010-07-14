@@ -5,15 +5,13 @@
 #include <stdbool.h>
 
 typedef struct _MzConfig MzConfig;
-struct _MzConfig
-{
-    char *sendmail_path;
-    char *charset_in_zip;
-};
 
 MzConfig     *mz_config_load   (const char *filename);
 bool          mz_config_reload (MzConfig *config);
 void          mz_config_free   (MzConfig *config);
+const char   *mz_config_get_string
+                               (MzConfig *config,
+                                const char *key);
 
 #endif /* __MZ_CONFIG_H__ */
 
