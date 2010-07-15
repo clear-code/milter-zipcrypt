@@ -67,7 +67,6 @@ mz_config_load (const char *filename)
     if (!fp)
         return NULL;
 
-    memset(buffer, 0, BUFFER_SIZE);
     config = mz_config_new(filename);
 
     while (fgets(buffer, sizeof(buffer) - 1, fp)) {
