@@ -21,6 +21,7 @@
 #include "mz-password.h"
 #include "mz-config.h"
 #include "mz-sendmail.h"
+#include "mz-mime-utils.h"
 
 struct MzPriv {
     char *boundary;
@@ -196,18 +197,23 @@ _send_headers (SMFICTX *context, MzList *attachments)
     char *content_type = NULL;
     char *content_disposition = NULL;
     char *new_filename;
+    char *encoded_filename;
     int bytes_written;
     MzAttachment *attachment = attachments->data;
 
     new_filename = mz_utils_get_filename_without_extension(attachment->filename);
+    if (!new_filename)
+        new_filename = strdup("attachment");
+    encoded_filename = mz_mime_utils_encode(new_filename);
+    free(new_filename);
 
     bytes_written = asprintf(&content_type,
                              "Content-Type: application/zip; name=\"%s.zip\"\r\n",
-                             new_filename);
+                             encoded_filename);
     bytes_written = asprintf(&content_disposition,
                              "Content-Disposition: attachment; filename=\"%s.zip\"\r\n",
-                             new_filename);
-    free(new_filename);
+                             encoded_filename);
+    free(encoded_filename);
     smfi_replacebody(context,
                      (unsigned char*)content_type,
                      strlen(content_type));

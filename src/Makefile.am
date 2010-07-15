@@ -28,6 +28,8 @@ libmilter_zipcrypt_la_SOURCES =	\
 	mz-convert.h		\
 	mz-list.c		\
 	mz-list.h		\
+	mz-mime-utils.h		\
+	mz-mime-utils.c		\
 	mz-password.h		\
 	mz-password.c		\
 	mz-quoted-printable.h	\
