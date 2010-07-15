@@ -10,7 +10,7 @@
 #  include <sys/wait.h>
 #else
 #  ifndef WEXITSTATUS
-#    define WEXITSTATUS(status) (status)
+#    define WEXITSTATUS(status) (((status) & 0xff00) >> 8)
 #  endif
 #endif
 #include "mz-list.h"
