@@ -211,11 +211,11 @@ _send_headers (SMFICTX *context, MzList *attachments)
     charset = attachment->charset ? attachment->charset : "iso-8859-1";
 
     bytes_written = asprintf(&content_type,
-                             "Content-Type: application/zip; name*=%s''\"%s.zip\"\r\n",
+                             "Content-Type: application/zip; name*=%s''%s.zip\r\n",
                              charset,
                              encoded_filename);
     bytes_written = asprintf(&content_disposition,
-                             "Content-Disposition: attachment; filename*=%s''\"%s.zip\"\r\n",
+                             "Content-Disposition: attachment; filename*=%s''%s.zip\r\n",
                              charset,
                              encoded_filename);
     free(encoded_filename);
