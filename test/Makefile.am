@@ -47,7 +47,7 @@ LIBS =							\
 	$(GCUTTER_LIBS)
 
 mz-test-sendmail-receiver.h: mz-test-sendmail.xml
-	dbus-binding-tool --prefix=mz_test_sendmail --mode=glib-server $< > $@
+	$(AM_V_GEN) dbus-binding-tool --prefix=mz_test_sendmail --mode=glib-server $< > $@
 
 libmz_test_utils_la_SOURCES = 				\
 	mz-test-utils.c					\
