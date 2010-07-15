@@ -2,6 +2,7 @@
 
 #include <cutter.h>
 #include <glib.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -119,5 +120,29 @@ mz_test_utils_get_file_attributes (const char *path)
         return 0;
 
     return (stat_buf.st_mode << 16) | !(stat_buf.st_mode & S_IWRITE);
+}
+
+const char *
+mz_test_utils_create_temporary_config_file (const char *contents)
+{
+    FILE *fp;
+    const char *config_path;
+
+    cut_make_directory(cut_get_test_directory(),
+                       "fixtures",
+                       "config",
+                       NULL);
+
+    config_path = cut_build_path(cut_get_test_directory(),
+                                 "fixtures",
+                                 "config",
+                                 "test-milter-zipcrypt.conf",
+                                 NULL);
+
+    fp = fopen(config_path, "w+");
+    fwrite(contents, strlen(contents), 1, fp);
+    fclose(fp);
+
+    return config_path;
 }
 

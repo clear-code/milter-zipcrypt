@@ -56,23 +56,21 @@ mz_config_new (const char *filename)
 }
 
 #define BUFFER_SIZE 4096
-MzConfig *
-mz_config_load (const char *filename)
+static void
+_load_from_file (MzConfig *config)
 {
-    MzConfig *config;
     FILE *fp;
     char buffer[BUFFER_SIZE];
 
-    fp = fopen(filename, "r");
+    fp = fopen(config->file_path, "r");
     if (!fp)
-        return NULL;
-
-    config = mz_config_new(filename);
+        return;
 
     while (fgets(buffer, sizeof(buffer) - 1, fp)) {
         char *beginning = buffer;
         char *key_end;
         char *value_start;
+        char *key, *value;
 
         while (isspace(*beginning))
             beginning++;
@@ -95,12 +93,24 @@ mz_config_load (const char *filename)
             value_start++;
         chomp_string(value_start);
 
-        add_key(config,
-                strndup(beginning, key_end - beginning + 1),
-                strdup(value_start));
+        key = strndup(beginning, key_end - beginning + 1),
+        value = strdup(value_start);
+        mz_config_set_string(config, key, value);
+        free(key);
+        free(value);
     }
 
     fclose(fp);
+}
+
+MzConfig *
+mz_config_load (const char *filename)
+{
+    MzConfig *config;
+
+    config = mz_config_new(filename);
+
+    _load_from_file(config);
 
     return config;
 }
@@ -108,8 +118,8 @@ mz_config_load (const char *filename)
 bool
 mz_config_reload (MzConfig *config)
 {
-    /* not implemented yet */
-    return false;
+    _load_from_file(config);
+    return true;
 }
 
 static void
@@ -176,7 +186,7 @@ mz_config_set_string (MzConfig *config, const char *key, const char *value)
     KeyValuePair pair;
     MzList *found;
 
-    if (!config || !config->key_value_pairs)
+    if (!config)
         return;
 
     pair.key = (char*)key;
