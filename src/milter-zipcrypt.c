@@ -198,6 +198,7 @@ _send_headers (SMFICTX *context, MzList *attachments)
     char *content_disposition = NULL;
     char *new_filename;
     char *encoded_filename;
+    char *charset;
     int bytes_written;
     MzAttachment *attachment = attachments->data;
 
@@ -207,11 +208,15 @@ _send_headers (SMFICTX *context, MzList *attachments)
     encoded_filename = mz_mime_utils_encode(new_filename);
     free(new_filename);
 
+    charset = attachment->charset ? attachment->charset : "iso-8859-1";
+
     bytes_written = asprintf(&content_type,
-                             "Content-Type: application/zip; name=\"%s.zip\"\r\n",
+                             "Content-Type: application/zip; name*=%s''\"%s.zip\"\r\n",
+                             charset,
                              encoded_filename);
     bytes_written = asprintf(&content_disposition,
-                             "Content-Disposition: attachment; filename=\"%s.zip\"\r\n",
+                             "Content-Disposition: attachment; filename*=%s''\"%s.zip\"\r\n",
+                             charset,
                              encoded_filename);
     free(encoded_filename);
     smfi_replacebody(context,
