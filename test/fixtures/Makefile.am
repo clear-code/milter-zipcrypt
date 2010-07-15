@@ -13,4 +13,5 @@ EXTRA_DIST =						\
 	t.png						\
 	test-mail					\
 	text						\
-	text-attachments
+	text-attachments				\
+	config/normal.conf
