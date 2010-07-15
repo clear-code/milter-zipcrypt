@@ -11,6 +11,7 @@
 struct _MzConfig
 {
     MzList *key_value_pairs;
+    char *file_path;
 };
 
 typedef struct _KeyValuePair KeyValuePair;
@@ -42,6 +43,18 @@ add_key (MzConfig *config, char *key, char *value)
     config->key_value_pairs = mz_list_append(config->key_value_pairs, pair);
 }
 
+static MzConfig *
+mz_config_new (const char *filename)
+{
+    MzConfig *config;
+
+    config = malloc(sizeof(*config));
+    config->key_value_pairs = NULL;
+    config->file_path = strdup(filename);
+
+    return config;
+}
+
 #define BUFFER_SIZE 4096
 MzConfig *
 mz_config_load (const char *filename)
@@ -55,8 +68,7 @@ mz_config_load (const char *filename)
         return NULL;
 
     memset(buffer, 0, BUFFER_SIZE);
-    config = malloc(sizeof(*config));
-    config->key_value_pairs = NULL;
+    config = mz_config_new(filename);
 
     while (fgets(buffer, sizeof(buffer) - 1, fp)) {
         char *beginning = buffer;
@@ -125,6 +137,7 @@ mz_config_free (MzConfig *config)
                                     (MzListElementFreeFunc)key_value_pair_free);
     }
 
+    free(config->file_path);
     free(config);
 }
 
