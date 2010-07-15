@@ -41,6 +41,7 @@ if test "x$ac_cv_use_gcutter" != "xno"; then
   AC_DEFINE_UNQUOTED(MILTER_TEST_SERVER, ["$MILTER_TEST_SERVER"], [milter-test-server name])
   PKG_CHECK_MODULES(DBUS_GLIB, dbus-glib-1)
 fi
+m4_ifdef([AC_CHECK_COVERAGE], [AC_CHECK_COVERAGE])
 
 AC_CONFIG_FILES([
 Makefile

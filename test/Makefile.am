@@ -34,6 +34,7 @@ INCLUDES =			\
 	-I$(top_srcdir)/test
 
 AM_CFLAGS = 			\
+	$(COVERAGE_CFLAGS)	\
 	$(GCUTTER_CFLAGS)
 
 AM_LDFLAGS =			\
