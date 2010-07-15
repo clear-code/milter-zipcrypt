@@ -37,10 +37,13 @@ AM_CFLAGS = 			\
 	$(GCUTTER_CFLAGS)
 
 AM_LDFLAGS =			\
-	-module			\
 	-rpath "`pwd`/.libs"	\
 	-avoid-version		\
 	-no-undefined
+
+TEST_LDFLAGS = 			\
+	$(AM_LDFLAGS)		\
+	-module
 
 LIBS =							\
 	-L/usr/lib/libmilter				\
@@ -57,32 +60,39 @@ libmz_test_utils_la_LIBADD =				\
 	$(top_builddir)/src/libmilter_zipcrypt.la
 
 test_utils_la_SOURCES = test-utils.c
+test_utils_la_LDFLAGS =	$(TEST_LDFLAGS)
 test_utils_la_LIBADD =					\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_base64_la_SOURCES = test-base64.c
+test_base64_la_LDFLAGS = $(TEST_LDFLAGS)
 test_base64_la_LIBADD =					\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_config_la_SOURCES = test-config.c
+test_config_la_LDFLAGS = $(TEST_LDFLAGS)
 test_config_la_LIBADD =				\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_convert_la_SOURCES = test-convert.c
+test_convert_la_LDFLAGS = $(TEST_LDFLAGS)
 test_convert_la_LIBADD =				\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_milter_zipcrypt_la_SOURCES = test-milter-zipcrypt.c
+test_milter_zipcrypt_la_LDFLAGS = $(TEST_LDFLAGS)
 test_milter_zipcrypt_la_LIBADD =			\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_password_la_SOURCES = test-password.c
+test_password_la_LDFLAGS = $(TEST_LDFLAGS)
 test_password_la_LIBADD =				\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_sendmail_la_CFLAGS = 				\
 	$(AM_CFLAGS)					\
 	$(DBUS_GLIB_CFLAGS)
+test_sendmail_la_LDFLAGS = $(TEST_LDFLAGS)
 test_sendmail_la_SOURCES = 				\
 	test-sendmail.c					\
 	mz-test-sendmail-receiver.h
@@ -91,6 +101,7 @@ test_sendmail_la_LIBADD =				\
 	$(top_builddir)/test/libmz_test_utils.la
 
 test_zip_stream_la_SOURCES = test-zip-stream.c
+test_zip_stream_la_LDFLAGS = $(TEST_LDFLAGS)
 test_zip_stream_la_LIBADD =				\
 	$(top_builddir)/test/libmz_test_utils.la
 
