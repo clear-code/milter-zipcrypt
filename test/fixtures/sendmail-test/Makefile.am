@@ -15,7 +15,7 @@ BUILT_SOURCES = 			\
 	mz-test-sendmail-reporter.h
 
 mz-test-sendmail-reporter.h: $(top_srcdir)/test/mz-test-sendmail.xml
-	dbus-binding-tool --prefix=mz_test_sendmail --mode=glib-client $< > $@
+	$(AM_V_GEN) dbus-binding-tool --prefix=mz_test_sendmail --mode=glib-client $< > $@
 
 sendmail_test_LDADD = 		\
 	$(GCUTTER_LIBS)		\
