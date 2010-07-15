@@ -36,6 +36,11 @@ cut_startup (void)
 {
     FILE *fp;
 
+    cut_make_directory(cut_get_test_directory(),
+                       "fixtures",
+                       "config",
+                       NULL);
+
     config_path = cut_build_path(cut_get_test_directory(),
                                  "fixtures",
                                  "config",
