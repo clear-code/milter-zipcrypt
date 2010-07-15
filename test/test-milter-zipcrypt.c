@@ -54,6 +54,7 @@ cut_startup (void)
                                    "sendmail-test",
                                    NULL);
     fprintf(fp, "sendmail_path = %s\n", sendmail_path);
+    fprintf(fp, "charset_in_zip_file = UTF-8\n");
     fclose(fp);
 }
 
