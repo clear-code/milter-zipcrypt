@@ -24,7 +24,7 @@ EXTRA_DIST =			\
 	mz-test-sendmail.xml	\
 	run-test.sh
 
-BUILT_SOURCES = 			\
+check_HEADERS = 			\
 	mz-test-sendmail-receiver.h
 
 INCLUDES =			\
