@@ -24,7 +24,7 @@ mz_mime_utils_encode (const char *string)
     out = encoded;
 
     while (*in) {
-        if (is_attrchar(*in)) {
+        if (!is_attrchar(*in)) {
             *out = '%';
             out++;
             *out = tohex[(*in >> 4) & 0xf];
