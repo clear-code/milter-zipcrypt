@@ -537,8 +537,10 @@ static struct option long_options[] = {
 static void
 reload_config_handler (int signum)
 {
-    if (signum == SIGHUP)
+    if (signum == SIGUSR1) {
         mz_config_reload(config);
+        syslog(LOG_NOTICE, "reload config file.");
+    }
 }
 
 int
@@ -628,9 +630,9 @@ main (int argc, char *argv[])
     sigemptyset(&reload_config_action.sa_mask);
     reload_config_action.sa_flags = 0;
 
-    sigaction(SIGHUP, &reload_config_action, &old_sighup_action);
+    sigaction(SIGUSR1, &reload_config_action, &old_sighup_action);
     ret = smfi_main();
-    sigaction(SIGHUP, &old_sighup_action, NULL);
+    sigaction(SIGUSR1, &old_sighup_action, NULL);
 
     syslog(LOG_NOTICE, "exit milter-zipcrypt.");
 
