@@ -9,6 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <syslog.h>
+#include <signal.h>
 #include <pwd.h>
 #include <errno.h>
 #include <getopt.h>
@@ -533,6 +534,13 @@ static struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
+static void
+reload_config_handler (int signum)
+{
+    if (signum == SIGHUP)
+        mz_config_reload(config);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -545,6 +553,8 @@ main (int argc, char *argv[])
     bool verbose_mode = false;
     bool daemon_mode = false;
     int option_index;
+    struct sigaction reload_config_action;
+    struct sigaction old_sighup_action;
 
     while ((opt = getopt_long(argc, argv, "c:s:u:dhv", long_options, &option_index)) != -1) {
         switch (opt) {
@@ -614,7 +624,13 @@ main (int argc, char *argv[])
     if (verbose_mode && smfi_setdbg(6) == MI_FAILURE)
         goto fail;
 
+    reload_config_action.sa_handler = reload_config_handler;
+    sigemptyset(&reload_config_action.sa_mask);
+    reload_config_action.sa_flags = 0;
+
+    sigaction(SIGHUP, &reload_config_action, &old_sighup_action);
     ret = smfi_main();
+    sigaction(SIGHUP, &old_sighup_action, NULL);
 
     syslog(LOG_NOTICE, "exit milter-zipcrypt.");
 
