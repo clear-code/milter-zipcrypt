@@ -1,0 +1,8 @@
+Milter Zipcrypt
+===============
+
+ Milter Zipcrypt is a milter for encryption of attachmen files.
+
+ Attachment files in a mail are encrypted in a zip file with
+an auto-generated password.  The password is sent to the sender
+by Milter Zipcrypt.
