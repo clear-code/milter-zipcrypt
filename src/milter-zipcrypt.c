@@ -596,6 +596,8 @@ main (int argc, char *argv[])
         } else {
             if (!connection_spec)
                 connection_spec = (char*)mz_config_get_string(config, "connection_spec");
+            if (!pid_file)
+                pid_file = (char*)mz_config_get_string(config, "pid_file");
         }
     }
 
