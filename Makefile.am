@@ -1,4 +1,4 @@
-SUBDIRS = src data test
+SUBDIRS = src data test man
 
 ACLOCAL_AMFLAGS = -I m4
 
