@@ -18,3 +18,9 @@ ChangeLog:
 	fi
 .PHONY: ChangeLog
 
+MAINTAINERCLEANFILES = ChangeLog
+distclean-local:
+	if test "$(srcdir)" = "."; then :; else \
+		rm -f ChangeLog; 		\
+	fi
+
