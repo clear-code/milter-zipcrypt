@@ -586,17 +586,21 @@ main (int argc, char *argv[])
         }
     }
 
-    if (!connection_spec)
-        show_usage();
-
     openlog("milter-zipcrypt", LOG_PID, LOG_MAIL);
     syslog(LOG_NOTICE, "starting milter-zipcrypt.");
 
     if (config_file) {
         config = mz_config_load(config_file);
-        if (!config)
+        if (!config) {
             syslog(LOG_NOTICE, "config file (%s) is not loaded.", config_file);
+        } else {
+            if (!connection_spec)
+                connection_spec = (char*)mz_config_get_string(config, "connection_spec");
+        }
     }
+
+    if (!connection_spec)
+        show_usage();
 
     if (pid_file) {
         FILE *fd;
