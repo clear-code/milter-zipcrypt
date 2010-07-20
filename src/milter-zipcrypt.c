@@ -598,6 +598,8 @@ main (int argc, char *argv[])
                 connection_spec = (char*)mz_config_get_string(config, "connection_spec");
             if (!pid_file)
                 pid_file = (char*)mz_config_get_string(config, "pid_file");
+            if (!user_name)
+                user_name = (char*)mz_config_get_string(config, "user_name");
         }
     }
 
