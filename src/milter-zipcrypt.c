@@ -110,6 +110,9 @@ _header (SMFICTX *context, char *name, char *value)
     struct MzPriv *priv;
     char *boundary;
 
+    if (!strcmp(name, "X-ZIP-Crypted"))
+        return SMFIS_CONTINUE;
+
     if (strcasecmp(name, "Content-type"))
         return SMFIS_CONTINUE;
 

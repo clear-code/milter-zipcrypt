@@ -1,5 +1,2 @@
-== general ==
-  * ignore encrypted zip file.
-
 == test ==
   * tests using DBus-GLib should be rewritten with GDBus.
