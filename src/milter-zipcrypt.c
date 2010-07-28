@@ -376,6 +376,7 @@ _send_password (struct MzPriv *priv, MzList *attachments)
                                    priv->from,
                                    (const char*)priv->body,
                                    body->boundary_start_position - (const char*)priv->body,
+                                   priv->boundary,
                                    priv->password,
                                    1000);
     return true;
@@ -405,7 +406,6 @@ _eom (SMFICTX *context)
     _set_password(priv);
 
     smfi_addheader(context, "X-ZIP-Crypted", "Yes");
-    smfi_addheader(context, "X-ZIP-Crypted-Password", priv->password);
 
     _send_body(context, priv, attachments);
     ret = _replace_with_crypted_data(context, priv, attachments);
