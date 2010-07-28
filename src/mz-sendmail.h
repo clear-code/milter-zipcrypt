@@ -7,6 +7,7 @@ int mz_sendmail_send_password_mail (const char   *command_path,
                                     const char   *recipient,
                                     const char   *body,
                                     unsigned int  body_length,
+                                    const char   *boundary,
                                     const char   *password,
                                     int           timeout);
 

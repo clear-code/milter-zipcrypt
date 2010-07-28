@@ -49,7 +49,8 @@ static size_t CRLF_LENGTH = sizeof(CRLF) - 1;
 static bool
 output_headers (int fd,
                 const char *from,
-                const char *recipient)
+                const char *recipient,
+                const char *boundary)
 {
     size_t ret;
 
@@ -64,10 +65,10 @@ output_headers (int fd,
     ret = write(fd, MIME_HEADER, strlen(MIME_HEADER));
     ret = write(fd, CRLF, CRLF_LENGTH);
 
-    ret = write(fd, CONTENT_TYPE_HEADER, strlen(CONTENT_TYPE_HEADER));
-    ret = write(fd, CRLF, CRLF_LENGTH);
-
-    ret = write(fd, CONTENT_TRANSFER_ENCODING_HEADER, strlen(CONTENT_TRANSFER_ENCODING_HEADER));
+    ret = write(fd, "Content-Type: multipart/mixed; boundary=\"",
+                strlen("Content-Type: multipart/mized; boundary=\""));
+    ret = write(fd, boundary, strlen(boundary));
+    ret = write(fd, "\"", 1);
     ret = write(fd, CRLF, CRLF_LENGTH);
 
     return true;
@@ -76,11 +77,23 @@ output_headers (int fd,
 #define PASSWORD_MESSAGE "The password of the attachment file in the following mail is: "
 
 static bool
-output_password (int fd, const char *password)
+output_password (int fd, const char *password, const char *boundary)
 {
     size_t ret;
 
+    ret = write(fd, "--", 2);
+    ret = write(fd, boundary, strlen(boundary));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+
+    ret = write(fd, CONTENT_TYPE_HEADER, strlen(CONTENT_TYPE_HEADER));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+    ret = write(fd, CONTENT_TRANSFER_ENCODING_HEADER, strlen(CONTENT_TRANSFER_ENCODING_HEADER));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+    ret = write(fd, CRLF, CRLF_LENGTH);
+
     ret = write(fd, PASSWORD_MESSAGE, strlen(PASSWORD_MESSAGE));
+    ret = write(fd, CRLF, CRLF_LENGTH);
+
     ret = write(fd, password, strlen(password));
     ret = write(fd, CRLF, CRLF_LENGTH);
 
@@ -105,6 +118,7 @@ mz_sendmail_send_password_mail (const char   *command_path,
                                 const char   *recipient,
                                 const char   *body,
                                 unsigned int  body_length,
+                                const char   *boundary,
                                 const char   *password,
                                 int           timeout)
 {
@@ -149,8 +163,8 @@ mz_sendmail_send_password_mail (const char   *command_path,
         close_pipe(stderr_pipe, WRITE);
         close_pipe(stdin_pipe, READ);
 
-        output_headers(stdin_pipe[WRITE], from, recipient);
-        output_password(stdin_pipe[WRITE], password);
+        output_headers(stdin_pipe[WRITE], from, recipient, boundary);
+        output_password(stdin_pipe[WRITE], password, boundary);
         output_body(stdin_pipe[WRITE], body, body_length);
 
         while (waitpid(pid, &status, WNOHANG) <= 0);
