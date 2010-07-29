@@ -232,7 +232,7 @@ timeout_sending_password (gpointer data)
 "Content-Transfer-Encoding: 8bit\r\n"                       \
 "\r\n"                                                      \
 "The password of the attachment file"                       \
-" in the following mail is: \r\n"                           \
+" in the following mail is:\r\n"                            \
 "secret\r\n"                                                \
 "This is a test mail.\r\n"                                  \
 

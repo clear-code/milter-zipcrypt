@@ -74,7 +74,7 @@ output_headers (int fd,
     return true;
 }
 
-#define PASSWORD_MESSAGE "The password of the attachment file in the following mail is: "
+#define PASSWORD_MESSAGE "The password of the attachment file in the following mail is:"
 
 static bool
 output_password (int fd, const char *password, const char *boundary)
