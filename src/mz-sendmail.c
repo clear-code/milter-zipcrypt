@@ -39,8 +39,8 @@ sane_dup2 (int fd1, int fd2)
 #define FROM_HEADER                      "From: "
 #define TO_HEADER                        "To: "
 #define MIME_HEADER                      "MIME-Version: 1.0"
-#define CONTENT_TYPE_HEADER              "Conent-Type: text/plain; charset=\"UTF-8\""
-#define CONTENT_TRANSFER_ENCODING_HEADER "Conent-Transfer-Encoding: 8bit"
+#define CONTENT_TYPE_HEADER              "Content-Type: text/plain; charset=\"UTF-8\""
+#define CONTENT_TRANSFER_ENCODING_HEADER "Content-Transfer-Encoding: 8bit"
 #define SUBJECT                          "MilterZipCrypt: Password Notification"
 
 #define CRLF "\r\n"
