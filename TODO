@@ -1,2 +1,5 @@
+== general ==
+  * quoted-printable support.
+
 == test ==
   * tests using DBus-GLib should be rewritten with GDBus.
