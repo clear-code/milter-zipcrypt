@@ -204,6 +204,7 @@ send_password_mail_thread (gpointer data)
                                                          MAIL_BODY,
                                                          strlen(MAIL_BODY),
                                                          PASSWORD,
+                                                         "boundary",
                                                          3);
 
     status->is_terminated = TRUE;
