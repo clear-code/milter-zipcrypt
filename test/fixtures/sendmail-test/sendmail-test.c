@@ -43,6 +43,7 @@ process_mail (int argc, char *argv[])
     int i;
     DBusGProxy *proxy = NULL;
     GString *body = NULL;
+    gboolean next_password = FALSE;
 
     proxy = get_dbus_proxy();
     /*
@@ -67,14 +68,17 @@ process_mail (int argc, char *argv[])
     do {
         status = g_io_channel_read_line(io, &line, &length, NULL, NULL);
         if (line) {
-            if (g_str_equal(line, ".\r\n"))
-                break;
-            if (g_str_has_prefix(line, "The password of ")) {
+            if (next_password) {
                 gchar *password;
-                password = g_strrstr(line, ": ");
+                password = line;
                 if (password && proxy && !org_MilterZipcrypt_Sendmail_password(proxy, password, NULL))
                     goto fail;
+                next_password = FALSE;
             }
+            if (g_str_equal(line, ".\r\n"))
+                break;
+            if (g_str_has_prefix(line, "The password of "))
+                next_password = TRUE;
             g_string_append(body, line);
         }
     } while (status == G_IO_STATUS_NORMAL || status == G_IO_STATUS_AGAIN);

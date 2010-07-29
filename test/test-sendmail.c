@@ -203,8 +203,8 @@ send_password_mail_thread (gpointer data)
                                                          "to@example.com",
                                                          MAIL_BODY,
                                                          strlen(MAIL_BODY),
-                                                         PASSWORD,
                                                          "boundary",
+                                                         PASSWORD,
                                                          3);
 
     status->is_terminated = TRUE;
@@ -222,15 +222,19 @@ timeout_sending_password (gpointer data)
     return FALSE;
 }
 
-#define EXPECTED_BODY                               \
-"Subject: MilterZipCrypt: Password Notification\r\n"\
-"To: to@example.com\r\n"                            \
-"MIME-Version: 1.0\r\n"                             \
-"Conent-Type: text/plain; charset=\"UTF-8\"\r\n"    \
-"Conent-Transfer-Encoding: 8bit\r\n"                \
-"The password of the attachment file"               \
-" in the following mail is: secret\r\n"             \
-"This is a test mail.\r\n"                          \
+#define EXPECTED_BODY                                       \
+"Subject: MilterZipCrypt: Password Notification\r\n"        \
+"To: to@example.com\r\n"                                    \
+"MIME-Version: 1.0\r\n"                                     \
+"Content-Type: multipart/mixed; boundary=\"boundary\"\r\n"  \
+"--boundary\r\n"                                            \
+"Content-Type: text/plain; charset=\"UTF-8\"\r\n"           \
+"Content-Transfer-Encoding: 8bit\r\n"                       \
+"\r\n"                                                      \
+"The password of the attachment file"                       \
+" in the following mail is: \r\n"                           \
+"secret\r\n"                                                \
+"This is a test mail.\r\n"                                  \
 
 void
 test_send (void)
