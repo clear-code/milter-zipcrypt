@@ -407,6 +407,10 @@ _eom (SMFICTX *context)
 
     smfi_addheader(context, "X-ZIP-Crypted", "Yes");
 
+    /* This header is needed for test-milter-zipcryt.c */
+    if (config && mz_config_get_string(config, "password_in_header"))
+        smfi_addheader(context, "X-ZIP-Crypted-Password", priv->password);
+
     _send_body(context, priv, attachments);
     ret = _replace_with_crypted_data(context, priv, attachments);
 

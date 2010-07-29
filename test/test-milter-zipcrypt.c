@@ -55,6 +55,7 @@ cut_startup (void)
                                    NULL);
     fprintf(fp, "sendmail_path = %s\n", sendmail_path);
     fprintf(fp, "charset_in_zip_file = UTF-8\n");
+    fprintf(fp, "password_in_header = yes\n");
     fclose(fp);
 }
 
