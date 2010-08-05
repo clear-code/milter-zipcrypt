@@ -111,7 +111,7 @@ _header (SMFICTX *context, char *name, char *value)
     char *boundary;
 
     if (!strcmp(name, "X-ZIP-Crypted"))
-        return SMFIS_CONTINUE;
+        return SMFIS_ACCEPT;
 
     if (strcasecmp(name, "Content-type"))
         return SMFIS_CONTINUE;
