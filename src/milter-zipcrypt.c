@@ -160,6 +160,9 @@ _body (SMFICTX *context, unsigned char *chunk, size_t size)
     if (!priv)
         return SMFIS_ACCEPT;
 
+    if (!priv->boundary)
+        return SMFIS_ACCEPT;
+
     return append_body(priv, chunk, size);
 }
 
