@@ -181,7 +181,8 @@ _replace_body_with_base64 (SMFICTX *context, const unsigned char *body, size_t s
                                           (char*)base64_output,
                                           state,
                                           save);
-    return smfi_replacebody(context, base64_output, base64_length);
+    return (smfi_replacebody(context, base64_output, base64_length) == MI_SUCCESS) ?
+            SMFIS_CONTINUE : SMFIS_TEMPFAIL;
 }
 
 static sfsistat
@@ -195,7 +196,8 @@ _replace_body_with_base64_close (SMFICTX *context, int *state, int *save)
                                           (char*)base64_output,
                                           state,
                                           save);
-    return smfi_replacebody(context, base64_output, base64_length);
+    return (smfi_replacebody(context, base64_output, base64_length) == MI_SUCCESS) ?
+            SMFIS_CONTINUE : SMFIS_TEMPFAIL;
 }
 
 static sfsistat
@@ -351,9 +353,13 @@ static sfsistat
 _send_body (SMFICTX *context, struct MzPriv *priv, MzList *attachments)
 {
     MzAttachment *body = attachments->data;
-    return smfi_replacebody(context,
-                            priv->body,
-                            ((unsigned char*)body->boundary_start_position - priv->body));
+    int ret;
+
+    ret = smfi_replacebody(context,
+                           priv->body,
+                           ((unsigned char*)body->boundary_start_position - priv->body));
+
+    return (ret == MI_SUCCESS) ? SMFIS_CONTINUE : SMFIS_TEMPFAIL;
 }
 
 static void
