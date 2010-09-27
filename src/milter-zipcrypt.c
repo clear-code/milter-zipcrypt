@@ -30,6 +30,7 @@ struct MzPriv {
     unsigned char *body;
     size_t body_length;
     char *password;
+    bool is_always_zipped;
 };
 
 static MzConfig *config;
@@ -62,21 +63,39 @@ _negotiate (SMFICTX *context,
     return SMFIS_CONTINUE;
 }
 
-static sfsistat
-_envfrom (SMFICTX *context, char **froms)
+static struct MzPriv *
+_mz_priv_new (SMFICTX *context)
 {
     struct MzPriv *priv;
     priv = malloc(sizeof(*priv));
 
     if (!priv)
-        return SMFIS_TEMPFAIL;
+        return NULL;
 
     memset(priv, 0, sizeof(*priv));
     smfi_setpriv(context, priv);
 
+    return priv;
+}
+
+static sfsistat
+_envfrom (SMFICTX *context, char **froms)
+{
+    struct MzPriv *priv;
+    const char *always_zipped;
+
+    priv = _mz_priv_new(context);
+
+    if (!priv)
+        return SMFIS_TEMPFAIL;
+
     priv->from = strdup(froms[0]);
     if (!priv->from)
         return SMFIS_TEMPFAIL;
+
+    always_zipped = mz_config_get_string(config, "always_zipped");
+    if (!strcmp(always_zipped, "yes"))
+        priv->is_always_zipped = true;
 
     return SMFIS_CONTINUE;
 }
