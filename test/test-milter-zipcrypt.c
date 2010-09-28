@@ -18,6 +18,8 @@
 #include "mz-test-utils.h"
 
 void test_no_attachment (void);
+void test_attachment (void);
+void test_attachment_without_request (void);
 
 static GCutProcess *test_server;
 static GCutProcess *milter_zipcrypt;
@@ -56,7 +58,7 @@ cut_startup (void)
     fprintf(fp, "sendmail_path = %s\n", sendmail_path);
     fprintf(fp, "charset_in_zip_file = UTF-8\n");
     fprintf(fp, "password_in_header = yes\n");
-    fprintf(fp, "always_zipped = yes\n");
+    fprintf(fp, "always_zipped = no\n");
     fclose(fp);
 }
 
@@ -145,21 +147,24 @@ teardown (void)
 }
 
 static void
-run_test_server (const char *data_file_name)
+run_test_server (const char *data_file_name, gboolean request)
 {
     GError *error = NULL;
     const char *data_path;
+    const char *request_header;
 
     data_path = cut_build_path(cut_get_source_directory(),
                                "test",
                                "fixtures",
                                data_file_name,
                                NULL);
+    request_header = request ? "--header=X-ZIP-Crypted-Request: Yes" : "";
     test_server = gcut_process_new(MILTER_TEST_SERVER,
                                    "-s", temporary_socket,
                                    "-m", data_path,
                                    "--output-message",
                                    "--color=no",
+                                   request_header,
                                    NULL);
     gcut_process_run(test_server, &error);
     gcut_assert_error(error);
@@ -179,7 +184,7 @@ assert_status (const char *status)
 void
 test_no_attachment (void)
 {
-    cut_trace(run_test_server("no_attachment"));
+    cut_trace(run_test_server("no_attachment", TRUE));
     cut_trace(assert_status("accept"));
 }
 
@@ -221,7 +226,7 @@ test_attachment (void)
     const char *password;
     const char *expected_file;
 
-    cut_trace(run_test_server("test-mail"));
+    cut_trace(run_test_server("test-mail", TRUE));
     cut_trace(assert_status("pass"));
     cut_assert_match("\\+ X-ZIP-Crypted: Yes", modified_message->str);
 
@@ -258,5 +263,12 @@ test_attachment (void)
     expected_file = mz_test_utils_build_fixture_data_path("text", NULL);
     cut_assert_equal_file_raw(expected_file,
                               "tmp" G_DIR_SEPARATOR_S "text");
+}
+
+void
+test_attachment_without_request (void)
+{
+    cut_trace(run_test_server("test-mail", FALSE));
+    cut_trace(assert_status("accept"));
 }
 

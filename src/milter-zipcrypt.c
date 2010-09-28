@@ -13,6 +13,7 @@
 #include <pwd.h>
 #include <errno.h>
 #include <getopt.h>
+#include <ctype.h>
 #include <libmilter/mfapi.h>
 
 #include "mz-base64.h"
@@ -31,6 +32,7 @@ struct MzPriv {
     size_t body_length;
     char *password;
     bool is_always_zipped;
+    bool zip_request;
 };
 
 static MzConfig *config;
@@ -123,6 +125,21 @@ get_boundary (const char *value)
     return strndup(start, end - start);
 }
 
+static bool
+is_zip_request_header_yes (char *name, char *value)
+{
+    char *stripped_value = value;
+
+    while (stripped_value && isblank(stripped_value[0]))
+        stripped_value++;
+
+    if (!strcmp(name, "X-ZIP-Crypted-Request") &&
+        !strcasecmp(stripped_value, "Yes"))
+        return true;
+
+    return false;
+}
+
 static sfsistat
 _header (SMFICTX *context, char *name, char *value)
 {
@@ -131,6 +148,14 @@ _header (SMFICTX *context, char *name, char *value)
 
     if (!strcmp(name, "X-ZIP-Crypted"))
         return SMFIS_ACCEPT;
+
+    if (is_zip_request_header_yes(name, value)) {
+        priv = (struct MzPriv*)smfi_getpriv(context);
+        if (!priv)
+            return SMFIS_ACCEPT;
+        priv->zip_request = true;
+        return SMFIS_CONTINUE;
+    }
 
     if (strcasecmp(name, "Content-type"))
         return SMFIS_CONTINUE;
@@ -180,6 +205,9 @@ _body (SMFICTX *context, unsigned char *chunk, size_t size)
         return SMFIS_ACCEPT;
 
     if (!priv->boundary)
+        return SMFIS_ACCEPT;
+
+    if (!priv->zip_request && !priv->is_always_zipped)
         return SMFIS_ACCEPT;
 
     return append_body(priv, chunk, size);
