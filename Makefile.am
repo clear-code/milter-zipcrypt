@@ -24,3 +24,6 @@ distclean-local:
 		rm -f ChangeLog; 		\
 	fi
 
+EXTRA_DIST =					\
+	ChangeLog				\
+	README
