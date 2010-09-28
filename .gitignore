@@ -35,3 +35,8 @@ src/milter-zipcrypt
 *.tar.gz
 test/mz-test-sendmail-receiver.h
 test/fixtures/sendmail-test/mz-test-sendmail-reporter.h
+milter-zipcrypt.spec
+debian/files
+debian/milter-zipcrypt*
+debian/stamp-*
+*.cdbs-*
