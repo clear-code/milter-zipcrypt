@@ -1,5 +1,6 @@
 /* vim: set ts=4 sts=4 nowrap ai expandtab sw=4: */
 
+#define _GNU_SOURCE
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
