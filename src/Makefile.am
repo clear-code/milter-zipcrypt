@@ -1,4 +1,4 @@
-bin_PROGRAMS =			\
+sbin_PROGRAMS =			\
 	milter-zipcrypt
 
 noinst_LTLIBRARIES =		\
