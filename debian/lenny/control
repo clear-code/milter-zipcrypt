@@ -1,0 +1,14 @@
+Source: milter-zipcrypt
+Priority: extra
+Maintainer: Clear Code Inc. <info@clear-code.com>
+Build-Depends: debhelper (>= 5), cdbs, autotools-dev,
+ libmilter-dev, libc6-dev, zlib1g-dev
+Standards-Version: 3.7.3
+Section: libs
+Homepage: http://www.clear-code.com/softwares/milter-zipcrypt.html
+
+Package: milter-zipcrypt
+Section: mail
+Architecture: any
+Depends: libmilter1.0.1, ${shlibs:Depends}
+Description: Milter Zipcrypt is a milter for encryption of attachment files.

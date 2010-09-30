@@ -6,7 +6,7 @@ include /usr/share/cdbs/1/class/autotools.mk
 DEB_INSTALL_DOCS_ALL = README TODO
 
 DEB_INSTALL_DIRS_milter-zipcrypt =		\
-	/usr/bin				\
+	/usr/sbin				\
 	/usr/share/man/man5			\
 	/usr/share/man/man8
 

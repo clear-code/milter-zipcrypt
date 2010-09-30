@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/autotools.mk
+
+DEB_INSTALL_DOCS_ALL = README TODO
+
+DEB_INSTALL_DIRS_milter-zipcrypt =		\
+	/usr/sbin				\
+	/usr/share/man/man5			\
+	/usr/share/man/man8
+
+#install/milter-zipcrypt::
+#	cp -ar debian/tmp/usr/bin/* debian/milter-zipcrypt/usr/bin/
+#	cp -ar debian/tmp/usr/share/man/man5/* \
+#		debian/cutter-bin/usr/share/man/man5/
+#	cp -ar debian/tmp/usr/share/man/man8/* \
+#		debian/cutter-bin/usr/share/man/man8/
