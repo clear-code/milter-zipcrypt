@@ -20,6 +20,22 @@ AC_CHECK_HEADERS([libmilter/mfapi.h],,[AC_MSG_ERROR([libmilter/mfapi.h not found
 AC_CHECK_HEADERS([getopt.h],,[AC_MSG_ERROR([getopt.h not found.])])
 AC_CHECK_FUNC([daemon],,[AC_MSG_ERROR([daemon() function not found])])
 
+MILTER_HAVE_NEGOTIATE=no
+AC_MSG_CHECKING([if libmilter has negotiate function])
+mz_save_CFLAGS=$CFLAGS
+if test "x$GCC" = "xyes"; then
+  CFLAGS="$CFLAGS -Werror"
+  AC_TRY_COMPILE([#include <libmilter/mfapi.h>], [
+    struct smfiDesc _smfilter;
+    _smfilter.xxfi_negotiate;
+  ],
+    AC_DEFINE(MILTER_HAVE_NEGOTIATE, 1,
+      [Define if libmilter has negotiate function])
+    MILTER_HAVE_NEGOTIATE=yes)
+fi
+AC_MSG_RESULT($MILTER_HAVE_NEGOTIATE)
+CFLAGS=$mz_save_CFLAGS
+
 AC_PATH_PROG([PKG_CONFIG], [pkg-config], [no])
 
 AM_ICONV_LINK(iconv)

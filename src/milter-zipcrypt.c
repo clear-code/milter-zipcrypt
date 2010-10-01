@@ -46,6 +46,7 @@ static sfsistat _abort   (SMFICTX *context);
 static sfsistat _close   (SMFICTX *context);
 static sfsistat _cleanup (SMFICTX *context);
 
+#ifdef MILTER_HAVE_NEGOTIATE
 static sfsistat
 _negotiate (SMFICTX *context,
             unsigned long f0,
@@ -64,6 +65,7 @@ _negotiate (SMFICTX *context,
 
     return SMFIS_CONTINUE;
 }
+#endif
 
 static struct MzPriv *
 _mz_priv_new (SMFICTX *context)
@@ -543,7 +545,9 @@ struct smfiDesc smfilter = {
     _close,
     NULL, /* unknown */
     NULL, /* data */
+#ifdef MILTER_HAVE_NEGOTIATE
     _negotiate  /* negotiate */
+#endif
 };
 
 static bool
