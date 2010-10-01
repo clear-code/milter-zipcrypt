@@ -16,6 +16,7 @@ milter_zipcrypt_LDADD =		\
 	-L/usr/lib/libmilter	\
 	-lcrypt			\
 	-lmilter		\
+	-lpthread		\
 	-lz
 
 libmilter_zipcrypt_la_SOURCES =	\
