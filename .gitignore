@@ -39,3 +39,6 @@ milter-zipcrypt.spec
 *.cdbs-*
 apt/ubuntu/*
 apt/debian/*
+yum/centos/*
+yum/fedora/*
+yum/RPM-GPG-KEY-milter-zipcrypt

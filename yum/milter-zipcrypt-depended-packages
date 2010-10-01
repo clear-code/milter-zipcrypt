@@ -1,0 +1,6 @@
+gettext
+gcc
+gcc-c++
+make
+sendmail-devel
+zlib-devel

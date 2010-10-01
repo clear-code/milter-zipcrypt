@@ -1,0 +1,11 @@
+connection_spec = unix:/tmp/milter-zipcrypt.sock
+
+# pid_file = /var/run/milter-zipcrypt.pid
+
+# user_name = postfix
+
+sendmail_path = /usr/sbin/sendmail
+
+charset_in_zip_file = SHIFT-JIS
+
+always_zipped = no

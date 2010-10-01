@@ -1,4 +1,4 @@
-pkg_sysconfdir =  $(sysconfdir)/$(PACKAGE)
+SUBDIRS = init.d
 
-dist_pkg_sysconf_DATA =          \
+EXTRA_DIST =					\
         milter-zipcrypt.conf

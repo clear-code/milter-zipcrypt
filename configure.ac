@@ -63,10 +63,17 @@ AC_CONFIG_FILES([
 Makefile
 src/Makefile
 data/Makefile
+data/init.d/Makefile
+data/init.d/redhat/Makefile
+data/init.d/redhat/sysconfig/Makefile
 test/Makefile
 test/fixtures/Makefile
 test/fixtures/sendmail-test/Makefile
 man/Makefile
+rpm/fedora/milter-zipcrypt.spec
+rpm/centos/milter-zipcrypt.spec
+yum/Makefile
+apt/Makefile
 ])
 
 AC_OUTPUT

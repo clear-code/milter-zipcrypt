@@ -1,4 +1,4 @@
-SUBDIRS = src data test man
+SUBDIRS = src data test man yum apt
 
 ACLOCAL_AMFLAGS = -I m4
 
