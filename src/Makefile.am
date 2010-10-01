@@ -4,7 +4,8 @@ sbin_PROGRAMS =			\
 noinst_LTLIBRARIES =		\
 	libmilter_zipcrypt.la
 
-AM_CFLAGS =			\
+AM_CFLAGS =				\
+	-DSMFI_VERSION=0x01000001	\
 	$(COVERAGE_CFLAGS)
 
 milter_zipcrypt_SOURCES =	\
