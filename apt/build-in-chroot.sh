@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 if [ $# != 5 ]; then
     echo "Usage: $0 PACKAGE VERSION CHROOT_BASE ARCHITECTURES CODES"
