@@ -10,6 +10,9 @@ DEB_INSTALL_DIRS_milter-zipcrypt =		\
 	/usr/share/man/man5			\
 	/usr/share/man/man8
 
+DEB_CONFIGURE_USER_FLAGS =			\
+	--without-cutter
+
 #install/milter-zipcrypt::
 #	cp -ar debian/tmp/usr/bin/* debian/milter-zipcrypt/usr/bin/
 #	cp -ar debian/tmp/usr/share/man/man5/* \
