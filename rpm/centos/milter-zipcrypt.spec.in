@@ -25,7 +25,7 @@ Milter Zipcrypt is a milter for encryption of attachment files.
 
 %build
 %configure
-make %{?_smp_mflags}
+make %{?_smp_mflags} --without-cutter
 
 %install
 rm -rf %{buildroot}
